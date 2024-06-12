@@ -6,9 +6,7 @@ To recognize a program or bootable module in RAM or flash, the toolbox needs a s
 | ----     | -----                                                    |
 | 0        | Signature: $F8                                           |
 | 1        | Signature: $16                                           |
-| 2        | Size of the program in 8KB blocks                        |
-| 3        | Reserved                                                 |
-| 4 -- 5   | Starting address of the program, little-endian format    |
+| 2 -- 5   | Starting address of the program, little-endian format    |
 | 6        | Header structure version number                          |
 | 7 -- 9   | Reserved                                                 |
 | 10 -- m  | Zero-terminated string: name of the program              |

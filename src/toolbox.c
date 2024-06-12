@@ -60,7 +60,7 @@
 #include "rsrc/font/MSX_CP437_8x8.h"
 #include "rsrc/bitmaps/splash_c256_u.h"
 
-const char* VolumeStr[FF_VOLUMES] = { "sd" };
+const char* VolumeStr[FF_VOLUMES] = { "sd0" };
 
 extern unsigned long __memory_start;
 
@@ -244,10 +244,6 @@ void initialize() {
     }
 }
 
-#define BOOT_DEFAULT    -1  // User chose default, or the time to over-ride has passed
-
-t_file_info file;
-
 int main(int argc, char * argv[]) {
     short result;
     short i;
@@ -255,24 +251,9 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
-    // // Display the splash screen and wait for user input
-    // short boot_dev = boot_screen();
-
-    // // Start the boot process
-    // boot_from_bdev(boot_dev);
-
-    // log(LOG_INFO, "Stopping.");
-
-	printf("Loading splashscreen...\n");
-
-	// txt_clear(0, 2);
-	bm_load_clut(0, splashscreen_lut);
-	bm_load_rle((uint8_t *)0x010000, splashscreen_pix, 640, 480);
-	printf("Splash screen rendered\n");
-	vdma_copy_linear((uint8_t *)0xb00000, (uint8_t *)0x010000, (long)640 * (long)480);
-	printf("Splash screen copied to VRAM\n");
-	bm_set_data(0, (uint8_t *)0xb00000);
-	bm_set_visibility(0, 0, 1);
+	// Attempt to start up the user code
+    log(LOG_INFO, "Looking for user startup code:");
+	boot_launch();
 
 	printf("Done.\n");
 

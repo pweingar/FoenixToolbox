@@ -1,44 +1,23 @@
 /**
- * @file boot.h
- *
- * Routines to support the boot process
+ * @file boot.c
+ * @author your name (you@domain.com)
+ * @brief Boot sequence control code for managing loading up the user's control code
+ * @version 0.1
+ * @date 2024-06-09
+ * 
+ * @copyright Copyright (c) 2024
+ * 
  */
 
-#ifndef __BOOT_H
-#define __BOOT_H
+#ifndef __boot_h__
+#define __boot_h__
 
-#define BOOT_DEFAULT    -1
-#define BOOT_SAFE       -2
-
-/*
- * Load and display the boot splash screen on the graphics screen
- *
- * @return boot device selected by user
- */
-extern short boot_screen();
+#include <stdint.h>
 
 /**
- * Start the boot process after initializing the MCP
- *
- * @param device the number of the block device to use for booting (-1 to go straight to CLI)
+ * @brief Find and launch the user's code
+ * 
  */
-extern void boot_from_bdev(short device);
-
-/**
- * Make the indicated drive non booting by erasing the boot information
- *
- * @param device the number of the block device to use for booting (-1 to go straight to CLI)
- * @return 0 on success, any other number is an error
- */
-extern short boot_non_booting(short device);
-
-/**
- * Make the indicated drive booting from a file
- *
- * @param device the number of the block device to use for booting (-1 to go straight to CLI)
- * @param path the path to the file to boot from
- * @return 0 on success, any other number is an error
- */
-extern short boot_set_file(short device, const char * path);
+extern void boot_launch();
 
 #endif

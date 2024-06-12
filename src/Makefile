@@ -56,7 +56,7 @@ else
 	LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file toolbox.map
 endif
 
-SRCS = toolbox.c log.c memory.c proc.c ring_buffer.c simpleio.c sys_general.c utilities.c $(SRCS_FOR_UNIT) # $(C_SRCS_DEBUGGER)
+SRCS = toolbox.c log.c boot.c memory.c proc.c ring_buffer.c simpleio.c sys_general.c utilities.c $(SRCS_FOR_UNIT) # $(C_SRCS_DEBUGGER)
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = dev/devices.a snd/sound.a fatfs/fatfs.a
@@ -88,7 +88,7 @@ fatfs/fatfs.a:
 
 # Clean up after a build
 clean:
-	$(RM) $(OBJS4RM) toolbox.s37 *.lst *.map
+	$(RM) $(OBJS4RM) toolbox.s37 *.lst *.map *.raw
 	$(MAKE) --directory=dev clean
 	$(MAKE) --directory=snd clean
 	$(MAKE) --directory=fatfs clean
