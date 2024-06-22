@@ -13,19 +13,14 @@
 
 #include "dev/uart.h"
 #include "dev/txt_screen.h"
+#include "gabe_reg.h"
 
-
-#if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS
-#include "A2560U/gabe_a2560u.h"
-#elif (MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X)
-#include "A2560K/gabe_a2560k.h"
-#endif
 
 /* Channel to which the logging output should go.
  * Positive: screen number
  * -1: UART. 
  */
-static short log_channel = LOG_CHANNEL;
+static short log_channel = -1;
 short log_level;
 
 // do_log either points to log_to_uart or log_to_screen.
@@ -49,14 +44,14 @@ void buzzer_off(void) {
 void log_init(void) {
     log_setlevel(DEFAULT_LOG_LEVEL);
 
-	// TODO: bring back
     // if (log_channel == LOG_CHANNEL_UART0) {
-    //     uart_init(UART_COM1);
-    //     do_log = log_to_uart;
-    //     //log(LOG_INFO,"FOENIX DEBUG OUTPUT------------");
+        uart_init(UART_COM1);
+        do_log = log_to_uart;
+        log(LOG_INFO,"FOENIX DEBUG OUTPUT------------");
     // }
-    // else
-        do_log = log_to_screen;
+    // else {
+    //     do_log = log_to_screen;
+	// }
 }
 
 unsigned short panic_number;        /* The number of the kernel panic */
@@ -250,12 +245,12 @@ void log_setlevel(short level) {
 
 
 static void log_to_uart(const char *message) {
-	// TODO: bring back
-    // char *c = (char*)message;
-    // while (*c)
-    //     uart_put(UART_COM1, *c++);
-    // uart_put(UART_COM1,'\r');
-    // uart_put(UART_COM1,'\n');
+    char *c = (char*)message;
+    while (*c) {
+        uart_put(UART_COM1, *c++);
+	}
+    uart_put(UART_COM1,'\r');
+    uart_put(UART_COM1,'\n');
 }
 
 static void log_to_screen(const char *message) {
@@ -284,8 +279,9 @@ void log(short level, const char * message, ...) {
     vsprintf(buf, message, args);
     va_end(args);
 
-    txt_print(0, buf);
-	txt_print(0, "\n");
+    (*do_log)(buf);
+//    txt_print(0, buf);
+//	txt_print(0, "\n");
 }
 
 void trace(const char * message, ...) {

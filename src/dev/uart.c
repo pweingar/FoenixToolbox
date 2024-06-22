@@ -173,6 +173,22 @@ unsigned char uart_get(short uart) {
     }
 }
 
+/*
+ * Write a string to the UART with a newline at the end
+ *
+ * Inputs:
+ * uart = the number of the UART: 0 for COM1, 1 for COM2
+ * message = the ASCIIZ string to print
+ *
+ */
+void uart_writeln(short uart, char * message) {
+	for (char * x = message; *x != 0; x++) {
+		uart_put(0, *x);
+	}
+	uart_put(0, '\n');
+	uart_put(0, '\r');
+}
+
 /**
  * Return the status of the UART
  *

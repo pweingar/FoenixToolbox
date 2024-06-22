@@ -67,6 +67,26 @@
 #define RTC_CTRL        ((volatile unsigned char *)0xaf080e)
 #define RTC_CENTURY     ((volatile unsigned char *)0xaf080f)
 
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+
+#define RTC_BASE        ((volatile unsigned char *)0xf01690)
+#define RTC_SEC         ((volatile unsigned char *)0xf01690)
+#define RTC_ALRM_SEC    ((volatile unsigned char *)0xf01691)
+#define RTC_MIN         ((volatile unsigned char *)0xf01692)
+#define RTC_ALRM_MIN    ((volatile unsigned char *)0xf01693)
+#define RTC_HOUR        ((volatile unsigned char *)0xf01694)
+#define RTC_ALRM_HOUR   ((volatile unsigned char *)0xf01695)
+#define RTC_DAY         ((volatile unsigned char *)0xf01696)
+#define RTC_ALRM_DAY    ((volatile unsigned char *)0xf01697)
+#define RTC_DAY_OF_WEEK ((volatile unsigned char *)0xf01698)
+#define RTC_MONTH       ((volatile unsigned char *)0xf01699)
+#define RTC_YEAR        ((volatile unsigned char *)0xf0169a)
+#define RTC_RATES       ((volatile unsigned char *)0xf0169b)
+#define RTC_ENABLES     ((volatile unsigned char *)0xf0169c)
+#define RTC_FLAGS       ((volatile unsigned char *)0xf0169d)
+#define RTC_CTRL        ((volatile unsigned char *)0xf0169e)
+#define RTC_CENTURY     ((volatile unsigned char *)0xf0169f)
+
 #endif
 
 /* Rate fields and settings */

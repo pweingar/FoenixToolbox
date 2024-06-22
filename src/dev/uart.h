@@ -59,6 +59,16 @@ extern bool uart_has_bytes(short uart);
 extern void uart_put(short uart, unsigned char b);
 
 /*
+ * Write a string to the UART with a newline at the end
+ *
+ * Inputs:
+ * uart = the number of the UART: 0 for COM1, 1 for COM2
+ * message = the ASCIIZ string to print
+ *
+ */
+extern void uart_writeln(short uart, char * message);
+
+/*
  * Get a byte from the UART. Blocks until there is data to read.
  *
  * Inputs:

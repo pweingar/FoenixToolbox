@@ -14,13 +14,16 @@
 
 #define MODEL_FOENIX_FMX            0
 #define MODEL_FOENIX_C256U          1
+#define MODEL_FOENIX_F256			2
 #define MODEL_FOENIX_GENX           4
 #define MODEL_FOENIX_C256U_PLUS     5
 #define MODEL_FOENIX_A2560U_PLUS    6
 #define MODEL_FOENIX_A2560X         8
 #define MODEL_FOENIX_A2560U         9
+#define MODEL_FOENIX_A2560M         10
 #define MODEL_FOENIX_A2560K         11
-#define MODEL_FOENIX_A2560M         12
+#define MODEL_FOENIX_F256K			18
+#define MODEL_FOENIX_F256K2			17
 
 /* IDs for the CPUs supported */
 

@@ -15,6 +15,10 @@
 
 #elif MODEL == MODEL_FOENIX_FMX || MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS
 #include "C256/timers_c256.h"
+
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#include "F256/timers_f256.h"
+
 #endif
 
 #endif

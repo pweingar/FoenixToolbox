@@ -16,6 +16,10 @@
 
 #elif MODEL == MODEL_FOENIX_FMX || MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS
 #include "C256/vicky_ii.h"
+
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#include "F256/vicky_ii.h"
+
 #endif
 
 

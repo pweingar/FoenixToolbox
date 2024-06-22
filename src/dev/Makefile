@@ -1,5 +1,5 @@
 
-UNIT := C256U_PLUS
+UNIT := F256
 
 # Define OS-dependent variables
 
@@ -32,13 +32,20 @@ else ifeq ($(UNIT),C256_FMX)
 
 	SRCS_FOR_UNIT=txt_c256.c txt_evid.c indicators_c256.c interrupts_c256.c timers_c256.c
 	CFLAGS_FOR_UNIT=-DMODEL=0 -DCPU=255 --target Foenix --code-model large --data-model large
+else ifeq ($(UNIT),F256)
+	CC=cc65816
+	AS=as65816
+	AR=nlib
+
+	SRCS_FOR_UNIT=txt_f256.c # indicators_c256.c interrupts_c256.c timers_c256.c
+	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large # --target Foenix
 endif
 
 INCLUDES=-I.. -I../include
 CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) -l
 ASFLAGS=$(INCLUDES)
 
-SRCS = bitmap.c block.c channel.c console.c dma.c fsys.c ps2.c sdc.c rtc.c txt_screen.c $(SRCS_FOR_UNIT) # pata.c
+SRCS = block.c channel.c console.c fsys.c txt_screen.c uart.c $(SRCS_FOR_UNIT) # pata.c bitmap.c dma.c ps2.c sdc.c rtc.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 OBJS4RM = $(subst /,\\,$(OBJS))
 

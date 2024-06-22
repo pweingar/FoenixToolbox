@@ -35,6 +35,9 @@
     #define HAS_MIDI_PORTS 1
     #define HAS_EXTERNAL_SIDS 1
     #define HAS_OPL3 1
+#elif MODEL == MODEL_FOENIX_F256KE
+    #define HAS_EXTERNAL_SIDS 1
+	#define HAS_OPL3 1
 #endif
 
 
