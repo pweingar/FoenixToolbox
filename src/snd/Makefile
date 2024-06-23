@@ -1,5 +1,5 @@
 
-UNIT := C256U_PLUS
+UNIT := F256
 
 # Define OS-dependent variables
 
@@ -32,6 +32,13 @@ else ifeq ($(UNIT),C256_FMX)
 
 	SRCS_FOR_UNIT=psg.c sid.c codec_c256.c
 	CFLAGS_FOR_UNIT=-DMODEL=0 -DCPU=255 --target Foenix --code-model large --data-model large
+else ifeq ($(UNIT),F256)
+	CC=cc65816
+	AS=as65816
+	AR=nlib
+
+	SRCS_FOR_UNIT=psg.c codec_c256.c #  sid.c
+	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large
 endif
 
 INCLUDES=-I.. -I../include

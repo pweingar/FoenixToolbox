@@ -133,27 +133,24 @@ void initialize() {
 #error Cannot identify screen setup
 #endif
 
-	txt_set_border_color(0, 0x80, 0x80, 0x80);
-	txt_print(0, "Foenix Toolbox starting up...\n");
-
+	printf("Foenix Toolbox v%d.%02d.%04d starting up...\n", VER_MAJOR, VER_MINOR, VER_BUILD);
 	INFO("Text system initialized.");
-
-	while (1) ;
 
 // 	// Initialize the bitmap system
 // 	bm_init();
 // 	INFO("Bitmap system initialized...");
 
-//     /* Initialize the indicators */
-//     ind_init();
-//     INFO("Indicators initialized");
+    /* Initialize the indicators */
+    ind_init();
+    INFO("Indicators initialized");
 
 //     /* Initialize the interrupt system */
 //     int_init();
 // 	INFO("Interrupts initialized");
 
-//     /* Mute the PSG */
-//     psg_mute_all();
+    /* Mute the PSG */
+    psg_mute_all();
+	INFO("PSG Muted.");
 
 //     /* Initialize and mute the SID chips */
 //     sid_init_all();
@@ -161,8 +158,9 @@ void initialize() {
 // //     /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
 // //     ym_init();
 
-//     /* Initialize the CODEC */
-//     init_codec();
+    /* Initialize the CODEC */
+    init_codec();
+	INFO("CODEC initialized.");
 
 //     cdev_init_system();   // Initialize the channel device system
 //     INFO("Channel device system ready.");

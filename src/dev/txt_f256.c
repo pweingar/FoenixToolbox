@@ -623,10 +623,8 @@ static void txt_f256_init() {
     txt_f256_set_cursor(1, 0, 0xB1);
 
     /* Set the border */
-    txt_f256_set_border(8, 8);                              /* Set up the border */
+    txt_f256_set_border(0, 0);                              /* Set up the border */
     txt_f256_set_border_color(0xf0, 0, 0);
-
-	INFO("Border set");
 
     /*
      * Enable set_sizes, now that everything is set up initially
