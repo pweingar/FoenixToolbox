@@ -162,17 +162,17 @@ void initialize() {
     init_codec();
 	INFO("CODEC initialized.");
 
-//     cdev_init_system();   // Initialize the channel device system
-//     INFO("Channel device system ready.");
+    cdev_init_system();   // Initialize the channel device system
+    INFO("Channel device system ready.");
 
-//     bdev_init_system();   // Initialize the channel device system
-//     INFO("Block device system ready.");
+    bdev_init_system();   // Initialize the channel device system
+    INFO("Block device system ready.");
 
-//     if ((res = con_install())) {
-//         log_num(LOG_ERROR, "FAILED: Console installation", res);
-//     } else {
-//         INFO("Console installed.");
-//     }
+    // if ((res = con_install())) {
+    //     log_num(LOG_ERROR, "FAILED: Console installation", res);
+    // } else {
+    //     INFO("Console installed.");
+    // }
 
 //     /* Initialize the timers the MCP uses */
 //     timers_init();
@@ -192,11 +192,13 @@ void initialize() {
 // //     /* Play the SID test bong on the Gideon SID implementation */
 // //     sid_test_internal();
 
-//     // if ((res = pata_install())) {
-//     //     log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
-//     // } else {
-//     //     INFO("PATA driver installed.");
-//     // }
+#if HAS_PATA
+    if ((res = pata_install())) {
+        log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
+    } else {
+        INFO("PATA driver installed.");
+    }
+#endif
 
 //     if ((res = sdc_install())) {
 //         ERROR1("FAILED: SDC driver installation %d", res);
@@ -204,13 +206,13 @@ void initialize() {
 //         INFO("SDC driver installed.");
 //     }
 
-// #if HAS_FLOPPY
-//     if ((res = fdc_install())) {
-//         ERROR1("FAILED: Floppy drive initialization %d", res);
-//     } else {
-//         INFO("Floppy drive initialized.");
-//     }
-// #endif
+#if HAS_FLOPPY
+    if ((res = fdc_install())) {
+        ERROR1("FAILED: Floppy drive initialization %d", res);
+    } else {
+        INFO("Floppy drive initialized.");
+    }
+#endif
 
 //     // At this point, we should be able to call into to console to print to the screens
 
@@ -220,29 +222,29 @@ void initialize() {
 //         log(LOG_INFO, "PS/2 keyboard initialized.");
 //     }
 
-// #if MODEL == MODEL_FOENIX_A2560K
-//     if ((res = kbdmo_init())) {
-//         log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
-//     } else {
-//         log(LOG_INFO, "A2560K built-in keyboard initialized.");
-//     }
-// #endif
+#if MODEL == MODEL_FOENIX_A2560K
+    if ((res = kbdmo_init())) {
+        log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
+    } else {
+        log(LOG_INFO, "A2560K built-in keyboard initialized.");
+    }
+#endif
 
-// #if HAS_PARALLEL_PORT
-//     if ((res = lpt_install())) {
-//         log_num(LOG_ERROR, "FAILED: LPT installation", res);
-//     } else {
-//         log(LOG_INFO, "LPT installed.");
-//     }
-// #endif
+#if HAS_PARALLEL_PORT
+    if ((res = lpt_install())) {
+        log_num(LOG_ERROR, "FAILED: LPT installation", res);
+    } else {
+        log(LOG_INFO, "LPT installed.");
+    }
+#endif
 
-// #if HAS_MIDI_PORTS
-//     if ((res = midi_install())) {
-//         log_num(LOG_ERROR, "FAILED: MIDI installation", res);
-//     } else {
-//         log(LOG_INFO, "MIDI installed.");
-//     }
-// #endif
+#if HAS_MIDI_PORTS
+    if ((res = midi_install())) {
+        log_num(LOG_ERROR, "FAILED: MIDI installation", res);
+    } else {
+        log(LOG_INFO, "MIDI installed.");
+    }
+#endif
 
 // //     if (res = uart_install()) {
 // //         log_num(LOG_ERROR, "FAILED: serial port initialization", res);

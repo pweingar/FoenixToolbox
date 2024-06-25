@@ -12,6 +12,9 @@
     // Actually, for the X this depends on the submodel. E.g. Pizza Box doesn't have floppy.
     #define HAS_FLOPPY 1
 
+	// Does the model have a PATA / IDE interface
+	#define HAS_PATA 1
+
     // Actually, for the X this depends on the submodel. E.g. Pizza Box doesn't have floppy.
     #define HAS_PARALLEL_PORT 1
 
@@ -27,14 +30,17 @@
     #define HAS_OPL3 1
 #elif MODEL == MODEL_FOENIX_A2560U
     #define HAS_OPL3 1
+	#define HAS_PATA 1
 #elif MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_C256U
     #define HAS_OPL3 1
+	#define HAS_PATA 1
 #elif MODEL == MODEL_FOENIX_C256U_FMX
     #define HAS_SUPERIO 1
     #define HAS_PARALLEL_PORT 1
     #define HAS_MIDI_PORTS 1
     #define HAS_EXTERNAL_SIDS 1
     #define HAS_OPL3 1
+	#define HAS_PATA 1
 #elif MODEL == MODEL_FOENIX_F256KE
     #define HAS_EXTERNAL_SIDS 1
 	#define HAS_OPL3 1
@@ -49,6 +55,10 @@
 
 #ifndef HAS_FLOPPY // Floppy disk drive presence
     #define HAS_FLOPPY 0
+#endif
+
+#ifndef HAS_PATA // PATA hard drive presence
+	#define HAS_PATA 0
 #endif
 
 #ifndef HAS_PARALLEL_PORT // Parallel/Centronics port presence
