@@ -71,6 +71,24 @@
 #define MASK_GRP2 			((volatile uint8_t *)0x00014e)
 #define MASK_GRP3 			((volatile uint8_t *)0x00014f)
 
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+
+#define PENDING_GRP0 		((volatile uint8_t *)0xf01660)
+#define PENDING_GRP1 		((volatile uint8_t *)0xf01661)
+#define PENDING_GRP2 		((volatile uint8_t *)0xf01662)
+
+#define POL_GRP0 			((volatile uint8_t *)0xf01664)
+#define POL_GRP1 			((volatile uint8_t *)0xf01665)
+#define POL_GRP2 			((volatile uint8_t *)0xf01666)
+
+#define EDGE_GRP0 			((volatile uint8_t *)0xf01668)
+#define EDGE_GRP1 			((volatile uint8_t *)0xf01669)
+#define EDGE_GRP2 			((volatile uint8_t *)0xf0166a)
+
+#define MASK_GRP0 			((volatile uint8_t *)0xf0166c)
+#define MASK_GRP1 			((volatile uint8_t *)0xf0166d)
+#define MASK_GRP2 			((volatile uint8_t *)0xf0166e)
+
 #endif
 
 

@@ -144,9 +144,9 @@ void initialize() {
     ind_init();
     INFO("Indicators initialized");
 
-//     /* Initialize the interrupt system */
-//     int_init();
-// 	INFO("Interrupts initialized");
+    /* Initialize the interrupt system */
+    int_init();
+	INFO("Interrupts initialized");
 
     /* Mute the PSG */
     psg_mute_all();
