@@ -56,33 +56,22 @@ static const uint8_t kbd_scan_codes[KBD_ROWS][KBD_COLUMNS] = {
 // Driver variables
 //
 
-static uint8_t kbd_stat[KBD_MATRIX_SIZE];
+static uint16_t kbd_stat[KBD_MATRIX_SIZE];
 static short counter = 0;
 static uint8_t last_press = 0;
 static t_word_ring scan_code_buffer; 
 
 /**
- * @brief Get the keys selected in a given column
+ * @brief Get the keys selected in a given row
  * 
- * @param column the number of the column (0 - 8)
- * @return uint8_t a bitfield representing the keys in that column (0 = released, 1 = pressed)
+ * @param row the number of the row to turn on (0 - 7)
+ * @return uint8_t a bitfield representing the keys in that row (0 = released, 1 = pressed)
  */
-static uint8_t kbd_get_rows(short column) {
-	uint8_t result = 0x00;
+static uint16_t kbd_get_columns(uint8_t row) {
+	uint16_t result = 0;
 
-	if (column > 7) {
-		via0->pb = 0x00;
-		result = via1->pa;
-		via0->pb = 0x80;
-	} else {
-		via1->pb = ~(0x01 << column);
-		result = via1->pa;
-		via1->pb = 0xff;
-	}
-
-	char message[80];
-	sprintf(message, "Row: %02X, %02X", result, column);
-	uart_writeln(0, message);
+	via1->pa = ~(0x01 << row);
+	result = ((uint16_t)via1->pb | (((uint16_t)(via0->pb) & 0x0080) << 1)) ^ 0x1ff;
 	
 	return result;
 }
@@ -96,8 +85,9 @@ static uint8_t kbd_get_rows(short column) {
  */
 static void kbd_process_key(short column, short row, bool is_pressed) {
 	uint8_t scan_code = kbd_scan_codes[row][column];
+
 	if (scan_code != 0) {
-		if (!is_pressed) {
+		if (is_pressed == 0) {
 			if (last_press == scan_code) {
 				// If we released the last key pressed, remove it from the typematic variables
 				last_press = 0;
@@ -112,7 +102,7 @@ static void kbd_process_key(short column, short row, bool is_pressed) {
 		}
 
 		if (!rb_word_full(&scan_code_buffer)) {
-			rb_word_put(&scan_code_buffer, (unsigned short)scan_code);
+			rb_word_put(&scan_code_buffer, scan_code);
 		}
 	}
 }
@@ -136,23 +126,23 @@ unsigned short kbd_get_scancode() {
  * 
  */
 void kbd_handle_irq() {
-	for (short column = 0; column < 8; column++) {
+	for (uint8_t row = 0; row < 8; row++) {
 		// Check each column to see if any key is pressed
-		uint8_t rows_stat = kbd_get_rows(column);
-		uint8_t rows_eor = kbd_stat[column] ^ rows_stat;
-		if (rows_eor != 0) {
-			short row = 0;
+		uint16_t columns_stat = kbd_get_columns(row);
+		uint16_t columns_eor = kbd_stat[row] ^ columns_stat;
+		if (columns_eor != 0) {
+			short column = 0;
 
-			kbd_stat[column] = rows_stat;
-			while (rows_eor != 0) {
-				if (rows_eor & 0x01) {
+			kbd_stat[row] = columns_stat;
+			while (columns_eor != 0) {
+				if (columns_eor & 0x01) {
 					// Current key changed
-					kbd_process_key(column, row, rows_stat && 0x01); 
+					kbd_process_key(column, row, columns_stat && 0x01);
 				}
 
-				rows_stat = rows_stat >> 1;
-				rows_eor = rows_eor >> 1;
-				row++;
+				columns_stat = columns_stat >> 1;
+				columns_eor = columns_eor >> 1;
+				column++;
 			}
 		}
 	}
@@ -163,16 +153,16 @@ void kbd_handle_irq() {
  *
  */
 short kbd_init() {
-	// Initialize VIA0 -- we'll just write to PB7
+	// Initialize VIA0 -- we'll just read from PB7
 	via0->ddra = 0x00;
-	via0->ddrb = 0x80;
+	via0->ddrb = 0x00;
 	via0->acr = 0x00;
 	via0->pcr = 0x00;
 	via0->ier = 0x00;
 
 	// Initialize VIA1 -- we'll write to all of PB
-	via1->ddra = 0x00;
-	via1->ddrb = 0xff;
+	via1->ddra = 0xff;
+	via1->ddrb = 0x00;
 	via1->acr = 0x00;
 	via1->pcr = 0x00;
 	via1->ier = 0x00;

@@ -285,15 +285,14 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
-	// while (1) {
-	// 	kbd_handle_irq();
-	// 	unsigned short scan_code = kbd_get_scancode();
-	// 	if (scan_code != 0) {
-	// 		tvky_text_matrix[0] = dec2hex((scan_code & 0xf0) >> 4);
-	// 		tvky_text_matrix[1] = dec2hex(scan_code & 0x0f);
-	// 		tvky_text_matrix[2] += 1;
-	// 	}
-	// }
+	kbd_init();
+	while (1) {
+		kbd_handle_irq();
+		unsigned short scan_code = kbd_get_scancode();
+		if (scan_code != 0) {
+			INFO1("0x%02X ", scan_code);
+		}
+	}
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");
