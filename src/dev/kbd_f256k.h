@@ -19,6 +19,14 @@
 extern void kbd_handle_irq();
 
 /*
+ * Try to retrieve the next scancode from the keyboard.
+ *
+ * Returns:
+ *      The next scancode to be processed, 0 if nothing.
+ */
+extern unsigned short kbd_get_scancode();
+
+/*
  * Initialize the matrix keyboard
  *
  */

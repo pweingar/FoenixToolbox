@@ -34,6 +34,7 @@
 #include "dev/txt_evid.h"
 #elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
 #include "dev/txt_f256.h"
+#include "dev/kbd_f256k.h"
 #endif
 
 #include "syscalls.h"
@@ -133,7 +134,7 @@ void initialize() {
 #error Cannot identify screen setup
 #endif
 
-	printf("Foenix Toolbox v%d.%02d.%04d starting up...\n", VER_MAJOR, VER_MINOR, VER_BUILD);
+	printf("Foenix Toolbox v%d.%02d.%04d starting up...\nHello, F256k!\n", VER_MAJOR, VER_MINOR, VER_BUILD);
 	INFO("Text system initialized.");
 
 // 	// Initialize the bitmap system
@@ -178,9 +179,21 @@ void initialize() {
 //     timers_init();
 // 	INFO("Timers initialized");
 
-//     /* Initialize the real time clock */
-//     rtc_init();
-// 	INFO("Real time clock initialized");
+    /* Initialize the real time clock */
+    rtc_init();
+	INFO("Real time clock initialized");
+
+	t_time time;
+	time.year = 2024;
+	time.month = 6;
+	time.day = 24;
+	time.hour = 22;
+	time.minute = 0;
+	time.second = 0;
+	rtc_set_time(&time);
+
+	rtc_get_time(&time);
+	INFO3("%04d-%02d-%02d", time.year, time.month, time.day);
 
 //     target_jiffies = sys_time_jiffies() + 300;     /* 5 seconds minimum */
 //     DEBUG1("target_jiffies assigned: %d", target_jiffies);
@@ -259,12 +272,28 @@ void initialize() {
 //     }
 }
 
+char dec2hex(uint8_t x) {
+	char * hex_digits = "0123456789ABCDEF";
+
+	return hex_digits[x & 0x0f];
+}
+
 int main(int argc, char * argv[]) {
     short result;
     short i;
 	char message[256];
 
     initialize();
+
+	// while (1) {
+	// 	kbd_handle_irq();
+	// 	unsigned short scan_code = kbd_get_scancode();
+	// 	if (scan_code != 0) {
+	// 		tvky_text_matrix[0] = dec2hex((scan_code & 0xf0) >> 4);
+	// 		tvky_text_matrix[1] = dec2hex(scan_code & 0x0f);
+	// 		tvky_text_matrix[2] += 1;
+	// 	}
+	// }
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");

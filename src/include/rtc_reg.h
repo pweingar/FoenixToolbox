@@ -27,7 +27,7 @@
 #define RTC_CTRL        ((volatile unsigned char *)0xFEC0008E)
 #define RTC_CENTURY     ((volatile unsigned char *)0xFEC0008F)
 
-#elif MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS
+#elif MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS
 
 #define RTC_BASE        ((volatile unsigned char *)0x00B00080)
 #define RTC_SEC         ((volatile unsigned char *)0x00B00080)

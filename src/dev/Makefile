@@ -37,7 +37,7 @@ else ifeq ($(UNIT),F256)
 	AS=as65816
 	AR=nlib
 
-	SRCS_FOR_UNIT=txt_f256.c indicators_c256.c interrupts_f256.c # timers_c256.c
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c # timers_c256.c
 	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large # --target Foenix
 endif
 
@@ -45,7 +45,7 @@ INCLUDES=-I.. -I../include
 CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) -l
 ASFLAGS=$(INCLUDES)
 
-SRCS = block.c channel.c console.c fsys.c txt_screen.c uart.c $(SRCS_FOR_UNIT) # pata.c bitmap.c dma.c ps2.c sdc.c rtc.c
+SRCS = block.c channel.c console.c fsys.c txt_screen.c rtc.c uart.c $(SRCS_FOR_UNIT) # pata.c bitmap.c dma.c ps2.c sdc.c 
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 OBJS4RM = $(subst /,\\,$(OBJS))
 

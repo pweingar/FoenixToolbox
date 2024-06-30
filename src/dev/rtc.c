@@ -259,6 +259,6 @@ SYSTEMCALL void rtc_get_time(p_time time) {
  * the number of jiffies since the last reset
  */
 long rtc_get_jiffies() {
-    return timers_jiffies();
+    return 0; // timers_jiffies();
 }
 

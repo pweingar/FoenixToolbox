@@ -52,8 +52,6 @@ typedef struct via_s {
 #define VIA_INT_IRQ 0x80
 
 #define via0 ((volatile __attribute__((far)) via_p)0xf01c00)
-#if MODEL == MODEL_FOENIX_F256K || MODEL ==MODEL_FOENIX_F256K2
 #define via1 ((volatile __attribute__((far)) via_p)0xf01b00)
-#endif
 
 #endif
