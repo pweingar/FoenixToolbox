@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include "uart.h"
+#include "gabe_reg.h"
 
 //
 // Constants
@@ -26,6 +27,19 @@
 #define KBD_MATRIX_SIZE		9
 #define KBD_COLUMNS			9
 #define KBD_ROWS			8
+
+/*
+ * Modifier bit flags
+ */
+
+#define KBD_LOCK_SCROLL     0x01
+#define KBD_LOCK_NUM        0x02
+#define KBD_LOCK_CAPS       0x04
+#define KBD_MOD_SHIFT       0x08
+#define KBD_MOD_CTRL        0x10
+#define KBD_MOD_ALT         0x20
+#define KBD_MOD_OS          0x40
+#define KBD_MOD_MENU        0x80
 
 //
 // Map a key's matrix position to its scan code (FoenixMCP scan codes are used here)
@@ -60,6 +74,7 @@ static uint16_t kbd_stat[KBD_MATRIX_SIZE];
 static short counter = 0;
 static uint8_t last_press = 0;
 static t_word_ring scan_code_buffer; 
+static uint8_t modifiers;
 
 /**
  * @brief Get the keys selected in a given row
@@ -77,6 +92,33 @@ static uint16_t kbd_get_columns(uint8_t row) {
 }
 
 /**
+ * @brief Set or reset the modifier_flag in the modifiers variable, depending on if the key is pressed or not
+ * 
+ * @param modifier_flag the bit to change
+ * @param is_pressed if true, key is pressed, if 0 key is released 
+ */
+static void kbd_process_modifier(uint8_t modifier_flag, bool is_pressed) {
+	if (is_pressed) {
+		modifiers |= modifier_flag;
+	} else {
+		modifiers &= ~(modifier_flag);
+	}
+}
+
+/**
+ * @brief Turn the caps lock LED on or off
+ * 
+ * @param cap_en true for on, false for off
+ */
+static void kbd_set_caps_led(bool cap_en) {
+	if (cap_en) {
+		*GABE_MSTR_CTRL |= GABE_CAP_EN;
+	} else {
+		*GABE_MSTR_CTRL &= (~GABE_CAP_EN);
+	}
+}
+
+/**
  * @brief Handle a key MAKE or BREAK event... set up for auto repeat and queue the MAKE/BREAK scan code
  * 
  * @param column the number of the column (0 - 8)
@@ -85,6 +127,40 @@ static uint16_t kbd_get_columns(uint8_t row) {
  */
 static void kbd_process_key(short column, short row, bool is_pressed) {
 	uint8_t scan_code = kbd_scan_codes[row][column];
+
+	switch(scan_code) {
+		case 0x2a:
+		case 0x36:
+			// Left or right SHIFT
+			kbd_process_modifier(KBD_MOD_SHIFT, is_pressed);
+			break;
+		
+		case 0x3a:
+			// CAPS... flip KBD_LOCK_CAPS bit on MAKE, ignore BREAK
+			if (is_pressed) {
+				modifiers = modifiers ^ KBD_LOCK_CAPS;
+				kbd_set_caps_led(modifiers & KBD_LOCK_CAPS);
+			}
+			break;
+
+		case 0x1d:
+			// Control key
+			kbd_process_modifier(KBD_MOD_CTRL, is_pressed);
+			break;
+
+		case 0x5c:
+			// ALT key
+			kbd_process_modifier(KBD_MOD_ALT, is_pressed);
+			break;
+
+		case 0x5b:
+			// FOENIX key
+			kbd_process_modifier(KBD_MOD_OS, is_pressed);
+			break;
+
+		default:
+			break;
+	}
 
 	if (scan_code != 0) {
 		if (is_pressed == 0) {
@@ -102,7 +178,7 @@ static void kbd_process_key(short column, short row, bool is_pressed) {
 		}
 
 		if (!rb_word_full(&scan_code_buffer)) {
-			rb_word_put(&scan_code_buffer, scan_code);
+			rb_word_put(&scan_code_buffer, (modifiers << 8) | scan_code);
 		}
 	}
 }
@@ -137,7 +213,7 @@ void kbd_handle_irq() {
 			while (columns_eor != 0) {
 				if (columns_eor & 0x01) {
 					// Current key changed
-					kbd_process_key(column, row, columns_stat && 0x01);
+					kbd_process_key(column, row, columns_stat & 0x01);
 				}
 
 				columns_stat = columns_stat >> 1;
@@ -167,6 +243,11 @@ short kbd_init() {
 	via1->pcr = 0x00;
 	via1->ier = 0x00;
 
+	// Clear the modifiers and intialize the caps lock LED to off
+	modifiers = 0;
+	kbd_set_caps_led(0);
+
+	// Initialize the keyboard status to nothing pressed
 	for (short i = 0; i < KBD_MATRIX_SIZE; i++) {
 		kbd_stat[i] = 0;
 	}

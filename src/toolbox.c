@@ -290,7 +290,7 @@ int main(int argc, char * argv[]) {
 		kbd_handle_irq();
 		unsigned short scan_code = kbd_get_scancode();
 		if (scan_code != 0) {
-			INFO1("0x%02X ", scan_code);
+			INFO1("0x%04X ", scan_code);
 		}
 	}
 

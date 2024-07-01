@@ -18,6 +18,7 @@
 #define GABE_CTRL_STS_LED0		0x04     	// Control Status LED0 (General Use) - C256 Foenix U Only
 #define GABE_CTRL_STS_LED1		0x08     	// Control Status LED0 (General Use) - C256 Foenix U Only
 #define GABE_CTRL_BUZZER		0x10     	// Controls the Buzzer
+#define GABE_CAP_EN				0x20		// SD card detect
 #define GABE_SD_CD				0x20		// SD card detect
 #define GABE_SD_WP				0x40		// SD card write protect
 #define GABE_CTRL_WRM_RST		0x80    	// Warm Reset (needs to Setup other registers)
