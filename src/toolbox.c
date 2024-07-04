@@ -169,11 +169,11 @@ void initialize() {
     bdev_init_system();   // Initialize the channel device system
     INFO("Block device system ready.");
 
-    // if ((res = con_install())) {
-    //     log_num(LOG_ERROR, "FAILED: Console installation", res);
-    // } else {
-    //     INFO("Console installed.");
-    // }
+    if ((res = con_install())) {
+        log_num(LOG_ERROR, "FAILED: Console installation", res);
+    } else {
+        INFO("Console installed.");
+    }
 
 //     /* Initialize the timers the MCP uses */
 //     timers_init();
@@ -286,15 +286,13 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
-	printf("Hello, world!\n");
-	printf("This is a test.\n");
-
 	kbd_init();
 	printf("\n> ");
+	chan_ioctrl(0, CON_IOCTRL_ECHO_OFF, 0, 0);
 	while (!kbd_break()) {
-		char c = kbd_getc();
+		char c = chan_read_b(0);
 		if (c != 0) {
-			txt_put(0, c);
+			chan_write_b(0, c);
 		}
 	}
 

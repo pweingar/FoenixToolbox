@@ -19,7 +19,13 @@
 #include "dev/channel.h"
 #include "dev/console.h"
 #include "dev/ps2.h"
+
+#if MODEL == MODEL_FOENIX_A2560K
 #include "dev/kbd_mo.h"
+#elif MODEL == MODEL_FOENIX_F256K
+#include "dev/kbd_f256k.h"
+#endif
+
 #include "dev/txt_screen.h"
 #include "simpleio.h"
 
