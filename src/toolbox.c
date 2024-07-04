@@ -184,15 +184,16 @@ void initialize() {
 	INFO("Real time clock initialized");
 
 	t_time time;
-	time.year = 2024;
-	time.month = 6;
-	time.day = 24;
-	time.hour = 22;
-	time.minute = 0;
-	time.second = 0;
-	rtc_set_time(&time);
+	// time.year = 2024;
+	// time.month = 7;
+	// time.day = 3;
+	// time.hour = 16;
+	// time.minute = 05;
+	// time.second = 0;
+	// rtc_set_time(&time);
 
 	rtc_get_time(&time);
+	printf("%04d-%02d-%02d %02d:%02d\n", time.year, time.month, time.day, time.hour, time.minute);
 	INFO3("%04d-%02d-%02d", time.year, time.month, time.day);
 
 //     target_jiffies = sys_time_jiffies() + 300;     /* 5 seconds minimum */
@@ -259,11 +260,11 @@ void initialize() {
     }
 #endif
 
-// //     if (res = uart_install()) {
-// //         log_num(LOG_ERROR, "FAILED: serial port initialization", res);
-// //     } else {
-// //         log(LOG_INFO, "Serial ports initialized.");
-// //     }
+//     if (res = uart_install()) {
+//         log_num(LOG_ERROR, "FAILED: serial port initialization", res);
+//     } else {
+//         log(LOG_INFO, "Serial ports initialized.");
+//     }
 
 //     if ((res = fsys_init())) {
 //         log_num(LOG_ERROR, "FAILED: file system initialization", res);
@@ -285,14 +286,20 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
+	printf("Hello, world!\n");
+	printf("This is a test.\n");
+
 	kbd_init();
-	while (1) {
+	printf("\n> ");
+	while (!kbd_break()) {
 		kbd_handle_irq();
-		unsigned short scan_code = kbd_get_scancode();
-		if (scan_code != 0) {
-			INFO1("0x%04X ", scan_code);
+		char c = kbd_getc();
+		if (c != 0) {
+			txt_put(0, c);
 		}
 	}
+
+	printf("\nDone.\n");
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");
