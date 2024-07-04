@@ -199,9 +199,9 @@ void initialize() {
 //     target_jiffies = sys_time_jiffies() + 300;     /* 5 seconds minimum */
 //     DEBUG1("target_jiffies assigned: %d", target_jiffies);
 
-//     /* Enable all interrupts */
-//     int_enable_all();
-//     TRACE("Interrupts enabled");
+    /* Enable all interrupts */
+    int_enable_all();
+    TRACE("Interrupts enabled");
 
 // //     /* Play the SID test bong on the Gideon SID implementation */
 // //     sid_test_internal();
@@ -292,7 +292,6 @@ int main(int argc, char * argv[]) {
 	kbd_init();
 	printf("\n> ");
 	while (!kbd_break()) {
-		kbd_handle_irq();
 		char c = kbd_getc();
 		if (c != 0) {
 			txt_put(0, c);

@@ -206,8 +206,8 @@
 #define INT_TIMER2          0x1A    /* Timer 2, Clocked with the CPU Clock */
 #define INT_TIMER3          0x1B    /* Timer 3, Clocked with the SOF Channel A */
 #define INT_TIMER4          0x1C    /* Timer 4, Clocked with the SOF Channel B */
-#define INT_RESERVED_3      0x1D    /* Reserved */
-#define INT_RESERVED_4      0x1E    /* Reserved */
+#define INT_VIA0      		0x1D    /* VIA #0 for machines that have them (F256s) */
+#define INT_VIA1      		0x1E    /* VIA #1 for F256k, F256k2e */
 #define INT_RTC             0x1F    /* Real Time Clock */
 
 #define INT_PATA            0x20    /* IDE/PATA Hard drive interrupt */

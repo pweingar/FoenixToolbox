@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "interrupt.h"
 #include "log.h"
 #include "ring_buffer.h"
 #include "dev/kbd_f256k.h"
@@ -21,6 +22,7 @@
 #include "uart.h"
 #include "gabe_reg.h"
 #include "simpleio.h"
+#include "vicky_general.h"
 
 //
 // Constants
@@ -396,6 +398,9 @@ unsigned short kbd_get_scancode() {
  * 
  */
 void kbd_handle_irq() {
+	uint8_t ifr = via0->ifr;
+	uint8_t counter_low = via0->t1c_l;
+
 	for (uint8_t row = 0; row < 8; row++) {
 		// Check each column to see if any key is pressed
 		uint16_t columns_stat = kbd_get_columns(row);
@@ -649,6 +654,15 @@ short kbd_init() {
 
 	// Set up the layout of the F256k keyboard
 	kbd_layout(kbd_256k_layout);
+
+	int_register(INT_VIA0, kbd_handle_irq);
+
+	via0->acr = 0x40;								// Timer #0 in free running mode
+	via0->ier = VIA_INT_TIMER1 | VIA_INT_IRQ;		// Allow timer #0 interrupts
+	via0->t1c_l = 0xff;								// Set timer count
+	via0->t1c_h = 0xff;
+
+	int_enable(INT_VIA0);
 
 	return 1;
 }
