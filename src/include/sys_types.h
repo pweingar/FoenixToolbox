@@ -110,14 +110,15 @@ typedef struct s_sys_info {
  */
 
 typedef struct s_dev_block {
-    short number;           // The number of the device (assigned by registration)
-    char * name;            // The name of the device
-    FUNC_V_2_S init;        // short init() -- Initialize the device
-    FUNC_LBS_2_S read;      // short read(long lba, byte * buffer, short size) -- Read a block from the device
-    FUNC_LcBS_2_S write;    // short write(long lba, byte * buffer, short size) -- Write a block to the device
-    FUNC_V_2_S status;      // short status() -- Get the status of the device
-    FUNC_V_2_S flush;       // short flush() -- Ensure that any pending writes to teh device have been completed
-    FUNC_SBS_2_S ioctrl;    // short ioctrl(short command, byte * buffer, short size)) -- Issue a control command to the device
+    short number;           														// The number of the device (assigned by registration)
+    char * name;            														// The name of the device
+	void * data;																	// Device-specific data block
+    short (*init)(struct s_dev_block *);        									// Initialize the device
+    short (*read)(struct s_dev_block *, long lba, uint8_t * buffer, short size);	// Read a block from the device
+    short (*write)(struct s_dev_block *, long lba, const uint8_t * buffer, short size);	// Write a block to the device
+    short (*status)(struct s_dev_block *);      									// Get the status of the device
+    short (*flush)(struct s_dev_block *);      										// Ensure that any pending writes to the device have been completed
+    short (*ioctrl)(struct s_dev_block *, short command, unsigned char * buffer, short size);	// Issue a control command to the device
 } t_dev_block, *p_dev_block;
 
 /*

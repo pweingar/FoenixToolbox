@@ -2,6 +2,9 @@
  * Definitions for access the bq4802LY real time clock
  */
 
+#include "log_level.h"
+#define DEFAULT_LOG_LEVEL LOG_ERROR
+
 #include "log.h"
 #include "interrupt.h"
 #include "gabe_reg.h"
@@ -121,13 +124,13 @@ SYSTEMCALL void rtc_set_time(p_time time) {
     minute_bcd = i_to_bcd(time->minute);
     second_bcd = i_to_bcd(time->second);
 
-    log_num(LOG_INFO, "Century: ", century_bcd);
-    log_num(LOG_INFO, "Year: ", year_bcd);
-    log_num(LOG_INFO, "Month: ", month_bcd);
-    log_num(LOG_INFO, "Day: ", day_bcd);
-    log_num(LOG_INFO, "Hour: ", hour_bcd);
-    log_num(LOG_INFO, "Minute: ", minute_bcd);
-    log_num(LOG_INFO, "Second: ", second_bcd);
+	INFO1("Century: %02d", century_bcd);
+    INFO1("Year: %04d", year_bcd);
+    INFO1("Month: %02d", month_bcd);
+    INFO1("Day: %02d", day_bcd);
+    INFO1("Hour: %02d", hour_bcd);
+    INFO1("Minute: %02d", minute_bcd);
+    INFO1("Second: %02d", second_bcd);
 
     if (!time->is_24hours) {
         if (time->is_pm) {
@@ -140,11 +143,11 @@ SYSTEMCALL void rtc_set_time(p_time time) {
     /* Temporarily disable updates to the clock */
     ctrl = *RTC_CTRL;
     *RTC_CTRL = ctrl | RTC_UTI;
-    log(LOG_INFO, "RTC Disabled");
-    log_num(LOG_INFO, "RTC Rates: ", *RTC_RATES);
-    log_num(LOG_INFO, "RTC Enables: ", *RTC_ENABLES);
-    log_num(LOG_INFO, "RTC Flags: ", *RTC_FLAGS);
-    log_num(LOG_INFO, "RTC Control: ", *RTC_CTRL);
+    INFO("RTC Disabled");
+    INFO1("RTC Rates: %02x", *RTC_RATES);
+    INFO1("RTC Enables: %02x", *RTC_ENABLES);
+    INFO1("RTC Flags: %02x", *RTC_FLAGS);
+    INFO1("RTC Control: %02x", *RTC_CTRL);
 
     /* Set the time in the RTC */
 
@@ -165,13 +168,13 @@ SYSTEMCALL void rtc_set_time(p_time time) {
     hour_bcd = *RTC_HOUR;
     minute_bcd = *RTC_MIN;
     second_bcd = *RTC_SEC;
-    log_num(LOG_INFO, "REG Century: ", century_bcd);
-    log_num(LOG_INFO, "REG Year: ", year_bcd);
-    log_num(LOG_INFO, "REG Month: ", month_bcd);
-    log_num(LOG_INFO, "REG Day: ", day_bcd);
-    log_num(LOG_INFO, "REG Hour: ", hour_bcd);
-    log_num(LOG_INFO, "REG Minute: ", minute_bcd);
-    log_num(LOG_INFO, "REG Second: ", second_bcd);
+    INFO1("REG Century: %02d", century_bcd);
+    INFO1("REG Year: %02d", year_bcd);
+    INFO1("REG Month: %02d", month_bcd);
+    INFO1("REG Day: %02d", day_bcd);
+    INFO1("REG Hour: %02d", hour_bcd);
+    INFO1("REG Minute: %02d", minute_bcd);
+    INFO1("REG Second: %02d", second_bcd);
 
     /* Set the 24/12 hour control bit if needed */
     if (time->is_24hours) {
@@ -180,11 +183,11 @@ SYSTEMCALL void rtc_set_time(p_time time) {
 
     /* Re-enable updates to the clock */
     *RTC_CTRL = (ctrl & 0x07) | RTC_STOP;
-    log(LOG_INFO, "RTC Enabled");
-    log_num(LOG_INFO, "RTC Rates: ", *RTC_RATES);
-    log_num(LOG_INFO, "RTC Enables: ", *RTC_ENABLES);
-    log_num(LOG_INFO, "RTC Flags: ", *RTC_FLAGS);
-    log_num(LOG_INFO, "RTC Control: ", *RTC_CTRL);
+    INFO("RTC Enabled");
+    INFO1("RTC Rates: %02x", *RTC_RATES);
+    INFO1("RTC Enables: %02x", *RTC_ENABLES);
+    INFO1("RTC Flags: %02x", *RTC_FLAGS);
+    INFO1("RTC Control: %02x", *RTC_CTRL);
 }
 
 /*
@@ -201,11 +204,11 @@ SYSTEMCALL void rtc_get_time(p_time time) {
     /* Temporarily disable updates to the clock */
     ctrl = *RTC_CTRL;
     *RTC_CTRL = ctrl | RTC_UTI;
-    log(LOG_INFO, "RTC Disabled");
-    log_num(LOG_INFO, "RTC Rates: ", *RTC_RATES);
-    log_num(LOG_INFO, "RTC Enables: ", *RTC_ENABLES);
-    log_num(LOG_INFO, "RTC Flags: ", *RTC_FLAGS);
-    log_num(LOG_INFO, "RTC Control: ", *RTC_CTRL);
+    INFO("RTC Disabled");
+    INFO1("RTC Rates: %02x", *RTC_RATES);
+    INFO1("RTC Enables: %02x", *RTC_ENABLES);
+    INFO1("RTC Flags: %02x", *RTC_FLAGS);
+    INFO1("RTC Control: %02x", *RTC_CTRL);
 
     if (*RTC_CTRL & RTC_2412) {
         time->is_24hours = 1;
@@ -223,19 +226,19 @@ SYSTEMCALL void rtc_get_time(p_time time) {
 
     /* Re-enable updates to the clock */
     *RTC_CTRL = (ctrl & 0x07) | RTC_STOP;
-    log(LOG_INFO, "RTC Enabled");
-    log_num(LOG_INFO, "RTC Rates: ", *RTC_RATES);
-    log_num(LOG_INFO, "RTC Enables: ", *RTC_ENABLES);
-    log_num(LOG_INFO, "RTC Flags: ", *RTC_FLAGS);
-    log_num(LOG_INFO, "RTC Control: ", *RTC_CTRL);
+    INFO("RTC Enabled");
+    INFO1("RTC Rates: %02x", *RTC_RATES);
+    INFO1("RTC Enables: %02x", *RTC_ENABLES);
+    INFO1("RTC Flags: %02x", *RTC_FLAGS);
+    INFO1("RTC Control: %02x", *RTC_CTRL);
 
-    log_num(LOG_INFO, "Century: ", century_bcd);
-    log_num(LOG_INFO, "Year: ", year_bcd);
-    log_num(LOG_INFO, "Month: ", month_bcd);
-    log_num(LOG_INFO, "Day: ", day_bcd);
-    log_num(LOG_INFO, "Hour: ", hour_bcd);
-    log_num(LOG_INFO, "Minute: ", minute_bcd);
-    log_num(LOG_INFO, "Second: ", second_bcd);
+    INFO1("Century: %02d", century_bcd);
+    INFO1("Year: %02d", year_bcd);
+    INFO1("Month: %02d", month_bcd);
+    INFO1("Day: %02d", day_bcd);
+    INFO1("Hour: %02d", hour_bcd);
+    INFO1("Minute: %02d", minute_bcd);
+    INFO1("Second: %02d", second_bcd);
 
     /* Fill out the time record */
 

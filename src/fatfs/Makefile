@@ -1,5 +1,5 @@
 
-UNIT := C256U_PLUS
+UNIT := F256
 
 # Define OS-dependent variables
 
@@ -13,19 +13,29 @@ endif
 
 ifeq ($(UNIT),C256U)
 	CPU=w65816
-	SRCS_FOR_UNIT=
+	SRCS_FOR_UNIT=c256_diskio.c
 	CFLAGS_FOR_UNIT=-DMODEL=1 -DCPU=255 --target Foenix --code-model large --data-model large
 	LDFLAGS_FOR_UNIT=C256/ld_lc_c256_u.scm clib-lc-ld.a
 else ifeq ($(UNIT),C256U_PLUS)
 	CPU=w65816
-	SRCS_FOR_UNIT=
+	SRCS_FOR_UNIT=c256_diskio.c
 	CFLAGS_FOR_UNIT=-DMODEL=5 -DCPU=255 --target Foenix --code-model large --data-model large
 	LDFLAGS_FOR_UNIT=C256/ld_lc_c256_fmx.scm clib-lc-ld.a --rtattr printf=medium
 else ifeq ($(UNIT),C256_FMX)
 	CPU=w65816
-	SRCS_FOR_UNIT=
+	SRCS_FOR_UNIT=c256_diskio.c
 	CFLAGS_FOR_UNIT=-DMODEL=0 -DCPU=255 --target Foenix --code-model large --data-model large
 	LDFLAGS_FOR_UNIT=C256/ld_lc_c256_fmx.scm clib-lc-ld.a 
+else ifeq ($(UNIT),F256)
+	CPU=w65816
+	SRCS_FOR_UNIT=toolbox_bdev.c
+	CFLAGS_FOR_UNIT=-DMODEL=0 -DCPU=255 --code-model large --data-model large
+
+	ifeq ($(MEMORY),ROM)
+		LDFLAGS_FOR_UNIT=C256/flash-f256.scm clib-lc-ld.a --rtattr printf=medium
+	else
+		LDFLAGS_FOR_UNIT=C256/ld_lc_f256.scm clib-lc-ld.a --rtattr printf=medium
+	endif
 endif
 
 ifeq ($(CPU),w65816)
@@ -39,7 +49,7 @@ INCLUDES=-I.. -I../include
 CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) -l
 ASFLAGS=$(INCLUDES)
 
-SRCS = c256_diskio.c ff.c ffsystem.c ffunicode.c $(SRCS_FOR_UNIT)
+SRCS = ff.c ffsystem.c ffunicode.c $(SRCS_FOR_UNIT)
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 OBJS4RM = $(subst /,\\,$(OBJS))
 

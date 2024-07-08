@@ -6,6 +6,9 @@
  *
  */
 
+#include "log_level.h"
+#define DEFAULT_LOG_LEVEL LOG_INFO
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -239,6 +242,7 @@ SYSTEMCALL short fsys_opendir(const char * path) {
         }
         if (fres != FR_OK) {
             /* If there was a problem, return an error number */
+			ERROR1("FATFS Error: %d", fres);
             return fatfs_to_foenix(fres);
         } else {
             /* Otherwise, allocate and return the handle */
@@ -827,8 +831,9 @@ short fsys_mount(short bdev) {
     drive[2] = 0;
 
     fres = f_mount(&g_drive[bdev], drive, 0);
+	INFO1("fsys_mount called f_mount: %d", fres);
     if (fres != FR_OK) {
-        DEBUG1("Unable to mount drive: %s", drive);        
+        ERROR2("Unable to mount drive %s, FatFS Error: %d", drive, fres);        
         return fatfs_to_foenix(fres);
     } else {
         return 0;
@@ -1507,7 +1512,7 @@ short fsys_init() {
 	/* Set the default working directory.
 	 * TODO: set this based on the boot drive.
 	 */
-	strcpy(g_current_directory, "/sd");
+	strcpy(g_current_directory, "/sd0");
 
     /* Mark all directories as available */
     for (i = 0; i < MAX_DIRECTORIES; i++) {
@@ -1524,7 +1529,11 @@ short fsys_init() {
     for (i = 0; i < MAX_DRIVES; i++) {
         short res = sys_bdev_status((short)i);
         if (res >= 0) {
-            fsys_mount(i);
+			INFO1("Mounting drive #%d", i);
+            short result = fsys_mount(i);
+			if (result < 0) {
+				ERROR2("Could not mount device %d: %d", i, result);
+			}
         }
     }
 

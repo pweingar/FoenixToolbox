@@ -6,6 +6,7 @@
 #define DEFAULT_LOG_LEVEL LOG_INFO
 #define LOG_CHANNEL LOG_CHANNEL_UART0
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +36,7 @@
 #elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
 #include "dev/txt_f256.h"
 #include "dev/kbd_f256k.h"
+#include "dev/sdc_f256.h"
 #endif
 
 #include "syscalls.h"
@@ -214,11 +216,11 @@ void initialize() {
     }
 #endif
 
-//     if ((res = sdc_install())) {
-//         ERROR1("FAILED: SDC driver installation %d", res);
-//     } else {
-//         INFO("SDC driver installed.");
-//     }
+    if ((res = sdc_install())) {
+        ERROR1("FAILED: SDC driver installation %d", res);
+    } else {
+        INFO("SDC driver installed.");
+    }
 
 #if HAS_FLOPPY
     if ((res = fdc_install())) {
@@ -266,17 +268,41 @@ void initialize() {
 //         log(LOG_INFO, "Serial ports initialized.");
 //     }
 
-//     if ((res = fsys_init())) {
-//         log_num(LOG_ERROR, "FAILED: file system initialization", res);
-//     } else {
-//         INFO("File system initialized.");
-//     }
+    if ((res = fsys_init())) {
+        log_num(LOG_ERROR, "FAILED: file system initialization", res);
+    } else {
+        INFO("File system initialized.");
+    }
 }
 
-char dec2hex(uint8_t x) {
-	char * hex_digits = "0123456789ABCDEF";
+t_file_info dir;
+uint8_t buffer[512];
 
-	return hex_digits[x & 0x0f];
+
+void dump(uint8_t * buffer, int count) {
+	char char_buffer[17];
+
+	printf("\n");
+
+	short index = 0;
+	for (int i = 0; i < count; i++) {
+		if ((i > 0) && (i % 16 == 0)) {
+			index = 0;
+			char_buffer[16] = 0;
+			printf(" %s\n", char_buffer);
+		} else if (i > 0) {
+			char c = buffer[i];
+			printf("%02X ", c);
+
+			if (isalpha(c) || isdigit(c)) {
+				char_buffer[index++] = c;
+			} else {
+				char_buffer[index++] = '.';
+			}
+		}
+	}
+
+	printf(" %s\n", char_buffer);
 }
 
 int main(int argc, char * argv[]) {
@@ -286,17 +312,52 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
-	kbd_init();
-	printf("\n> ");
-	chan_ioctrl(0, CON_IOCTRL_ECHO_OFF, 0, 0);
-	while (!kbd_break()) {
-		char c = chan_read_b(0);
-		if (c != 0) {
-			chan_write_b(0, c);
+	short fd = fsys_opendir("0:/");
+	if (fd > -1) {
+		INFO("fsys_opendir");
+
+		short result = fsys_readdir(fd, &dir);
+		while (result == 0) {
+			if (dir.name[0] != 0) {
+				printf("%s\n", dir.name);
+			} else {
+				break;
+			}
+
+			result = fsys_readdir(fd, &dir);
 		}
+
+		fsys_closedir(fd);
+		INFO("fsys_closedir");
+	} else {
+		ERROR1("Could not open directory %d", fd);
 	}
 
-	printf("\nDone.\n");
+	// kbd_init();
+	// printf("\n> ");
+	// chan_ioctrl(0, CON_IOCTRL_ECHO_OFF, 0, 0);
+	// while (!kbd_break()) {
+	// 	char c = chan_read_b(0);
+	// 	if (c != 0) {
+	// 		chan_write_b(0, c);
+	// 	}
+	// }
+
+	// INFO("bdev_init");
+	// short status = bdev_init(BDEV_SD0);
+	// if (status) {
+	// 	ERROR1("bdev_init returned %d", status);
+	// }
+	// INFO("bdev_read");
+	// status = bdev_read(BDEV_SD0, 97, buffer, 512);
+	// if (status < 512) {
+	// 	ERROR1("bdev_read returned %d", status);
+	// }
+	// INFO("Read.");
+	// dump(buffer, 512);
+	
+
+	// printf("\nDone.\n");
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");

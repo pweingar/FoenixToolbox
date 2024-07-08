@@ -421,7 +421,7 @@ short sdc_ioctrl(short command, unsigned char * buffer, short size) {
 short sdc_install() {
     t_dev_block dev;                    // bdev_register copies the data, so we'll allocate this on the stack
 
-    TRACE("sdc_install");
+    INFO("old sdc_install");
 
     /* Install an interrupt handler to catch insertion of a card */
     int_register(INT_SDC_INS, sdc_handler);

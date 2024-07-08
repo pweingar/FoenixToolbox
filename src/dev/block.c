@@ -9,6 +9,8 @@
 
 #include "log.h"
 #include "block.h"
+#include "uart.h"
+#include <stdio.h>
 
 t_dev_block g_block_devs[BDEV_DEVICES_MAX];
 
@@ -41,6 +43,7 @@ SYSTEMCALL short bdev_register(p_dev_block device) {
         p_dev_block bdev = &g_block_devs[dev];
         bdev->number = device->number;
         bdev->name = device->name;
+		bdev->data = device->data;
         bdev->init = device->init;
         bdev->read = device->read;
         bdev->write = device->write;
@@ -71,8 +74,9 @@ short bdev_init(short dev) {
 
     if (dev < BDEV_DEVICES_MAX) {
         p_dev_block bdev = &g_block_devs[dev];
-        if (bdev->number == dev)
-            ret = bdev->init();
+        if (bdev->number == dev) {
+            ret = bdev->init(bdev);
+		}
     }
 
     TRACE1("bdev_init returning %d", (int)ret);
@@ -99,7 +103,7 @@ SYSTEMCALL short bdev_read(short dev, long lba, unsigned char * buffer, short si
     if (dev < BDEV_DEVICES_MAX) {
         p_dev_block bdev = &g_block_devs[dev];
         if (bdev->number == dev)
-            ret = bdev->read(lba, buffer, size);
+            ret = bdev->read(bdev, lba, buffer, size);
     }
 
     TRACE1("bdev_read returning %d", (int)ret);
@@ -126,7 +130,7 @@ SYSTEMCALL short bdev_write(short dev, long lba, const unsigned char * buffer, s
     if (dev < BDEV_DEVICES_MAX) {
         p_dev_block bdev = &g_block_devs[dev];
         if (bdev->number == dev)
-            ret = bdev->write(lba, buffer, size);
+            ret = bdev->write(bdev, lba, buffer, size);
     }
 
     TRACE1("bdev_write returning %d", (int)ret);
@@ -150,7 +154,7 @@ SYSTEMCALL short bdev_status(short dev) {
     if (dev < BDEV_DEVICES_MAX) {
         p_dev_block bdev = &g_block_devs[dev];
         if (bdev->number == dev)
-            ret = bdev->status();
+            ret = bdev->status(bdev);
     }
 
     TRACE1("bdev_status returning %d", (int)ret);
@@ -174,7 +178,7 @@ SYSTEMCALL short bdev_flush(short dev) {
     if (dev < BDEV_DEVICES_MAX) {
         p_dev_block bdev = &g_block_devs[dev];
         if (bdev->number == dev)
-            return bdev->flush();
+            return bdev->flush(bdev);
     }
 
     TRACE1("bdev_flush returning %d", (int)ret);
@@ -201,7 +205,7 @@ SYSTEMCALL short bdev_ioctrl(short dev, short command, unsigned char * buffer, s
     if (dev < BDEV_DEVICES_MAX) {
         p_dev_block bdev = &g_block_devs[dev];
         if (bdev->number == dev)
-            ret =  bdev->ioctrl(command, buffer, size);
+            ret =  bdev->ioctrl(bdev, command, buffer, size);
     }
 
     TRACE1("bdev_ioctrl returning %d", (int)ret);

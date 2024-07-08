@@ -47,9 +47,10 @@
  * Block devices
  */
 
-#define BDEV_SDC 0
-#define BDEV_FDC 1
-#define BDEV_HDC 2
+#define BDEV_SD0 0
+#define BDEV_SD1 1
+#define BDEV_FDC 2
+#define BDEV_HDC 3
 
 /*
  * Channel devices 
@@ -62,5 +63,14 @@
 #define CDEV_LPT 4
 #define CDEV_MIDI 5
 #define CDEV_FILE 6
+
+/*
+ * Block Device IOCRTRL commands
+ */
+
+#define IOCTRL_CTRL_SYNC			0	/* Complete pending write process (needed at FF_FS_READONLY == 0) */
+#define IOCTRL_GET_SECTOR_COUNT		1	/* Get media size (needed at FF_USE_MKFS == 1) */
+#define IOCTRL_GET_SECTOR_SIZE		2	/* Get sector size (needed at FF_MAX_SS != FF_MIN_SS) */
+#define IOCTRL_GET_BLOCK_SIZE		3	/* Get erase block size (needed at FF_USE_MKFS == 1) */
 
 #endif
