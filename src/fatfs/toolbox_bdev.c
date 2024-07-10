@@ -93,3 +93,20 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff) {
 	INFO1("disk_ioctl: %d", result);
 	return bdev_to_fatfs(result);
 }
+
+DWORD get_fattime(void) {
+	t_time time;
+	rtc_get_time(&time);
+
+	DWORD timestamp = (DWORD)(time.year - 1980) << 25 |
+           			  (DWORD)(time.month) << 21 |
+           			  (DWORD)time.day << 16 |
+           			  (DWORD)time.hour << 11 |
+           			  (DWORD)time.minute << 5 |
+           			  (DWORD)time.second >> 1;
+
+	INFO1("get_fattime %08lX", timestamp);
+
+	return timestamp;
+}
+

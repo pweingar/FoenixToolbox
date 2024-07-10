@@ -305,26 +305,58 @@ void dump(uint8_t * buffer, int count) {
 	printf(" %s\n", char_buffer);
 }
 
-int main(int argc, char * argv[]) {
-    short result;
-    short i;
-	char message[256];
+union fatfs_date_u {
+	struct {
+		unsigned int day : 5;
+		unsigned int month : 4;
+		unsigned int year : 7;
+	} s;
+	short date;
+};
 
-    initialize();
+union fatfs_time_u {
+	struct {
+		unsigned int second : 5;
+		unsigned int minute : 6;
+		unsigned int hour : 5;
+	} s;
+	short time;
+};
 
-	short fd = fsys_opendir("0:/");
+void print_fatfs_datetime(short date, short time) {
+	union fatfs_date_u fat_date;
+	union fatfs_time_u fat_time;
+	
+	fat_date.date = date;
+	fat_time.time = time;
+
+	printf("%04d-%02d-%02d %02d:%02d ", fat_date.s.year + 1980, fat_date.s.month, fat_date.s.day, fat_time.s.hour, fat_time.s.minute);
+}
+
+void print_directory() {
+	printf("\nDirectory for /sd0/\n");
+	short fd = fsys_opendir("/sd0/");
 	if (fd > -1) {
 		INFO("fsys_opendir");
 
 		short result = fsys_readdir(fd, &dir);
-		while (result == 0) {
-			if (dir.name[0] != 0) {
-				printf("%s\n", dir.name);
-			} else {
+		while ((result == 0) && (dir.name[0] != 0)) {
+			if (dir.name[0] == 0) {
 				break;
-			}
+			} else {
+				if ((dir.attributes & FSYS_AM_SYS) == 0) {
+					print_fatfs_datetime(dir.date, dir.time);
+					printf(" %4ld ", dir.size);
 
-			result = fsys_readdir(fd, &dir);
+					if (dir.attributes & FSYS_AM_DIR) {
+						printf(" %s/\n", dir.name);
+					} else {
+						printf(" %s\n", dir.name);
+					}
+				}
+
+				result = fsys_readdir(fd, &dir);
+			}
 		}
 
 		fsys_closedir(fd);
@@ -332,38 +364,71 @@ int main(int argc, char * argv[]) {
 	} else {
 		ERROR1("Could not open directory %d", fd);
 	}
+}
 
-	// kbd_init();
-	// printf("\n> ");
-	// chan_ioctrl(0, CON_IOCTRL_ECHO_OFF, 0, 0);
-	// while (!kbd_break()) {
-	// 	char c = chan_read_b(0);
-	// 	if (c != 0) {
-	// 		chan_write_b(0, c);
-	// 	}
-	// }
+void create_sample_file(const char * path) {
+	printf("\nTrying to create: %s\n", path);
+	short fd = fsys_open(path, FSYS_CREATE_ALWAYS | FSYS_WRITE);
+	if (fd > 0) {
+		char message[80];
+		printf("Got channel #%d\n", fd);
+		sprintf(message, "Hello, world!\n");
+		short result = chan_write(fd, (uint8_t *)message, strlen(message));
+		printf("Wrote %d characters.\n", result);
+		fsys_close(fd);
 
-	// INFO("bdev_init");
-	// short status = bdev_init(BDEV_SD0);
-	// if (status) {
-	// 	ERROR1("bdev_init returned %d", status);
-	// }
-	// INFO("bdev_read");
-	// status = bdev_read(BDEV_SD0, 97, buffer, 512);
-	// if (status < 512) {
-	// 	ERROR1("bdev_read returned %d", status);
-	// }
-	// INFO("Read.");
-	// dump(buffer, 512);
+	} else {
+		printf("Could not create file: %d\n", fd);
+	}
+}
+
+void read_sample_file(const char * path) {
+	printf("\nContents of %s:\n", path);
+	short fd = fsys_open(path, FSYS_READ);
+	if (fd >= 0) {
+		short c = 0;
+		short status;
+		do {
+			c = chan_read_b(fd);
+			chan_write_b(0, (uint8_t)c);
+			status = chan_status(fd);
+		} while ((status & CDEV_STAT_EOF) == 0);
+		chan_close(fd);
+
+	} else {
+		printf("Could not open file: %d\n", fd);
+	}
+}
+
+int main(int argc, char * argv[]) {
+    short result;
+    short i;
+	char message[256];
+
+    initialize();
+
+	print_directory();
 	
+	printf("\nfsys_rename(\"/sd0/hello.txt\", \"/sd0/renamed.txt\")");
+	fsys_rename("/sd0/hello.txt", "/sd0/renamed.txt");
+	print_directory();
 
-	// printf("\nDone.\n");
+	printf("\nfsys_delete(\"/sd0/renamed.txt\")");
+	fsys_delete("/sd0/renamed.txt");
+	print_directory();
+
+	printf("\nCreating /sd0/hello.txt\n");
+	create_sample_file("/sd0/hello.txt");
+	print_directory();
+
+	read_sample_file("/sd0/test.txt");
+	read_sample_file("/sd0/hello.txt");
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");
 	// boot_launch();
 
-	INFO("Done.");
+	printf("Done.\n");
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);
