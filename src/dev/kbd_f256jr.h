@@ -1,7 +1,7 @@
 /**
- * @file kbd_f256k.h
+ * @file kbd_f256jr.h
  * @author your name (you@domain.com)
- * @brief Driver for the F256K and F256K2 matrix keyboard
+ * @brief Driver for the F256jr PS/2 keyboard
  * @version 0.1
  * @date 2024-06-17
  * 
@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __kbd_f256k_h__
-#define __kbd_f256k_h__
+#ifndef __kbd_f256jr_h__
+#define __kbd_f256jr_h__
 
 #include <stdbool.h>
 #include "sys_macros.h"

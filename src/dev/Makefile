@@ -37,7 +37,14 @@ else ifeq ($(UNIT),F256)
 	AS=as65816
 	AR=nlib
 
-	SRCS_FOR_UNIT=txt_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_f256.c # timers_c256.c
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256jr.c indicators_c256.c interrupts_f256.c sdc_f256.c # timers_c256.c
+	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large # --target Foenix
+else ifeq ($(UNIT),F256K)
+	CC=cc65816
+	AS=as65816
+	AR=nlib
+
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_f256.c # timers_c256.c
 	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large # --target Foenix
 endif
 

@@ -35,7 +35,7 @@
 #include "dev/txt_evid.h"
 #elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
 #include "dev/txt_f256.h"
-#include "dev/kbd_f256k.h"
+#include "dev/kbd_f256.h"
 #include "dev/sdc_f256.h"
 #endif
 
@@ -400,13 +400,7 @@ void read_sample_file(const char * path) {
 	}
 }
 
-int main(int argc, char * argv[]) {
-    short result;
-    short i;
-	char message[256];
-
-    initialize();
-
+void test_sdc() {
 	print_directory();
 	
 	printf("\nfsys_rename(\"/sd0/hello.txt\", \"/sd0/renamed.txt\")");
@@ -423,6 +417,40 @@ int main(int argc, char * argv[]) {
 
 	read_sample_file("/sd0/test.txt");
 	read_sample_file("/sd0/hello.txt");
+}
+
+void test_kbd_sc() {
+	printf("> ");
+	do {
+		unsigned short scancode = kbd_get_scancode();
+		if (scancode != 0) {
+			printf("%04X ", scancode);
+		}
+	} while (!kbd_break());
+	printf("\n\n");
+}
+
+void test_kbd() {
+	printf("> ");
+	do {
+		kbd_handle_irq();
+		char c = kbd_getc();
+		if (c != 0) {
+			txt_put(0, c);
+		}
+	} while (!kbd_break());
+	printf("\n\n");
+}
+
+int main(int argc, char * argv[]) {
+    short result;
+    short i;
+	char message[256];
+
+    initialize();
+	kbd_init();
+
+	test_kbd();
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");
