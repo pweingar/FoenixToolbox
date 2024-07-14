@@ -1,5 +1,5 @@
 
-UNIT := F256
+UNIT := F256K
 
 # Define OS-dependent variables
 

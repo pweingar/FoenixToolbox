@@ -1,7 +1,7 @@
 # VPATH=.:../../module/Calypsi-remote-debug/src
 DEBUGGER=../module/Calypsi-remote-debug/src
 
-UNIT := F256
+UNIT := F256K
 MEMORY := RAM
 
 # Define OS-dependent variables
@@ -38,6 +38,17 @@ else ifeq ($(UNIT),C256_FMX)
 	CFLAGS_FOR_UNIT=-DMODEL=0 -DCPU=255 --code-model large --data-model large
 	LDFLAGS_FOR_UNIT=C256/ld_lc_c256_fmx.scm clib-lc-ld.a 
 else ifeq ($(UNIT),F256)
+	CPU=w65816
+	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
+	SRCS_FOR_UNIT=C256/jumptable.s C256/io_stubs.c C256/extras.s
+	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large
+
+	ifeq ($(MEMORY),ROM)
+		LDFLAGS_FOR_UNIT=C256/flash-f256.scm clib-lc-ld.a --rtattr printf=medium
+	else
+		LDFLAGS_FOR_UNIT=C256/ld_lc_f256.scm clib-lc-ld.a --rtattr printf=medium
+	endif
+else ifeq ($(UNIT),F256K)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
 	SRCS_FOR_UNIT=C256/jumptable.s C256/io_stubs.c C256/extras.s

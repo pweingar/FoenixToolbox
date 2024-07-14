@@ -136,7 +136,6 @@ void initialize() {
 #error Cannot identify screen setup
 #endif
 
-	printf("Foenix Toolbox v%d.%02d.%04d starting up...\nHello, F256k!\n", VER_MAJOR, VER_MINOR, VER_BUILD);
 	INFO("Text system initialized.");
 
 // 	// Initialize the bitmap system
@@ -184,19 +183,6 @@ void initialize() {
     /* Initialize the real time clock */
     rtc_init();
 	INFO("Real time clock initialized");
-
-	t_time time;
-	// time.year = 2024;
-	// time.month = 7;
-	// time.day = 3;
-	// time.hour = 16;
-	// time.minute = 05;
-	// time.second = 0;
-	// rtc_set_time(&time);
-
-	rtc_get_time(&time);
-	printf("%04d-%02d-%02d %02d:%02d\n", time.year, time.month, time.day, time.hour, time.minute);
-	INFO3("%04d-%02d-%02d", time.year, time.month, time.day);
 
 //     target_jiffies = sys_time_jiffies() + 300;     /* 5 seconds minimum */
 //     DEBUG1("target_jiffies assigned: %d", target_jiffies);
@@ -442,6 +428,34 @@ void test_kbd() {
 	printf("\n\n");
 }
 
+void test_sysinfo() {
+	// 8 x 22 region
+	t_rect region;
+	region.size.height = 9;
+	region.size.width = 23;
+	region.origin.x = 80 - region.size.width;
+	region.origin.y = 60 - region.size.height;
+
+	txt_set_region(0, &region);
+	
+	printf("Foenix Retro Systems\n");
+	printf("Model   %s\n", info.model_name);
+	printf("MID     %x\n", info.model);
+	printf("CPU     %s\n", info.cpu_name);
+	printf("Clock   %lu MHz\n", info.cpu_clock_khz / (long)1024);
+	printf("Memory  %d MB\n", (int)(info.system_ram_size / ((long)1024 * (long)1024)));
+	printf("FPGA    %04X %04X.%04X\n", info.fpga_model, info.fpga_version, info.fpga_subver);
+	printf("Toolbox v%d.%02d.%04d\n", info.mcp_version, info.sub_model, info.mcp_build);
+
+	region.size.width = 0;
+	region.size.height = 0;
+	region.origin.x = 0;
+	region.origin.y = 0;
+
+	txt_set_region(0, &region);
+	txt_set_xy(0, 0, 0);
+}
+
 int main(int argc, char * argv[]) {
     short result;
     short i;
@@ -450,13 +464,11 @@ int main(int argc, char * argv[]) {
     initialize();
 	kbd_init();
 
-	test_kbd();
+	test_sysinfo();
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");
 	// boot_launch();
-
-	printf("Done.\n");
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);

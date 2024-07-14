@@ -230,8 +230,6 @@ SYSTEMCALL void int_enable(unsigned short n) {
 	/* Find the mask for the interrupt */
 	unsigned short mask = int_mask(n);
 
-	printf("Enable interrupt %d => group: %d, mask: %d\n", n, group, mask);
-
 	if ((group != 0xff) && (mask != 0xff)) {
 		// Only set the mask if the mask and group numbers are valid
 		uint8_t new_mask = MASK_GRP0[group] & ~mask;

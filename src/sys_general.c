@@ -130,6 +130,27 @@ void sys_get_information(p_sys_info info) {
 			break;
 	}
 
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+	machine_id = GABE_SYS_STAT->machine_id;
+	// TODO: be able to remove this line
+	if (machine_id == 0x13) {
+		machine_id = MODEL_FOENIX_F256K;
+	}
+
+	cpu = CPU_WDC65816;
+	clock_speed = SYSCLK_6MHZ;
+
+	info->has_expansion_card = 0;
+    info->has_hard_drive = 0;
+    info->has_ethernet = 0;
+    info->screens = 1;
+
+    info->fpga_model = GABE_VERSION->model;
+    info->fpga_version = GABE_VERSION->version;
+    info->fpga_subver = GABE_VERSION->subversion;
+
+	info->system_ram_size = (uint32_t)512 * (uint32_t)1024 * (uint32_t)1024;
+
 #else
     machine_id = 0xFF;
     cpu = CPU_M68000;
@@ -150,6 +171,11 @@ void sys_get_information(p_sys_info info) {
     info->cpu = cpu;
 
     switch (clock_speed) {
+		case SYSCLK_6MHZ:
+		    /* 6 MHz */
+            info->cpu_clock_khz = 6000;
+            break;
+
         case SYSCLK_14MHZ:
             /* 14.318 MHz */
             info->cpu_clock_khz = 14318;
@@ -243,6 +269,18 @@ void sys_get_information(p_sys_info info) {
     }
 
     switch (info->model) {
+		case MODEL_FOENIX_F256:
+		    info->model_name = "F256jr";
+            break;
+
+		case MODEL_FOENIX_F256K:
+		    info->model_name = "F256K";
+            break;
+
+		case MODEL_FOENIX_F256K2:
+		    info->model_name = "F256K2";
+            break;
+
         case MODEL_FOENIX_FMX:
             info->model_name = "C256 FMX";
             break;

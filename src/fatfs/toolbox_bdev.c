@@ -20,6 +20,7 @@
 #include "constants.h"
 #include "errors.h"
 #include "dev/block.h"
+#include "dev/rtc.h"
 
 /**
  * @brief Convert Toolkit Block Device result codes to FatFS result codes

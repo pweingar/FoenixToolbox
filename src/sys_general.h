@@ -43,14 +43,15 @@
 
 /* Clock speeds */
 
-#define SYSCLK_14MHZ                0x00    /* 14.318 MHz */
-#define SYSCLK_20MHZ                0x01    /* 20 MHz */
-#define SYSCLK_25MHZ                0x02    /* 25 MHz */
-#define SYSCLK_33MHZ                0x03    /* 33 MHz */
-#define SYSCLK_40MHZ                0x04    /* 40 MHz */
-#define SYSCLK_50MHZ                0x05    /* 50 MHz */
-#define SYSCLK_66MHZ                0x06    /* 66 MHz */
-#define SYSCLK_80MHZ                0x07    /* 88 MHz */
+#define SYSCLK_6MHZ					0x00	/* 6 MHz */
+#define SYSCLK_14MHZ                0x01    /* 14.318 MHz */
+#define SYSCLK_20MHZ                0x02    /* 20 MHz */
+#define SYSCLK_25MHZ                0x03    /* 25 MHz */
+#define SYSCLK_33MHZ                0x04    /* 33 MHz */
+#define SYSCLK_40MHZ                0x05    /* 40 MHz */
+#define SYSCLK_50MHZ                0x06    /* 50 MHz */
+#define SYSCLK_66MHZ                0x07    /* 66 MHz */
+#define SYSCLK_80MHZ                0x08    /* 88 MHz */
 
 /*
  * Fill out a s_sys_info structure with the information about the current system
