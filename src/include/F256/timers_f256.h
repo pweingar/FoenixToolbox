@@ -1,11 +1,11 @@
 /**
- * @file timers_c256.h
+ * @file timers_f256.h
  *
- * Define timer registers on the C256
+ * Define timer registers on the F256
  */
 
-#ifndef __C256_TIMERS_H
-#define __C256_TIMERS_H
+#ifndef __F256_TIMERS_H
+#define __F256_TIMERS_H
 
 //
 // TIMER_CTRL_* flags
@@ -24,7 +24,7 @@
 #define TIMER_CMP_RELOAD	0x02	// Set to reload the charge value on reaching 0
 
 //
-// Timer 0 -- Based on system clock (14318180Hz)
+// Timer 0 -- Based on system clock (6MHz)
 //
 
 #define TIMER_CTRL_0    ((volatile __attribute__((far)) uint8_t *)0xf01650)

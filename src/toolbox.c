@@ -176,15 +176,15 @@ void initialize() {
         INFO("Console installed.");
     }
 
-//     /* Initialize the timers the MCP uses */
-//     timers_init();
-// 	INFO("Timers initialized");
+    /* Initialize the timers the MCP uses */
+    timers_init();
+	INFO("Timers initialized");
 
     /* Initialize the real time clock */
     rtc_init();
 	INFO("Real time clock initialized");
 
-//     target_jiffies = sys_time_jiffies() + 300;     /* 5 seconds minimum */
+//     target_jiffies = timers_jiffies() + 300;     /* 5 seconds minimum */
 //     DEBUG1("target_jiffies assigned: %d", target_jiffies);
 
     /* Enable all interrupts */
@@ -263,7 +263,6 @@ void initialize() {
 
 t_file_info dir;
 uint8_t buffer[512];
-
 
 void dump(uint8_t * buffer, int count) {
 	char char_buffer[17];
@@ -465,6 +464,9 @@ int main(int argc, char * argv[]) {
 	kbd_init();
 
 	test_sysinfo();
+	test_kbd();
+	long jiffies = timers_jiffies();
+	printf("Jiffies: %ld\n", jiffies);
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");
