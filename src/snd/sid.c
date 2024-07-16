@@ -73,7 +73,7 @@ void sid_init_all() {
 
 }
 
-#if MODEL == MODEL_FOENIX_FMX || MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS
+#if MODEL == MODEL_FOENIX_FMX || MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
 /*
  * Test the internal SID implementation
  */
@@ -82,6 +82,8 @@ void sid_test_internal() {
 
 	sid = (struct s_sid *)sid_get_base(0);
 	if (sid)  {
+		long jiffies = 0;
+
 		sid->v1.attack_decay = 0x29;
 		sid->v2.attack_decay = 0x29;
 		sid->v2.attack_decay = 0x29;
@@ -95,32 +97,32 @@ void sid_test_internal() {
 		sid->v1.frequency = 0x1660;
 		sid->v1.control = 0x11;
 
-		// jiffies = rtc_get_jiffies() + 3;
-    	// while (jiffies > rtc_get_jiffies());
+		jiffies = rtc_get_jiffies() + 3;
+    	while (jiffies > rtc_get_jiffies());
 
-		// sid->v2.frequency = 0x0831;
-		// sid->v2.control = 0x11;
+		sid->v2.frequency = 0x0831;
+		sid->v2.control = 0x11;
 
-		// jiffies = rtc_get_jiffies() + 3;
-    	// while (jiffies > rtc_get_jiffies());
+		jiffies = rtc_get_jiffies() + 3;
+    	while (jiffies > rtc_get_jiffies());
 
-		// sid->v3.frequency = 0x2187;
-		// sid->v3.control = 0x11;
+		sid->v3.frequency = 0x2187;
+		sid->v3.control = 0x11;
 
-		// jiffies = rtc_get_jiffies() + 25;
-		// while (jiffies > rtc_get_jiffies());
+		jiffies = rtc_get_jiffies() + 25;
+		while (jiffies > rtc_get_jiffies());
 
-		// sid->v1.control = 0x10;
-    	// jiffies = rtc_get_jiffies() + 3;
-    	// while (jiffies > rtc_get_jiffies());
+		sid->v1.control = 0x10;
+    	jiffies = rtc_get_jiffies() + 3;
+    	while (jiffies > rtc_get_jiffies());
 
-		// sid->v2.control = 0x10;
-    	// jiffies = rtc_get_jiffies() + 3;
-    	// while (jiffies > rtc_get_jiffies());
+		sid->v2.control = 0x10;
+    	jiffies = rtc_get_jiffies() + 3;
+    	while (jiffies > rtc_get_jiffies());
 
-		// sid->v3.control = 0x10;
+		sid->v3.control = 0x10;
 
-		// sid->mode_volume = 0;
+		sid->mode_volume = 0;
 	}
 }
 

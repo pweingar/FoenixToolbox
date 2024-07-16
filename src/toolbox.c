@@ -154,8 +154,8 @@ void initialize() {
     psg_mute_all();
 	INFO("PSG Muted.");
 
-//     /* Initialize and mute the SID chips */
-//     sid_init_all();
+    /* Initialize and mute the SID chips */
+    sid_init_all();
 
 // //     /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
 // //     ym_init();
@@ -184,15 +184,12 @@ void initialize() {
     rtc_init();
 	INFO("Real time clock initialized");
 
-//     target_jiffies = timers_jiffies() + 300;     /* 5 seconds minimum */
-//     DEBUG1("target_jiffies assigned: %d", target_jiffies);
-
     /* Enable all interrupts */
     int_enable_all();
-    TRACE("Interrupts enabled");
+    INFO("Interrupts enabled");
 
-// //     /* Play the SID test bong on the Gideon SID implementation */
-// //     sid_test_internal();
+    // /* Play the SID test bong on the Gideon SID implementation */
+    // sid_test_internal();
 
 #if HAS_PATA
     if ((res = pata_install())) {
@@ -427,6 +424,26 @@ void test_kbd() {
 	printf("\n\n");
 }
 
+void test_psg() {
+	long target_time = rtc_get_jiffies() + (long)(60 * 2);
+
+	psg_tone(3, 0, 262);
+	psg_tone(3, 1, 262 * 2);
+	psg_tone(3, 2, 262 * 4);
+
+	psg_attenuation(3, 0, 0);
+	psg_attenuation(3, 1, 15);
+	psg_attenuation(3, 2, 15);
+
+	while (target_time > rtc_get_jiffies()) {
+		;
+	}
+
+	psg_attenuation(3, 0, 15);
+	psg_attenuation(3, 1, 15);
+	psg_attenuation(3, 2, 15);
+}
+
 void test_sysinfo() {
 	// 8 x 22 region
 	t_rect region;
@@ -464,6 +481,7 @@ int main(int argc, char * argv[]) {
 	kbd_init();
 
 	test_sysinfo();
+	// test_psg();
 	test_kbd();
 	long jiffies = timers_jiffies();
 	printf("Jiffies: %ld\n", jiffies);
