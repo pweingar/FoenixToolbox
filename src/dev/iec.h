@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __iec_port_h__
-#define __iec_port_h__
+#ifndef __iec_h__
+#define __iec_h__
 
 #include <stdint.h>
 
@@ -20,8 +20,9 @@
  * @param device number of the IEC device to query
  * @param buffer character buffer in which to write the status
  * @param count the maximum number of bytes to fetch
+ * @return the number of bytes read from the device
  */
-extern void iec_status(uint8_t device, char * buffer, short count);
+extern short iec_status(uint8_t device, char * buffer, short count);
 
 /**
  * @brief Initialize the IEC port

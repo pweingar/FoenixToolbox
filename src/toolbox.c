@@ -50,11 +50,11 @@
 #include "dev/dma.h"
 #include "dev/fdc.h"
 #include "dev/fsys.h"
+#include "dev/iec.h"
 #include "dev/ps2.h"
 #include "dev/rtc.h"
 #include "dev/sdc.h"
 #include "dev/txt_screen.h"
-
 #include "dev/uart.h"
 #include "snd/codec.h"
 #include "snd/psg.h"
@@ -175,6 +175,10 @@ void initialize() {
     } else {
         INFO("Console installed.");
     }
+
+#if HAS_IEC
+	iec_init();
+#endif
 
     /* Initialize the timers the MCP uses */
     timers_init();
@@ -482,9 +486,13 @@ int main(int argc, char * argv[]) {
 
 	test_sysinfo();
 	// test_psg();
-	test_kbd();
+	// test_kbd();
 	long jiffies = timers_jiffies();
 	printf("Jiffies: %ld\n", jiffies);
+
+	printf("Attempting to get status for IEC drive #8: ");
+	short n = iec_status(8, message, 256);
+	printf("\"%s\"\n", message);
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");

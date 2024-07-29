@@ -1,0 +1,10 @@
+
+https://discord.com/channels/691915291721990194/934618943400837130/1266710378612789278:
+
+$F0_1D00 - $F0_1D1F - SDCARD0
+$F0_1D20 - $F0_1D3F - SDCARD1 *** This one has moved ***
+$F0_1D20 - $F0_1D3F - SPLASH LCD (SPI Port)
+$F0_1D60 - $F0_1D7F - Wiznet Copper SPI Interface
+$F0_1D80 - $F0_1D9F - Wiznet WIFI UART interface (115K or 2M)
+$F0_1DA0 - $F0_1DBF - MIDI UART (Fixed @ 31,250Baud)
+$F0_1DC0 - $F0_1DDF - Master SPI Interface to Supervisor (RP2040)*
