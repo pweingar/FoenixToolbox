@@ -88,4 +88,10 @@ extern short iecll_eoi();
  */
 extern void iecll_out(uint8_t byte);
 
+/**
+ * @brief Assert and release the reset line on the IEC bus
+ * 
+ */
+extern void iecll_reset();
+
 #endif

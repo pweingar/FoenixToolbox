@@ -51,6 +51,7 @@
 #include "dev/fdc.h"
 #include "dev/fsys.h"
 #include "dev/iec.h"
+#include "iecll.h"
 #include "dev/ps2.h"
 #include "dev/rtc.h"
 #include "dev/sdc.h"
@@ -176,9 +177,9 @@ void initialize() {
         INFO("Console installed.");
     }
 
-#if HAS_IEC
-	iec_init();
-#endif
+// #if HAS_IDE
+// 	iec_init();
+// #endif
 
     /* Initialize the timers the MCP uses */
     timers_init();
@@ -485,13 +486,16 @@ int main(int argc, char * argv[]) {
 	kbd_init();
 
 	test_sysinfo();
-	// test_psg();
-	// test_kbd();
-	long jiffies = timers_jiffies();
-	printf("Jiffies: %ld\n", jiffies);
+
+	printf("Initializing IEC\n");
+	result = iec_init();
+	if (result != 0) {
+		printf("Error initializing IEC.\n");
+	}
 
 	printf("Attempting to get status for IEC drive #8: ");
 	short n = iec_status(8, message, 256);
+
 	printf("\"%s\"\n", message);
 
 	// Attempt to start up the user code

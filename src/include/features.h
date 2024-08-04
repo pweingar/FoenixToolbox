@@ -41,8 +41,11 @@
     #define HAS_EXTERNAL_SIDS 1
     #define HAS_OPL3 1
 	#define HAS_PATA 1
-#elif MODEL == MODEL_FOENIX_F256KE
+#elif MODEL == MODEL_FOENIX_F256KE || MODEL == MODEL_FOENIX_F256K
     #define HAS_EXTERNAL_SIDS 1
+	#define HAS_OPL3 1
+	#define HAS_IEC 1
+#elif MODEL == MODEL_FOENIX_F256
 	#define HAS_OPL3 1
 	#define HAS_IEC 1
 #endif

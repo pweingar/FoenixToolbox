@@ -17,6 +17,7 @@
 				.public iecll_listen
 				.public iecll_listen_sa
 				.public iecll_unlisten
+				.public iecll_reset
 
 #include "F256/iec_f256.h"
 
@@ -86,6 +87,9 @@ read_DATA:		read_bit IEC_DATA_i
 assert_DATA:   	assert_bit IEC_DATA_o
 release_DATA:	release_bit IEC_DATA_o
 
+assert_RST:   	assert_bit IEC_RST_o
+release_RST:	release_bit IEC_RST_o
+
 ;;
 ;; Routines to wait various amounts of time
 ;;
@@ -99,20 +103,20 @@ _loop$       	dex
             
 sleep_100us:	phx
             	ldx #5
-_loop$	      	jsl sleep_20us
+_loop$	      	jsr sleep_20us
 				dex
 				bne _loop$
 				plx
 				rts                
 
-sleep_300us:	jsl sleep_100us
-            	jsl sleep_100us
-            	jsl sleep_100us
+sleep_300us:	jsr sleep_100us
+            	jsr sleep_100us
+            	jsr sleep_100us
             	rts
             
-sleep_1ms:		jsl sleep_300us
-            	jsl sleep_300us
-            	jsl sleep_300us
+sleep_1ms:		jsr sleep_300us
+            	jsr sleep_300us
+            	jsr sleep_300us
             	jmp sleep_100us
 
 ;;
@@ -315,6 +319,7 @@ zero$       	jsr assert_DATA
             	bra clock$
 
 one$        	jsr release_DATA
+				bra clock$
             	
 clock$
           		; Toggle the clock
@@ -657,6 +662,20 @@ iecll_out		php
 				; Queue the new byte
 queue$          sta queue
 				dec delayed
+
+				plp
+				rtl
+
+;
+; Trigger the reset line on the IEC port
+;
+iecll_reset:	php
+				sei
+				sep #0x30
+
+				jsr assert_RST
+				jsr sleep_1ms
+				jsr release_RST
 
 				plp
 				rtl
