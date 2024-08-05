@@ -26,6 +26,20 @@ void iec_close(uint8_t device, uint8_t channel)  {
 	iecll_unlisten();
 }
 
+void iec_print(uint8_t device, char * message) {
+	// Open the device, channel 1
+	uint8_t channel = 1;
+	iecll_listen(device);
+	iecll_listen_sa(0x60 | channel);
+
+	for (char *x = message; *x; x++) {
+		iecll_out(*x);
+	}
+
+	iecll_unlisten();
+	iec_close(4, channel);
+}
+
 /**
  * @brief Retrieve the raw status string from an IEC device
  * 

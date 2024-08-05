@@ -493,10 +493,13 @@ int main(int argc, char * argv[]) {
 		printf("Error initializing IEC.\n");
 	}
 
-	printf("Attempting to get status for IEC drive #8: ");
-	short n = iec_status(8, message, 256);
+	// printf("Attempting to get status for IEC drive #8: ");
+	// short n = iec_status(8, message, 256);
+	// printf("\"%s\"\n", message);
 
-	printf("\"%s\"\n", message);
+	printf("Attempting to write to the printer.\n");
+	iec_print(4, "\e1THIS IS PRINTED FROM AN F256K OVER THE IEC PORT!\r");
+	printf("Done.\n");
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");

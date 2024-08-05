@@ -8,3 +8,11 @@ $F0_1D60 - $F0_1D7F - Wiznet Copper SPI Interface
 $F0_1D80 - $F0_1D9F - Wiznet WIFI UART interface (115K or 2M)
 $F0_1DA0 - $F0_1DBF - MIDI UART (Fixed @ 31,250Baud)
 $F0_1DC0 - $F0_1DDF - Master SPI Interface to Supervisor (RP2040)*
+
+/* SPI Controler 0 Registers - External Access (Front of Unit)*/
+#define SD0_CTRL      (*(volatile __far uint8_t *)0xF01D00)
+#define SD0_DATA            (*(volatile __far uint8_t *)0xF01D01)
+/* SPI Controler 1 Registers - Internal Access (underneath of Unit - uSDCard) */
+// Specific to the F256xE - Internal SDCard (Permanent Disk)
+#define SD1_CTRL      (*(volatile __far uint8_t *)0xF01D20)  <----
+#define SD1_DATA            (*(volatile __far uint8_t *)0xF01D21) <----

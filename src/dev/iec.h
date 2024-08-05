@@ -14,6 +14,8 @@
 
 #include <stdint.h>
 
+extern void iec_print(uint8_t device, char * message);
+
 /**
  * @brief Retrieve the raw status string from an IEC device
  * 

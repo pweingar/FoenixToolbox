@@ -62,6 +62,13 @@ loop$           lda IEC_INPUT_PORT
                 pla
                 rts
                 .endm
+
+emit:			.macro char
+				pha
+				lda #(\char)
+				sta long: 0xf04000
+				pla
+				.endm
                
 ;;
 ;; Private functions
