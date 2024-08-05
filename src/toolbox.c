@@ -50,11 +50,12 @@
 #include "dev/dma.h"
 #include "dev/fdc.h"
 #include "dev/fsys.h"
+#include "dev/iec.h"
+#include "iecll.h"
 #include "dev/ps2.h"
 #include "dev/rtc.h"
 #include "dev/sdc.h"
 #include "dev/txt_screen.h"
-
 #include "dev/uart.h"
 #include "snd/codec.h"
 #include "snd/psg.h"
@@ -175,6 +176,10 @@ void initialize() {
     } else {
         INFO("Console installed.");
     }
+
+// #if HAS_IDE
+// 	iec_init();
+// #endif
 
     /* Initialize the timers the MCP uses */
     timers_init();
@@ -481,10 +486,20 @@ int main(int argc, char * argv[]) {
 	kbd_init();
 
 	test_sysinfo();
-	// test_psg();
-	test_kbd();
-	long jiffies = timers_jiffies();
-	printf("Jiffies: %ld\n", jiffies);
+
+	printf("Initializing IEC\n");
+	result = iec_init();
+	if (result != 0) {
+		printf("Error initializing IEC.\n");
+	}
+
+	// printf("Attempting to get status for IEC drive #8: ");
+	// short n = iec_status(8, message, 256);
+	// printf("\"%s\"\n", message);
+
+	printf("Attempting to write to the printer.\n");
+	iec_print(4, "\e1THIS IS PRINTED FROM AN F256K OVER THE IEC PORT!\r");
+	printf("Done.\n");
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");

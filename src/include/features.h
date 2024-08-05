@@ -41,9 +41,13 @@
     #define HAS_EXTERNAL_SIDS 1
     #define HAS_OPL3 1
 	#define HAS_PATA 1
-#elif MODEL == MODEL_FOENIX_F256KE
+#elif MODEL == MODEL_FOENIX_F256KE || MODEL == MODEL_FOENIX_F256K
     #define HAS_EXTERNAL_SIDS 1
 	#define HAS_OPL3 1
+	#define HAS_IEC 1
+#elif MODEL == MODEL_FOENIX_F256
+	#define HAS_OPL3 1
+	#define HAS_IEC 1
 #endif
 
 
@@ -87,6 +91,10 @@
 
 #ifndef HAS_SNES_GAMEPAD // Super Nintendo gamepad connectors (even if through adapter)
     #define HAS_SNES_GAMEPAD 0
+#endif
+
+#ifndef HAS_IEC
+	#define HAS_IEC 0
 #endif
 
 #endif
