@@ -1,5 +1,12 @@
 (define memories
-  '((memory flash (address (#xf80000 . #xffffff))
+  '(
+	(memory HiCode1 (address (#xfc0000 . #xfcffff))
+	    (section cfar switch data_init_table idata ifar farcode))
+    (memory HiCode2 (address (#xfd0000 . #xfdffff))
+	    (section cfar switch data_init_table idata ifar farcode))
+    (memory HiCode3 (address (#xfe0000 . #xfeffff))
+	    (section cfar switch data_init_table idata ifar farcode))
+	(memory flash (address (#xff0000 . #xffffff))
   		(fill 0)
 	    (section
 			(LoCodeStorage #xffe000)
@@ -22,12 +29,6 @@
     (memory Vector (address (#x00ffe0 . #x00ffff))
 		(scatter-to VectorStorage)
         (section (reset #xfffc)))
-    (memory HiCode1 (address (#xf80000 . #xf8ffff))
-	    (section cfar switch data_init_table ifar farcode))
-    (memory HiCode2 (address (#xf90000 . #xf9ffff))
-	    (section cfar switch data_init_table ifar farcode))
-    (memory HiCode3 (address (#xfa0000 . #xfaffff))
-	    (section cfar switch data_init_table ifar farcode))
     (block stack (size #x1000))
     (block heap (size #x1000))
     (base-address _DirectPageStart DirectPage 0)

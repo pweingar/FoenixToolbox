@@ -469,8 +469,10 @@ SYSTEMCALL void int_clear(unsigned short n) {
  * 
  * NOTE: this routine might not be fast enough in C and have to be replaced by hand written
  *       assembly code... but we will try it this way first.
+ * 
+ * __attribute__((interrupt(0xffee))) 
  */
-__attribute__((interrupt(0xffee))) void int_handle_irq() {
+void int_handle_irq() {
 	uint8_t mask_bits = 0;
 
 	// Process any pending interrupts in group 0
@@ -525,6 +527,8 @@ __attribute__((interrupt(0xffee))) void int_handle_irq() {
 
 /**
  * @brief Handle incomming NMI signal
+ * 
+ * __attribute__((interrupt(0xffea)))  
  */
-__attribute__((interrupt(0xffea))) void int_handle_nmi() {
+void int_handle_nmi() {
 }

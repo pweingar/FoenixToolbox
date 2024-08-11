@@ -9,7 +9,7 @@
 #endif
 
               	.section stack
-				.section code
+				.section farcode
 
 ;
 ; Reset the stack to the initial value.

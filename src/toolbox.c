@@ -79,13 +79,6 @@ void initialize() {
     long target_jiffies;
     int i;
     short res;
-	
-	*vky_brdr_ctrl = 0x01;
-	*vky_brdr_col_red = 0x80;
-	*vky_brdr_col_green = 0x00;
-	*vky_brdr_col_blue = 0x00;
-	*vky_brdr_size_x = 0x08;
-	*vky_brdr_size_y = 0x08;
 
     /* Setup logging early */
     log_init();
@@ -186,8 +179,8 @@ void initialize() {
 	INFO("Timers initialized");
 
     /* Initialize the real time clock */
-    rtc_init();
-	INFO("Real time clock initialized");
+    // rtc_init();
+	// INFO("Real time clock initialized");
 
     /* Enable all interrupts */
     int_enable_all();
@@ -487,23 +480,27 @@ int main(int argc, char * argv[]) {
 
 	test_sysinfo();
 
-	printf("Initializing IEC\n");
-	result = iec_init();
-	if (result != 0) {
-		printf("Error initializing IEC.\n");
-	}
+	printf("Foenix Toolbox v%d.%04d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
+	test_kbd();
+
+	// printf("Initializing IEC\n");
+	// result = iec_init();
+	// if (result != 0) {
+	// 	printf("Error initializing IEC.\n");
+	// }
 
 	// printf("Attempting to get status for IEC drive #8: ");
 	// short n = iec_status(8, message, 256);
 	// printf("\"%s\"\n", message);
 
-	printf("Attempting to write to the printer.\n");
-	iec_print(4, "\e1THIS IS PRINTED FROM AN F256K OVER THE IEC PORT!\r");
-	printf("Done.\n");
+	// printf("Attempting to write to the printer.\n");
+	// iec_print(4, "\e1THIS IS PRINTED FROM AN F256K OVER THE IEC PORT!\r");
 
 	// Attempt to start up the user code
     // log(LOG_INFO, "Looking for user startup code:");
 	// boot_launch();
+
+	printf("Done.\n");
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);

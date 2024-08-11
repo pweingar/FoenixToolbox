@@ -2,8 +2,8 @@
 ;;; Low-level support code for the IEC port
 ;;;
 ;;; NOTE: routines will be split into private routines and public routines.
-;;;       Private routines will assume near JSRs, 8-bit accumulator and index registers, and interrupts disabled.
-;;;		  Public routines will assume far JSRs and 16-bit accumulator and index registers.
+;;;       Private routines will assume near jsls, 8-bit accumulator and index registers, and interrupts disabled.
+;;;		  Public routines will assume far jsls and 16-bit accumulator and index registers.
 ;;;       Public routines will also assume Calypsi calling conventions.
 ;;;
 
@@ -21,14 +21,14 @@
 
 #include "F256/iec_f256.h"
 
-				.section data,data
+				.section ztiny,bss
 
-eoi_pending:	.byte 0
-rx_eoi:			.byte 0
-delayed:		.byte 0
-queue:			.byte 0
+eoi_pending:	.space 1
+rx_eoi:			.space 1
+delayed:		.space 1
+queue:			.space 1
 
-				.section code
+				.section farcode
 
 ;;
 ;; Macros
@@ -40,7 +40,7 @@ assert_bit:     .macro pin
                 and #(\pin ^ 0xff)
                 sta IEC_OUTPUT_PORT
                 pla
-                rts
+                rtl
                 .endm
             
 release_bit:    .macro pin
@@ -49,7 +49,7 @@ release_bit:    .macro pin
                 ora #(\pin)
                 sta IEC_OUTPUT_PORT
                 pla
-                rts
+                rtl
                 .endm
 
 read_bit:       .macro pin
@@ -60,7 +60,7 @@ loop$           lda IEC_INPUT_PORT
                 and #(\pin)
                 cmp #1
                 pla
-                rts
+                rtl
                 .endm
 
 emit:			.macro char
@@ -106,38 +106,38 @@ sleep_20us:		phx
 _loop$       	dex
 				bne _loop$
 				plx
-				rts
+				rtl
             
 sleep_100us:	phx
             	ldx #5
-_loop$	      	jsr sleep_20us
+_loop$	      	jsl sleep_20us
 				dex
 				bne _loop$
 				plx
-				rts                
+				rtl                
 
-sleep_300us:	jsr sleep_100us
-            	jsr sleep_100us
-            	jsr sleep_100us
-            	rts
+sleep_300us:	jsl sleep_100us
+            	jsl sleep_100us
+            	jsl sleep_100us
+            	rtl
             
-sleep_1ms:		jsr sleep_300us
-            	jsr sleep_300us
-            	jsr sleep_300us
-            	jmp sleep_100us
+sleep_1ms:		jsl sleep_300us
+            	jsl sleep_300us
+            	jsl sleep_300us
+            	jmp long: sleep_100us
 
 ;;
 ;; Code to handle the IEC port
 ;;
 
-init:			jsr sleep_1ms
-				jsr release_ATN
-				jsr release_DATA
-				jsr release_SREQ
-				jsr assert_CLOCK   	; IDLE state
-				jsr sleep_1ms
-				jsr sleep_1ms
-				jsr sleep_1ms
+init:			jsl sleep_1ms
+				jsl release_ATN
+				jsl release_DATA
+				jsl release_SREQ
+				jsl assert_CLOCK   	; IDLE state
+				jsl sleep_1ms
+				jsl sleep_1ms
+				jsl sleep_1ms
 				
 				; Bail if ATN and SRQ fail to float back up.
 				; We'll have a more thorough test when we send
@@ -145,18 +145,18 @@ init:			jsr sleep_1ms
 				nop
 				nop
 				nop
-				jsr read_SREQ
+				jsl read_SREQ
 				bcc err$
-				jsr read_ATN
+				jsl read_ATN
 				bcc err$
 
-            	jsr sleep_1ms
+            	jsl sleep_1ms
 
             	clc
-            	rts
+            	rtl
 
 err$        	sec
-            	rts     
+            	rtl     
 
 ;
 ; Send a command byte and release the DATA and CLOCK lines afterwards
@@ -164,25 +164,25 @@ err$        	sec
 ; A = the command byte to send
 ;
 atn_release_data
-				jsr release_DATA
-            	jsr release_CLOCK			; TODO: makes /no/ sense; maybe we can remove...
-            	jsr atn_common				; NOTE: does NOT release ATN!  Does NOT release IRQs!
-				rts
+				jsl release_DATA
+            	jsl release_CLOCK			; TODO: makes /no/ sense; maybe we can remove...
+            	jsl atn_common				; NOTE: does NOT release ATN!  Does NOT release IRQs!
+				rtl
 
 ;
 ; Send a command byte and release the ATN, DATA, and CLOCK lines
 ;
 ; A = the command byte to send
 ;
-atn_release		jsr atn_common            
+atn_release		jsl atn_common            
 
-				jsr release_ATN
-				jsr sleep_20us
-				jsr sleep_20us
-				jsr sleep_20us
-				jsr release_CLOCK
-				jsr release_DATA
-				rts
+				jsl release_ATN
+				jsl sleep_20us
+				jsl sleep_20us
+				jsl sleep_20us
+				jsl release_CLOCK
+				jsl release_DATA
+				rtl
 
 ;
 ; Send a command byte with ATN asserted
@@ -193,41 +193,41 @@ atn_common
 				; Assert ATN; if we aren't already in sending mode, 
 				; get there:
 
-				jsr assert_ATN
-				jsr assert_CLOCK
-				jsr release_DATA
+				jsl assert_ATN
+				jsl assert_CLOCK
+				jsl release_DATA
 
 				; Now give the devices ~1ms to start listening.
-				jsr sleep_1ms
+				jsl sleep_1ms
 				
 				; If no one is listening, there's nothing on
 				; the bus, so signal an error.
-				jsr read_DATA
+				jsl read_DATA
 				bcs err$
 
 				; ATN bytes are technically never EOI bytes
 				stz eoi_pending
 
-				jmp send       
+				jmp long: send       
 
 err$
 				; Always release the ATN line on error; TODO: add post delay
-				jmp release_ATN
+				jmp long: release_ATN
 
 ;
 ; Send a byte over the IEC bus but mark it as the last byte
 ;
 ; A = the byte to send
 ;
-send_eoi		jsr set_eoi
-            	jmp send
+send_eoi		jsl set_eoi
+            	jmp long: send
 
 ;
 ; Set that the EOI byte is the next to be sent
 ;
 set_eoi			stz eoi_pending
 				dec eoi_pending
-				rts
+				rtl
 
 ;
 ; Sends the queued byte with an EOI
@@ -237,9 +237,9 @@ flush			bit delayed
         		pha
         		lda queue
         		stz delayed
-        		jsr send_eoi
+        		jsl send_eoi
         		pla
-done$:		    rts
+done$:		    rtl
 
 ;
 ; Send a byte over the IEC bus
@@ -251,26 +251,26 @@ send
 				; the host is asserting CLOCK and the devices are asserting DATA.
 
 				; There must be at least 100us between bytes.
-				jsr     sleep_300us
+				jsl     sleep_300us
 
 				; ; Clever cheating (PJW: removed since we disable interrupts for all this code)
 
 				; ; Act as an ersatz listener to keep the other listeners busy
 				; ; until we are ready to receive.  This is NOT part of the
 				; ; IEC protocol -- we are doing this in lieu of an interrupt.
-				; jsr assert_DATA
+				; jsl assert_DATA
 
 				; Release CLOCK to signal that we are ready to send
 				; We can do this without disabling interrupts because
 				; we are also asserting DATA.
-				jsr release_CLOCK
+				jsl release_CLOCK
             
         		; Now we wait for all of the listeners to acknowledge.
 wait$
-          		jsr sleep_20us
+          		jsl sleep_20us
 
 				; Check to see if all listeners have acknowledged
-				jsr read_DATA
+				jsl read_DATA
 				bcs ready$
             
 				; Other listeners are still busy; go back to sleep.
@@ -288,7 +288,7 @@ eoi$
 				; already had the opportunity to delay before starting the
 				; ack, so hopefully it will stay in nominal 250us range.
         
-TYE$        	jsr read_DATA
+TYE$        	jsl read_DATA
             	bcs TYE$
 
 				; Now we're basically back to the point where we are waiting
@@ -299,13 +299,13 @@ TYE$        	jsr read_DATA
 
 				; The drive should hold DATA for at least 60us.  Give it
 				; 20us, and then repeat our ersatz listener trick.
-				jsr sleep_20us
-				; jsr     assert_DATA (PJW: removed trick)
+				jsl sleep_20us
+				; jsl     assert_DATA (PJW: removed trick)
 				bra wait$
 
 send$
 				; Give the listeners time to notice that the've all ack'd
-				jsr sleep_20us  ; NOT on the C64
+				jsl sleep_20us  ; NOT on the C64
 
 				; Now start pushing out the bits.  Note that the timing
 				; is not critical, but each clock state must last at
@@ -317,32 +317,32 @@ loop$
 				; TODO: opt test for a frame error
 
           		; Clock out the next bit
-				jsr assert_CLOCK
-				jsr sleep_20us
+				jsl assert_CLOCK
+				jsl sleep_20us
 				lsr a
 				bcs one$
 
-zero$       	jsr assert_DATA
+zero$       	jsl assert_DATA
             	bra clock$
 
-one$        	jsr release_DATA
+one$        	jsl release_DATA
 				bra clock$
             	
 clock$
           		; Toggle the clock
-           		jsr sleep_20us  ; TODO: Maybe extend this.
+           		jsl sleep_20us  ; TODO: Maybe extend this.
 
-				jsr sleep_20us  ; 1541 needs this.
-				jsr release_CLOCK
+				jsl sleep_20us  ; 1541 needs this.
+				jsl release_CLOCK
 
-				jsr sleep_20us
+				jsl sleep_20us
 				dex
 				bne loop$
 				plx
             
 	          	; Finish the last bit and wait for the listeners to ack.
-            	jsr release_DATA
-            	jsr assert_CLOCK
+            	jsl release_DATA
+            	jsl assert_CLOCK
 
 				; Now wait for listener ack.  Of course, if there are
 				; multiple listeners, we can only know that one ack'd.
@@ -352,10 +352,10 @@ clock$
 				; TODO: ATN release timing appears to be semi-critical; we may need
 				; to completely change the code below.
 
-ack$        	jsr read_DATA
+ack$        	jsl read_DATA
             	bcs ack$
             	clc
-            	rts
+            	rtl
 
 ;
 ; Wait for a byte of data to be read from the IEC port
@@ -366,16 +366,16 @@ recv_data
 				stz rx_eoi
 
 				; Wait for the sender to have a byte
-wait1$      	jsr read_CLOCK
+wait1$      	jsl read_CLOCK
            		bcc wait1$
 
           		; TODO: start and check a timer
 
 				; Signal we are ready to receive
-ready$			jsr release_DATA
+ready$			jsl release_DATA
 
           		; Wait for all other listeners to signal
-wait2$      	jsr read_DATA
+wait2$      	jsl read_DATA
             	bcc wait2$
 
 				; Wait for the first bit or an EOI condition
@@ -383,7 +383,7 @@ wait2$      	jsr read_DATA
 				lda #0      ; counter
 wait3$      	inc a
 				beq eoi$
-				jsr read_CLOCK
+				jsl read_CLOCK
 				bcc recv$
 				adc #7      ; microseconds per loop
 				bcc wait3$
@@ -392,10 +392,10 @@ eoi$			lda rx_eoi
             	bmi error$
 
 				; Ack the EOI
-				jsr assert_DATA
-				jsr sleep_20us
-				jsr sleep_20us
-				jsr sleep_20us
+				jsl assert_DATA
+				jsl sleep_20us
+				jsl sleep_20us
+				jsl sleep_20us
 
 				; Set the EOI flag.  
 				dec rx_eoi 				; TODO: error on second round
@@ -404,42 +404,42 @@ eoi$			lda rx_eoi
 				bra ready$
 
 error$			sec
-            	rts
+            	rtl
 
 recv$
 				; Clock in the bits
 				phx
 				ldx #8
 
-wait_fall$  	jsr read_CLOCK
+wait_fall$  	jsl read_CLOCK
             	bcs wait_fall$
 
-wait_rise$  	jsr read_CLOCK
+wait_rise$  	jsl read_CLOCK
             	bcc wait_rise$
            
-				jsr read_DATA
+				jsl read_DATA
 				ror a
 				dex
 				bne wait_fall$
 				plx
 
 				; Ack
-				jsr sleep_20us
-				jsr assert_DATA
+				jsl sleep_20us
+				jsl assert_DATA
 
 				; Drives /usually/ work with a lot less, but
 				; I see failures on the SD2IEC on a status check
 				; after file-not-found when debugging is turned off.
-				jsr sleep_20us  ; Seems to be missing the ack.
-				jsr sleep_20us  ; Seems to be missing the ack.
-				jsr sleep_20us  ; Seems to be missing the ack.
-				jsr sleep_20us  ; Seems to be missing the ack.
+				jsl sleep_20us  ; Seems to be missing the ack.
+				jsl sleep_20us  ; Seems to be missing the ack.
+				jsl sleep_20us  ; Seems to be missing the ack.
+				jsl sleep_20us  ; Seems to be missing the ack.
             
 				; Return EOI in NV
 				clc
 				bit rx_eoi
 				ora #0
-				rts
+				rtl
 
 ;;
 ;; Public Functions
@@ -458,7 +458,7 @@ iecll_ioinit	php
 
 				stz delayed
 
-            	jsr init
+            	jsl init
 				bcs err$
 
 				plp
@@ -481,8 +481,8 @@ iecll_talk		php
 				sep #0x30
 				
 				ora #0x40
-            	jsr flush
-            	jsr atn_release_data   ; NOTE: does NOT drop ATN!
+            	jsl flush
+            	jsl atn_release_data   ; NOTE: does NOT drop ATN!
 
 				plp
 				rtl
@@ -498,12 +498,12 @@ iecll_talk_sa   php
 				sei
 				sep #0x30
 				
-				jsr atn_common
+				jsl atn_common
            
-				jsr assert_DATA
-				jsr release_ATN
-				jsr release_CLOCK
-1$				jsr read_CLOCK
+				jsl assert_DATA
+				jsl release_ATN
+				jsl release_CLOCK
+1$				jsl read_CLOCK
 				bcs 1$ 									; TODO: should time out.
 				
 				plp
@@ -521,8 +521,8 @@ iecll_listen	php
 				sep #0x30
 				
 				ora #0x20
-           		jsr flush
-            	jsr atn_release_data   					; NOTE: does NOT drop ATN!
+           		jsl flush
+            	jsl atn_release_data   					; NOTE: does NOT drop ATN!
 
 				plp
 				rtl
@@ -538,8 +538,8 @@ iecll_listen_sa	php
 				sei
 				sep #0x30
 				
-				jsr atn_common
-            	jsr release_ATN
+				jsl atn_common
+            	jsl release_ATN
 
 				; TODO: WARNING!  No delay here!  
 				; TODO: IMHO, should wait at least 100us to avoid accidental turn-around!
@@ -569,8 +569,8 @@ iecll_untalk	php
 				; TODO: track the state and cause calls to IECOUT to fail.
 
           		; pre-sets CLOCK IMMEDIATELY before the ATN ... again, TODO: makes no sense
-            	jsr assert_CLOCK
-            	jsr atn_release
+            	jsl assert_CLOCK
+            	jsl atn_release
 
 				plp
 				rtl
@@ -587,8 +587,8 @@ iecll_unlisten 	php
 				; Detangled from C64 sources; TODO: compare with Stef's
 
             	lda #0x3f
-            	jsr flush
-            	jsr atn_release
+            	jsl flush
+            	jsl atn_release
 
 				plp
 				rtl
@@ -607,7 +607,7 @@ iecll_in		php
 				sei					; Disable interrupts
 				sep #0x30			; Switch to 8-bit registers
 
-				jsr recv_data
+				jsl recv_data
 
 				; NOTE: we'll just read from the eoi variable in a separate function
 				;       We might need to return it here folded in with the data somwhow
@@ -662,7 +662,7 @@ iecll_out		php
 				; Send the old byte
 				pha
 				lda queue
-				jsr send
+				jsl send
 				pla
 				stz delayed
 
@@ -680,9 +680,9 @@ iecll_reset:	php
 				sei
 				sep #0x30
 
-				jsr assert_RST
-				jsr sleep_1ms
-				jsr release_RST
+				jsl assert_RST
+				jsl sleep_1ms
+				jsl release_RST
 
 				plp
 				rtl

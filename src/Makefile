@@ -1,8 +1,8 @@
 # VPATH=.:../../module/Calypsi-remote-debug/src
 DEBUGGER=../module/Calypsi-remote-debug/src
 
-UNIT := F256
-MEMORY := RAM
+UNIT := F256K
+MEMORY := ROM
 
 # Define OS-dependent variables
 
@@ -44,20 +44,20 @@ else ifeq ($(UNIT),F256)
 	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large
 
 	ifeq ($(MEMORY),ROM)
-		LDFLAGS_FOR_UNIT=C256/flash-f256.scm clib-lc-ld.a --rtattr printf=medium
+		LDFLAGS_FOR_UNIT=C256/f256-flash.scm clib-lc-ld.a --rtattr printf=medium
 	else
-		LDFLAGS_FOR_UNIT=C256/ld_lc_f256.scm clib-lc-ld.a --rtattr printf=medium
+		LDFLAGS_FOR_UNIT=C256/f256-ld_lc.scm clib-lc-ld.a --rtattr printf=medium
 	endif
 else ifeq ($(UNIT),F256K)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s
-	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large
+	SRCS_FOR_UNIT=C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s 
+	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large
 
 	ifeq ($(MEMORY),ROM)
-		LDFLAGS_FOR_UNIT=C256/flash-f256.scm clib-lc-ld.a --rtattr printf=medium
+		LDFLAGS_FOR_UNIT=C256/f256-flash.scm clib-lc-ld.a --rtattr printf=medium --cstartup=f256
 	else
-		LDFLAGS_FOR_UNIT=C256/ld_lc_f256.scm clib-lc-ld.a --rtattr printf=medium
+		LDFLAGS_FOR_UNIT=C256/f256-ld_lc.scm clib-lc-ld.a --rtattr printf=medium --cstartup=f256
 	endif
 endif
 
@@ -69,8 +69,8 @@ ifeq ($(CPU),w65816)
 endif
 
 INCLUDES=-I. -I./include
-CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) # -l -D_CALYPSI_MCP_DEBUGGER
-ASFLAGS=$(INCLUDES)
+CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) -l # -l -D_CALYPSI_MCP_DEBUGGER
+ASFLAGS=$(INCLUDES) --data-model large --code-model large
 
 ifeq ($(MEMORY),ROM)
 	LDFLAGS=--rom-code $(LDFLAGS_FOR_UNIT) --list-file toolbox.map
@@ -89,7 +89,7 @@ toolbox.s37: $(OBJS) $(LIBS)
 	$(LD) $(LDFLAGS) --output-format s37 -o $@ $^
 
 toolbox.raw: $(OBJS) $(LIBS)
-	$(LD) $(LDFLAGS) --output-format raw -o $@ $^
+	$(LD) $(LDFLAGS) --raw-multiple-memories --output-format raw -o $@ $^
 
 dev/devices.a:
 	$(MAKE) --directory=dev
