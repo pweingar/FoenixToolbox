@@ -34,6 +34,7 @@
 #include "dev/txt_c256.h"
 #include "dev/txt_evid.h"
 #elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#include "cartridge.h"
 #include "dev/txt_f256.h"
 #include "dev/kbd_f256.h"
 #include "dev/sdc_f256.h"
@@ -481,6 +482,42 @@ int main(int argc, char * argv[]) {
 	test_sysinfo();
 
 	printf("Foenix Toolbox v%d.%04d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
+
+	const char * test_data = "Hello, world!";
+
+	volatile uint8_t * cartridge = ((volatile uint8_t *)0xf40000);
+
+	short cartridge_id = cart_id();
+	switch(cartridge_id) {
+		case CART_ID_NONE:
+			printf("No cartridge detected.\n");
+			break;
+
+		case CART_ID_RAM:
+			printf("RAM cartridge detected.\n");
+			break;
+
+		case CART_ID_FLASH:
+			printf("FLASH cartridge detected.\n");
+			// printf("Attempting to erase the flash cartridge.\n");
+			// cart_erase();
+			// printf("Attempting to program the flash cartridge.\n");
+			// for (int i = 0; i < strlen(test_data); i++) {
+			// 	cart_write(0xf40000 + i, test_data[i]);
+			// }
+
+			// for (int j = 0; j < strlen(test_data); j++) {
+			// 	txt_put(0, cartridge[j]);
+			// }
+
+			// printf("\n");
+			break;
+
+		default:
+			printf("Unable to determine whether a cartridge is present.\n");
+			break;
+	}
+
 	test_kbd();
 
 	// printf("Initializing IEC\n");
