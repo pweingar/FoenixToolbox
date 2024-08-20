@@ -58,7 +58,7 @@ static void cart_flash_system_id_exit() {
  * 
  * @return short the code describing the cartridge (-1 for none found)
  */
-short cart_id() {
+SYSTEMCALL short cart_id() {
 	if (cart_id_memo == CART_ID_UNDEF) {
 		// Start off assuming we don't have anything in the slot
 		cart_id_memo = -1;
@@ -91,7 +91,7 @@ short cart_id() {
  * @brief Erase the entire flash memory 
  * 
  */
-void cart_erase() {
+SYSTEMCALL void cart_erase() {
 	if (cart_id() == CART_ID_FLASH) {
 		cart_flash_command(0x80);
 		cart_flash_command(0x10);
@@ -108,7 +108,7 @@ void cart_erase() {
  * @param address the address to write to (in CPU address space)
  * @param value the byte to write to the address
  */
-void cart_write(uint32_t address, uint8_t value) {
+SYSTEMCALL void cart_write_b(uint32_t address, uint8_t value) {
 	uint32_t cart_base_address = (uint32_t)cartridge;
 	uint32_t cart_end_address = 0xf7ffff;
 	uint8_t current_value = 0;
@@ -122,8 +122,37 @@ void cart_write(uint32_t address, uint8_t value) {
 			*dest = value;
 
 			// Wait for the value to show up at the destination
-			long target_jiffies = timers_jiffies() + 5;
+			long target_jiffies = timers_jiffies() + 3;
 			while (timers_jiffies() < target_jiffies) ;
+		}
+	}
+}
+
+/**
+ * @brief Write a block of bytes to the flash cartridge (if present)
+ * 
+ * @param dest the address within the flash cartridge to start writing to
+ * @param src the address in regular memory to start reading from
+ * @param count the number of bytes to write
+ */
+SYSTEMCALL void cart_write(uint32_t dest, uint32_t src, int count) {
+	uint32_t cart_base_address = (uint32_t)cartridge;
+	uint32_t cart_end_address = 0xf7ffff;
+	uint8_t current_value = 0;
+
+	if (cart_id() == CART_ID_FLASH) {
+		if ((cart_base_address <= src) && (cart_end_address >= src + count)) {
+			for (int x = 0; x < count; x++) {
+				volatile uint8_t * dest_position = ((volatile uint8_t *)(dest + x));
+				uint8_t * src_position = (uint8_t *)(src + x);
+
+				cart_flash_command(0xa0);
+				*dest_position = *src_position;
+
+				// Wait for the value to show up at the destination
+				long target_jiffies = timers_jiffies() + 3;
+				while (timers_jiffies() < target_jiffies) ;
+			}
 		}
 	}
 }

@@ -14,6 +14,8 @@
 
 #include <stdint.h>
 
+#include "sys_macros.h"
+
 #define CART_ID_UNDEF	-2
 #define CART_ID_NONE	-1
 #define CART_ID_RAM		0
@@ -24,13 +26,13 @@
  * 
  * @return short the code describing the cartridge (-1 for none found)
  */
-extern short cart_id();
+extern SYSTEMCALL short cart_id();
 
 /**
  * @brief Erase the entire flash memory 
  * 
  */
-extern void cart_erase();
+extern SYSTEMCALL void cart_erase();
 
 /**
  * @brief Write a byte to the flash memory
@@ -38,6 +40,15 @@ extern void cart_erase();
  * @param address the address to write to (in CPU address space)
  * @param value the byte to write to the address
  */
-extern void cart_write(uint32_t address, uint8_t value);
+extern SYSTEMCALL void cart_write_b(uint32_t address, uint8_t value);
+
+/**
+ * @brief Write a block of bytes to the flash cartridge (if present)
+ * 
+ * @param dest the address within the flash cartridge to start writing to
+ * @param src the address in regular memory to start reading from
+ * @param count the number of bytes to write
+ */
+extern SYSTEMCALL void cart_write(uint32_t dest, uint32_t src, int count);
 
 #endif

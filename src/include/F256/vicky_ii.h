@@ -71,7 +71,9 @@ typedef struct tvky_crsr_ctrl_s {
 #define VKY_MCR_RES_320x240   	0x0600
 #define VKY_MCR_RES_320x200   	0x0700
 
-#define tvky_brdr_ctrl ((volatile  tvky_border_ctrl_p)0xf01004)
+#define tvky_layers ((volatile __attribute__((far)) uint16_t *)0xf01002)
+
+#define tvky_brdr_ctrl ((volatile __attribute__((far)) tvky_border_ctrl_p)0xf01004)
 
 #define vky_brdr_ctrl ((volatile __attribute__((far)) uint8_t *)0xf01004)
 #define vky_brdr_col_blue ((volatile __attribute__((far)) uint8_t *)0xf01005)
@@ -118,6 +120,23 @@ typedef volatile __attribute__((far24)) uint8_t *p_far24;
 #define bm0_control         ((volatile __attribute__((far)) uint8_t *)0xf01100)
 #define bm0_address         ((volatile __attribute__((far)) uint8_t *)0xf01101)
 
+//
+// Sprite graphics registers
+//
+
+/**
+ * @brief Registers for a given sprite
+ * 
+ */
+typedef struct s_sprite {
+	uint8_t control;
+	p_far24 address;
+	uint16_t x;
+	uint16_t y;
+} t_sprite, *p_sprite;
+
+#define vky_sprite			((volatile __attribute__((far)) p_sprite)0xf01900)
+
 #define MousePointer_Mem_A	((volatile __attribute__((far)) uint8_t *)0xf00c00)
 #define MousePtr_A_CTRL_Reg	((volatile __attribute__((far)) uint8_t *)0xf016e0)
 #define MousePtr_En         0x0001
@@ -127,6 +146,42 @@ typedef volatile __attribute__((far24)) uint8_t *p_far24;
 #define MousePtr_A_Mouse0	((volatile __attribute__((far)) uint8_t *)0xf016e6)
 #define MousePtr_A_Mouse1	((volatile __attribute__((far)) uint8_t *)0xf016e7)
 #define MousePtr_A_Mouse2	((volatile __attribute__((far)) uint8_t *)0xf016e8)
+
+
+/**
+ * @brief Structure to represent a tile set (the bitmap providing the tiles)
+ * 
+ */
+typedef struct s_tile_set {
+	p_far24 address;
+	uint8_t control;
+} t_tile_set, *p_tile_set;
+
+#define VKY_TILESET_SQUARE	0x08
+#define VKY_TILESET_MAX		7
+
+#define vky_tile_sets		((volatile __attribute__((far)) p_tile_set)0xf01280)
+
+/**
+ * @brief Structure to represent a tile map (the assignments of tiles to positions)
+ * 
+ */
+typedef struct s_tile_map {
+	uint8_t control;
+	p_far24 address;
+	uint8_t width;
+	uint8_t reserved1;
+	uint8_t height;
+	uint8_t reserved2;
+	uint16_t x;
+	uint16_t y;
+} t_tile_map, *p_tile_map;
+
+#define VKY_TILEMAP_ENABLE	0x01
+#define VKY_TILEMAP_SIZE	0x10	/* 0 = 16x16, 1 = 8x8 */
+#define VKY_TILEMAP_MAX		2
+
+#define vky_tile_maps		((volatile __attribute__((far)) p_tile_map)0xf01200)
 
 //
 // Video RAM

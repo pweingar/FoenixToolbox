@@ -20,4 +20,10 @@
  */
 extern void boot_launch();
 
+/**
+ * @brief Setup the boot screen
+ * 
+ */
+extern void boot_screen();
+
 #endif
