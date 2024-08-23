@@ -23,6 +23,7 @@
 #include "fatfs/ff.h"
 #include "log.h"
 #include "syscalls.h"
+#include "sys_general.h"
 #include "simpleio.h"
 #include "utilities.h"
 
@@ -332,7 +333,7 @@ SYSTEMCALL short fsys_stat(const char * path, p_file_info file) {
 
 	// FatFS's f_stat function does not handle root directories so bodge this in...
 	// For each drive...
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < FF_VOLUMES; i++) {
 		// Compute two legitimate paths to it
 		strcpy(match1, "/");
 		strcat(match1, (char *)VolumeStr[i]);
@@ -1212,7 +1213,11 @@ short fsys_elf_loader(short chan, long destination, long * start) {
  * 0 on success, negative number on error
  */
 short fsys_pgx_loader(short chan, long destination, long * start) {
+#if CPU == CPU_WDC65816
+    const char signature[] = "PGX\x01";
+#else
     const char signature[] = "PGX\x02";
+#endif
     unsigned char * chunk = 0;
     unsigned char * dest = 0;
     long file_idx = 0;
@@ -1477,7 +1482,7 @@ short fsys_register_loader(const char * extension, p_file_loader loader) {
     for (i = 0; i < MAX_LOADERS; i++) {
         if (g_file_loader[i].status == 0) {
             g_file_loader[i].status = 1;                    /* Claim this loader record */
-            g_file_loader[i].loader = loader;               /* Set the loader routine */
+
             for (j = 0; j <= MAX_EXT; j++) {                /* Clear out the extension */
                 g_file_loader[i].extension[j] = 0;
             }
@@ -1491,6 +1496,10 @@ short fsys_register_loader(const char * extension, p_file_loader loader) {
                     break;
                 }
             }
+
+			// NOTE: this was moved here because somehow clearing the extension in the loader record
+			//       was clobbering the loader pointer. Not sure why
+            g_file_loader[i].loader = loader;               /* Set the loader routine */
 
             return 0;
         }

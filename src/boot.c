@@ -12,6 +12,8 @@
 #include "boot.h"
 #include "memory.h"
 #include "proc.h"
+#include "dev/fsys.h"
+#include "timers.h"
 #include "dev/txt_screen.h"
 #include "dev/sprites.h"
 #include "dev/tiles.h"
@@ -19,9 +21,12 @@
 #include "rsrc/sprites/boot_sprites.h"
 #include "rsrc/tiles/boot_tiles.h"
 
+#include <stdio.h>
 #include <string.h>
 
 const uint32_t boot_record_alignment = 8192;		// Number of bytes for boot record alignement
+const uint32_t boot_rom_location = 0xf00000;		// Location to check for a boot record in ROM
+const uint32_t boot_cart_location = 0xf40000;		// Location to check for a boot record in ROM
 
 enum boot_src_e {
 	BOOT_SRC_NONE = 0,		// Nothing more to check
@@ -54,9 +59,8 @@ static enum boot_src_e boot_chain[] = {
 	BOOT_SRC_RAM,
 	BOOT_SRC_CARTRIDGE,
 	BOOT_SRC_SD0,
-	BOOT_SRC_SD1,
+	// BOOT_SRC_SD1,
 	BOOT_SRC_ROM,
-	BOOT_SRC_NONE
 };
 
 /**
@@ -85,56 +89,183 @@ short boot_ram_launch(boot_record_p record) {
 }
 
 /**
- * @brief Look for a boot record in RAM
- * @return 1 if success, 0 if boot record not validated
+ * @brief Check to see if the boot record is valid
  * 
+ * @param record pointer to the potential boot record to validate
+ * @return true the record is valid
+ * @return false the record is not valid
  */
-short boot_ram() {
-	unsigned long top_ram = mem_get_ramtop();
-	for (uint32_t address = 0; address < top_ram; address += boot_record_alignment) {
-		if (boot_ram_launch((boot_record_p)address)) {
-			return 1;
-		}
+bool is_valid_boot_record(boot_record_p record) {
+	return ((record->signature1 == 0xf8) && (record->signature2 == 0x16) && (record->version == 0));
+}
+
+/**
+ * @brief Check to see if a device has bootable code
+ * 
+ * For RAM, ROM, and Flash boot devices, there will be a boot record on the device.
+ * The SD cards will not have a boot record.
+ * 
+ * @param device the ID of the boot device to check
+ * @param boot_record pointer to the pointer that should be set for the boot record on the device
+ * @return true if the device is bootable
+ * @return false if the device cannot be booted
+ */
+bool is_bootable(enum boot_src_e device, boot_record_p * boot_record) {
+	uint32_t top_ram = 0;
+	boot_record_p record = 0;
+	t_file_info file_info;
+
+	// By default, do not have a boot record
+	*boot_record = 0;
+
+	switch(device) {
+		case BOOT_SRC_RAM:
+			top_ram = (uint32_t)mem_get_ramtop();
+			for (uint32_t address = 0; address < top_ram; address += boot_record_alignment) {
+				record = (boot_record_p)address;
+
+				if (is_valid_boot_record(record)) {
+					*boot_record = record;
+					return true;
+				}
+			}
+			break;
+
+		case BOOT_SRC_ROM:
+			record = (boot_record_p)boot_rom_location;
+			if (is_valid_boot_record(record)) {
+				*boot_record = record;
+				return true;
+			}
+			break;
+
+		case BOOT_SRC_CARTRIDGE:
+			record = (boot_record_p)boot_cart_location;
+			if (is_valid_boot_record(record)) {
+				*boot_record = record;
+				return true;
+			}
+			break;
+
+		case BOOT_SRC_SD0:
+			if ((fsys_stat("/sd0/fnxboot.pgx", &file_info) >= 0) || (fsys_stat("/sd0/fnxboot.pgz", &file_info) >= 0)) {
+				return true;
+			}
+			break;
+
+		case BOOT_SRC_SD1:
+			// if (fsys_stat("/sd1/fnxboot.pgx", &file_info) || fsys_stat("/sd1/fnxboot.pgz", &file_info)) {
+			// 	return true;
+			// }
+			break;
+
+		default:
+			break;
 	}
 
 	return 0;
 }
 
 /**
- * @brief Look for a boot record in the flash cartridge
- * @return 1 if success, 0 if boot record not validated
+ * @brief Do the initial display of the boot device icon
  * 
+ * @param position the position in the boot sequence (0 - 4)
+ * @param device the ID of the boot device
  */
-short boot_cartridge() {
-	return 0;
+void boot_icon(short position, enum boot_src_e device) {
+	short base_x = 14*8;
+	short base_y = 21*8;
+	uint8_t x = base_x + 32*position;
+
+	switch(device) {
+		case BOOT_SRC_RAM:
+			sprite_assign(position, ram_pixels, 0, 0);
+			break;
+
+		case BOOT_SRC_ROM:
+			sprite_assign(position, rom_pixels, 0, 0);
+			break;
+
+		case BOOT_SRC_CARTRIDGE:
+			sprite_assign(position, cartridge_pixels, 0, 0);
+			break;
+		
+		case BOOT_SRC_SD0:
+			sprite_assign(position, sd_ext_pixels, 0, 0);
+			break;
+
+		case BOOT_SRC_SD1:
+			sprite_assign(position, sd_int_pixels, 0, 0);
+			break;
+					
+		default:
+			break;
+	}
+
+	// By default, we'll set the icon to dim
+	// We'll make it bright when we've confirmed it is bootable
+	sprite_clut(position, 1);
+
+	// Set the position of the icon
+	sprite_position(position, x, base_y);
+
+	// Enable the icon to display it
+	sprite_enable(position, true);
 }
 
 /**
- * @brief Find and launch the user's code
+ * @brief Indicate that the device is bootable by making it brighter
  * 
+ * @param position the position in the boot sequence (0 - 4)
  */
-void boot_launch() {
-	for (short i = 0; boot_chain[i] != BOOT_SRC_NONE; i++) {
-		switch(boot_chain[i]) {
-			case BOOT_SRC_RAM:
-				if (boot_ram()) {
-					return;
-				}
-				break;
+void boot_icon_highlight(short position) {
+	sprite_clut(position, 0);
+}
 
-			case BOOT_SRC_SD0:
-				if (proc_run("/sd0/fnxboot.pgz", 0, boot_args) == 0) {
-					return;
-				} else if (proc_run("/sd0/fnxboot.pgx", 0, boot_args) == 0) {
-					return;
-				} else if (proc_run("/sd0/fnxboot.elf", 0, boot_args) == 0) {
-					return;
-				}
-				break;
+void boot_from(enum boot_src_e device) {
+	short result = 0;
+	t_file_info file_info;
 
-			default:
-				break;
-		}
+	switch(device) {
+		case BOOT_SRC_SD0:
+			if (fsys_stat("/sd0/fnxboot.pgz", &file_info) >= 0) {
+				txt_print(0, "Booting: /sd0/fnxboot.pgz\n");
+				proc_run("/sd0/fnxboot.pgz", 0, boot_args);
+
+			} else if (fsys_stat("/sd0/fnxboot.pgx", &file_info) >= 0) {
+				txt_print(0, "Booting: /sd0/fnxboot.pgx\n");
+				result = proc_run("/sd0/fnxboot.pgx", 0, boot_args);
+				if (result != 0) {
+					printf("proc_run error: %d\n", result);
+				}
+			}
+			break;
+
+		default:
+			txt_print(0, "No bootable device is present.\n");
+			break;
+	}
+}
+
+const char * boot_source_name(enum boot_src_e device) {
+	switch(device) {
+		case BOOT_SRC_SD0:
+			return "External SDC";
+
+		case BOOT_SRC_SD1:
+			return "Internal SDC";
+
+		case BOOT_SRC_RAM:
+			return "RAM";
+
+		case BOOT_SRC_ROM:
+			return "ROM";
+
+		case BOOT_SRC_CARTRIDGE:
+			return "CARTRIDGE";
+
+		default:
+			return "None"; 
 	}
 }
 
@@ -143,6 +274,10 @@ void boot_launch() {
  * 
  */
 void boot_screen() {
+	enum boot_src_e boot_source = BOOT_SRC_NONE;
+	short i = 0;
+	long jiffies_target = 0;
+
 	// txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE);
 	*tvky_mstr_ctrl = (uint16_t)(VKY_MCR_TILE | VKY_MCR_SPRITE | VKY_MCR_GRAPHICS | VKY_MCR_TEXT_OVERLAY | VKY_MCR_TEXT);
 
@@ -150,7 +285,7 @@ void boot_screen() {
 	tvky_bg_color->green = 0;
 	tvky_bg_color->red = 0;
 
-	for (int i = 0; i < 4 * 256; i++) {
+	for (i = 0; i < 4 * 256; i++) {
 		VKY_GR_CLUT_0[i] = boot_clut[i];
 		VKY_GR_CLUT_1[i] = boot_clut[i] >> 2;
 	}
@@ -172,9 +307,6 @@ void boot_screen() {
 
 	*tvky_layers = 0x0444;
 
-	short base_x = 14*8;
-	short base_y = 21*8;
-
 	// Set up the text window for the boot messaging
 	t_rect boot_text_window;
 	boot_text_window.origin.x = 20;
@@ -183,35 +315,47 @@ void boot_screen() {
 	boot_text_window.size.height = 12;
 	txt_set_region(0, &boot_text_window);
 
-	txt_print(0, "Scanning for bootable devices...\n\n");
+	txt_print(0, "Scanning for bootable devices...\n");
 
-	sprite_assign(0, cartridge_pixels, 0, 0);
-	sprite_assign(1, ram_pixels, 0, 0);
-	sprite_assign(2, sd_ext_pixels, 0, 0);
-	sprite_assign(3, sd_int_pixels, 0, 0);
-	sprite_assign(4, rom_pixels, 0, 0);
+	for (short position = 0; position < sizeof(boot_chain) / sizeof(enum boot_src_e); position++) {
+		boot_record_p boot_record;
 
-	sprite_clut(0, 1);
-	sprite_clut(1, 0);
-	sprite_clut(2, 1);
-	sprite_clut(3, 0);
-	sprite_clut(4, 0);
+		boot_icon(position, boot_chain[position]);
+		if (is_bootable(boot_chain[position], &boot_record)) {
+			boot_icon_highlight(position);
 
-	sprite_position(0, base_x, base_y);
-	sprite_position(1, base_x + 32, base_y);
-	sprite_position(2, base_x + 32*2, base_y);
-	sprite_position(3, base_x + 32*3, base_y);
-	sprite_position(4, base_x + 32*4, base_y);
+			// Assign the boot source to this, if it hasn't already been bound
+			if (boot_source == BOOT_SRC_NONE) {
+				txt_print(0, "Default boot source: ");
+				txt_print(0, boot_source_name(boot_chain[position]));
+				txt_put(0, '\n');
+				boot_source = boot_chain[position];
+			}
 
-	sprite_enable(0, true);
-	sprite_enable(1, true);
-	sprite_enable(2, true);
-	sprite_enable(3, true);
-	sprite_enable(4, true);
+			// If there is a boot icon specified in the boot record, change to that icon
+			if (boot_record != 0) {
+				if (boot_record->icon_address != 0) {
+					sprite_assign(position, (uint8_t *)(boot_record->icon_address), 0, 0);
 
-	// txt_print(0, "1: Start 'Frogger' from the cartridge.\n");
-	txt_print(0, "1: Start 'Foobar' in RAM.\n");
-	// txt_print(0, "3: Start from external SD card.\n");
-	txt_print(0, "2: Start from internal SD card.\n");
-	txt_print(0, "3: Start 'f/Manager'.\n");
+					// If there is a CLUT defined for the boot record, switch to use that clut
+					if (boot_record->clut_address != 0) {
+						for (i = 0; i < 4 * 256; i++) {
+							uint8_t * source_clut = (uint8_t *)boot_record->clut_address;
+							VKY_GR_CLUT_2[i] = source_clut[i];
+						}
+						sprite_clut(position, 2);
+					}
+				}
+			}
+		}
+	}
+
+	// Wait some time for user input
+	jiffies_target = timers_jiffies() + 60 * 10;
+	while (jiffies_target > timers_jiffies()) {
+		;
+	}
+
+	// And launch the system
+	boot_from(boot_source);
 }
