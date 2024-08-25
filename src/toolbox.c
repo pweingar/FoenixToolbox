@@ -518,11 +518,13 @@ int main(int argc, char * argv[]) {
 	// 		break;
 	// }
 
+	// test_kbd();
+
 	boot_screen();
 
 	while (1) ;
 
-	// test_kbd();
+
 
 	// printf("Initializing IEC\n");
 	// result = iec_init();

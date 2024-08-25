@@ -12,11 +12,14 @@
 #include "boot.h"
 #include "memory.h"
 #include "proc.h"
+#include "cartridge.h"
 #include "dev/fsys.h"
-#include "timers.h"
+#include "dev/channel.h"
+#include "dev/kbd_f256k.h"
 #include "dev/txt_screen.h"
 #include "dev/sprites.h"
 #include "dev/tiles.h"
+#include "timers.h"
 #include "vicky_general.h"
 #include "rsrc/sprites/boot_sprites.h"
 #include "rsrc/tiles/boot_tiles.h"
@@ -25,8 +28,14 @@
 #include <string.h>
 
 const uint32_t boot_record_alignment = 8192;		// Number of bytes for boot record alignement
-const uint32_t boot_rom_location = 0xf00000;		// Location to check for a boot record in ROM
+const uint32_t boot_rom_location = 0xf80000;		// Location to check for a boot record in ROM
 const uint32_t boot_cart_location = 0xf40000;		// Location to check for a boot record in ROM
+
+const unsigned short kbd_sc_space = 0x0039;
+const unsigned short kbd_sc_f1 = 0x003b;
+const unsigned short kbd_sc_f3 = 0x003d;
+const unsigned short kbd_sc_f5 = 0x003f;
+const unsigned short kbd_sc_f7 = 0x0041;
 
 enum boot_src_e {
 	BOOT_SRC_NONE = 0,		// Nothing more to check
@@ -42,13 +51,13 @@ enum boot_src_e {
  * 
  */
 typedef struct boot_record_s {
-	char signature1;
-	char signature2;
-	uint32_t start_address;
-	uint8_t version;
-	uint32_t icon_address;
-	uint32_t clut_address;
-	const char * name;
+	char signature1;				// Needs to be $f8
+	char signature2;				// Needs to be $16
+	uint8_t version;				// Currently $00
+	uint32_t start_address;			// Address to start executing (in little-endian format of the 65816)
+	uint32_t icon_address;			// Address of an icon to show (32x32 sprite data, use 0 for no icon)
+	uint32_t clut_address;			// Address of the palette for the icon in Vicky format (0 to use the default)
+	const char * name;				// A display name/command word for the program (not currently used)
 } boot_record_t, *boot_record_p;
 
 /**
@@ -62,6 +71,8 @@ static enum boot_src_e boot_chain[] = {
 	// BOOT_SRC_SD1,
 	BOOT_SRC_ROM,
 };
+
+static bool bootable[10];
 
 /**
  * @brief A holder for empty arguments list so we have something to point to when starting a binary file
@@ -222,31 +233,6 @@ void boot_icon_highlight(short position) {
 	sprite_clut(position, 0);
 }
 
-void boot_from(enum boot_src_e device) {
-	short result = 0;
-	t_file_info file_info;
-
-	switch(device) {
-		case BOOT_SRC_SD0:
-			if (fsys_stat("/sd0/fnxboot.pgz", &file_info) >= 0) {
-				txt_print(0, "Booting: /sd0/fnxboot.pgz\n");
-				proc_run("/sd0/fnxboot.pgz", 0, boot_args);
-
-			} else if (fsys_stat("/sd0/fnxboot.pgx", &file_info) >= 0) {
-				txt_print(0, "Booting: /sd0/fnxboot.pgx\n");
-				result = proc_run("/sd0/fnxboot.pgx", 0, boot_args);
-				if (result != 0) {
-					printf("proc_run error: %d\n", result);
-				}
-			}
-			break;
-
-		default:
-			txt_print(0, "No bootable device is present.\n");
-			break;
-	}
-}
-
 const char * boot_source_name(enum boot_src_e device) {
 	switch(device) {
 		case BOOT_SRC_SD0:
@@ -262,10 +248,79 @@ const char * boot_source_name(enum boot_src_e device) {
 			return "ROM";
 
 		case BOOT_SRC_CARTRIDGE:
-			return "CARTRIDGE";
+			return "Cartridge";
 
 		default:
 			return "None"; 
+	}
+}
+
+static void boot_reset_screen() {
+	// txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE);
+	*tvky_mstr_ctrl = (uint16_t)(VKY_MCR_TEXT);
+
+	tile_set_assign(0, 0, false);
+	tile_set_update(0);
+
+	tile_map_assign(0, 0, 0, 0, 0);
+	tile_map_position(0, 0, 0);
+	tile_map_enable(0, false);
+	tile_map_update(0);
+
+	for (int i = 0; i < 5; i++) {
+		sprite_assign(i, 0, 0, 0);
+		sprite_position(i, 0, 0);
+		sprite_enable(i, 0);
+	}
+
+	// Clear the text screen
+	txt_clear(0, 2);
+}
+
+void boot_from(enum boot_src_e device, boot_record_p boot_record) {
+	short result = 0;
+	t_file_info file_info;
+
+	switch(device) {
+		case BOOT_SRC_SD0:
+			if (fsys_stat("/sd0/fnxboot.pgz", &file_info) >= 0) {
+				txt_print(0, "Booting: /sd0/fnxboot.pgz\n");
+				boot_reset_screen();
+				proc_run("/sd0/fnxboot.pgz", 0, boot_args);
+
+			} else if (fsys_stat("/sd0/fnxboot.pgx", &file_info) >= 0) {
+				txt_print(0, "Booting: /sd0/fnxboot.pgx\n");
+				boot_reset_screen();
+				result = proc_run("/sd0/fnxboot.pgx", 0, boot_args);
+				if (result != 0) {
+					printf("proc_run error: %d\n", result);
+				}
+			}
+			break;
+
+		case BOOT_SRC_CARTRIDGE:
+		case BOOT_SRC_ROM:
+		case BOOT_SRC_RAM:
+			txt_print(0, "Booting from ");
+			txt_print(0, boot_source_name(device));
+			txt_print(0, "\n");
+
+			// Double-check that the boot record is valid before we attempt to boot
+			if (boot_record != 0) {
+				if ((boot_record->signature1 == 0xf8) && (boot_record->signature2 == 0x16) && (boot_record->version == 0)) {
+					// Memory does indeed hold a boot record
+					boot_reset_screen();
+					proc_exec(boot_record->start_address, 0, 0, boot_args);
+				}
+			} else {
+				txt_print(0, "A valid boot record was not found.\n");
+			}
+
+			break;
+
+		default:
+			txt_print(0, "No bootable device is present.\n");
+			break;
 	}
 }
 
@@ -277,6 +332,8 @@ void boot_screen() {
 	enum boot_src_e boot_source = BOOT_SRC_NONE;
 	short i = 0;
 	long jiffies_target = 0;
+	boot_record_p boot_record[10];
+	short boot_position = 0;
 
 	// txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE);
 	*tvky_mstr_ctrl = (uint16_t)(VKY_MCR_TILE | VKY_MCR_SPRITE | VKY_MCR_GRAPHICS | VKY_MCR_TEXT_OVERLAY | VKY_MCR_TEXT);
@@ -318,29 +375,30 @@ void boot_screen() {
 	txt_print(0, "Scanning for bootable devices...\n");
 
 	for (short position = 0; position < sizeof(boot_chain) / sizeof(enum boot_src_e); position++) {
-		boot_record_p boot_record;
-
+		bootable[position] = false;
 		boot_icon(position, boot_chain[position]);
-		if (is_bootable(boot_chain[position], &boot_record)) {
+		if (is_bootable(boot_chain[position], &boot_record[position])) {
 			boot_icon_highlight(position);
-
+			bootable[position] = true;
+ 
 			// Assign the boot source to this, if it hasn't already been bound
 			if (boot_source == BOOT_SRC_NONE) {
 				txt_print(0, "Default boot source: ");
 				txt_print(0, boot_source_name(boot_chain[position]));
 				txt_put(0, '\n');
 				boot_source = boot_chain[position];
+				boot_position = position;
 			}
 
 			// If there is a boot icon specified in the boot record, change to that icon
-			if (boot_record != 0) {
-				if (boot_record->icon_address != 0) {
-					sprite_assign(position, (uint8_t *)(boot_record->icon_address), 0, 0);
+			if (boot_record[position] != 0) {
+				if (boot_record[position]->icon_address != 0) {
+					sprite_assign(position, (uint8_t *)(boot_record[position]->icon_address), 0, 0);
 
 					// If there is a CLUT defined for the boot record, switch to use that clut
-					if (boot_record->clut_address != 0) {
+					if (boot_record[position]->clut_address != 0) {
 						for (i = 0; i < 4 * 256; i++) {
-							uint8_t * source_clut = (uint8_t *)boot_record->clut_address;
+							uint8_t * source_clut = (uint8_t *)boot_record[position]->clut_address;
 							VKY_GR_CLUT_2[i] = source_clut[i];
 						}
 						sprite_clut(position, 2);
@@ -350,12 +408,16 @@ void boot_screen() {
 		}
 	}
 
-	// Wait some time for user input
+	txt_print(0, "\nPress SPACE to use default.\n");
+
 	jiffies_target = timers_jiffies() + 60 * 10;
 	while (jiffies_target > timers_jiffies()) {
-		;
+		unsigned short scancode = kbd_get_scancode();
+		if (scancode == kbd_sc_space) {
+			break;
+		}
 	}
 
 	// And launch the system
-	boot_from(boot_source);
+	boot_from(boot_source, boot_record[boot_position]);
 }
