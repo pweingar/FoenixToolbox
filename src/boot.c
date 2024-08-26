@@ -15,6 +15,7 @@
 #include "cartridge.h"
 #include "dev/fsys.h"
 #include "dev/channel.h"
+#include "dev/console.h"
 #include "dev/kbd_f256k.h"
 #include "dev/txt_screen.h"
 #include "dev/sprites.h"
@@ -31,11 +32,16 @@ const uint32_t boot_record_alignment = 8192;		// Number of bytes for boot record
 const uint32_t boot_rom_location = 0xf80000;		// Location to check for a boot record in ROM
 const uint32_t boot_cart_location = 0xf40000;		// Location to check for a boot record in ROM
 
+const unsigned short kbd_mod_shift = 0x0800;
 const unsigned short kbd_sc_space = 0x0039;
 const unsigned short kbd_sc_f1 = 0x003b;
+const unsigned short kbd_sc_f2 = 0x003c;
 const unsigned short kbd_sc_f3 = 0x003d;
+const unsigned short kbd_sc_f4 = 0x003e;
 const unsigned short kbd_sc_f5 = 0x003f;
+const unsigned short kbd_sc_f6 = 0x0040;
 const unsigned short kbd_sc_f7 = 0x0041;
+const unsigned short kbd_sc_f8 = 0x0042;
 
 enum boot_src_e {
 	BOOT_SRC_NONE = 0,		// Nothing more to check
@@ -284,12 +290,12 @@ void boot_from(enum boot_src_e device, boot_record_p boot_record) {
 	switch(device) {
 		case BOOT_SRC_SD0:
 			if (fsys_stat("/sd0/fnxboot.pgz", &file_info) >= 0) {
-				txt_print(0, "Booting: /sd0/fnxboot.pgz\n");
+				printf("Booting: /sd0/fnxboot.pgz\n");
 				boot_reset_screen();
 				proc_run("/sd0/fnxboot.pgz", 0, boot_args);
 
 			} else if (fsys_stat("/sd0/fnxboot.pgx", &file_info) >= 0) {
-				txt_print(0, "Booting: /sd0/fnxboot.pgx\n");
+				printf("Booting: /sd0/fnxboot.pgx\n");
 				boot_reset_screen();
 				result = proc_run("/sd0/fnxboot.pgx", 0, boot_args);
 				if (result != 0) {
@@ -301,9 +307,7 @@ void boot_from(enum boot_src_e device, boot_record_p boot_record) {
 		case BOOT_SRC_CARTRIDGE:
 		case BOOT_SRC_ROM:
 		case BOOT_SRC_RAM:
-			txt_print(0, "Booting from ");
-			txt_print(0, boot_source_name(device));
-			txt_print(0, "\n");
+			printf("Booting from %s\n", boot_source_name(device));
 
 			// Double-check that the boot record is valid before we attempt to boot
 			if (boot_record != 0) {
@@ -313,14 +317,54 @@ void boot_from(enum boot_src_e device, boot_record_p boot_record) {
 					proc_exec(boot_record->start_address, 0, 0, boot_args);
 				}
 			} else {
-				txt_print(0, "A valid boot record was not found.\n");
+				printf("A valid boot record was not found.\n");
 			}
 
 			break;
 
 		default:
-			txt_print(0, "No bootable device is present.\n");
+			printf("No bootable device is present.\n");
 			break;
+	}
+}
+
+/**
+ * @brief Convert a scan code to a menu selection
+ *
+ * Convert: function keys F1 - F8 to 1 - 8
+ *          SPACE to 0x20
+ * 
+ * @param scancode 
+ * @return short 
+ */
+static short sc_to_function(unsigned short scancode) {
+	switch(scancode) {
+		case kbd_sc_space:
+			return 0x20;
+
+		case kbd_sc_f1:
+			return 1;
+
+		case kbd_sc_f1 | kbd_mod_shift:
+		case kbd_sc_f2:
+			return 2;
+
+		case kbd_sc_f3:
+			return 3;
+			
+		case kbd_sc_f3 | kbd_mod_shift:
+		case kbd_sc_f4:
+			return 4;
+
+		case kbd_sc_f5:
+			return 5;
+			
+		case kbd_sc_f5 | kbd_mod_shift:
+		case kbd_sc_f6:
+			return 6;
+
+		default:
+			return 0;
 	}
 }
 
@@ -330,18 +374,25 @@ void boot_from(enum boot_src_e device, boot_record_p boot_record) {
  */
 void boot_screen() {
 	enum boot_src_e boot_source = BOOT_SRC_NONE;
-	short i = 0;
-	long jiffies_target = 0;
 	boot_record_p boot_record[10];
 	short boot_position = 0;
+	short bootable_count = 0;
+	short i = 0;
+	long jiffies_target = 0;
+	char message[80];
 
-	// txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE);
+	// Make sure that ANSI escape codes will be honored
+	chan_ioctrl(0, CON_IOCTRL_ANSI_ON, 0, 0);
+
+	// TODO: debug this
+	// txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE | VKY_MCR_TILE);
 	*tvky_mstr_ctrl = (uint16_t)(VKY_MCR_TILE | VKY_MCR_SPRITE | VKY_MCR_GRAPHICS | VKY_MCR_TEXT_OVERLAY | VKY_MCR_TEXT);
 
 	tvky_bg_color->blue = 0;
 	tvky_bg_color->green = 0;
 	tvky_bg_color->red = 0;
 
+	// Set up the highlighted (#0) and dimmed (#1) graphics CLUTs
 	for (i = 0; i < 4 * 256; i++) {
 		VKY_GR_CLUT_0[i] = boot_clut[i];
 		VKY_GR_CLUT_1[i] = boot_clut[i] >> 2;
@@ -372,7 +423,7 @@ void boot_screen() {
 	boot_text_window.size.height = 12;
 	txt_set_region(0, &boot_text_window);
 
-	txt_print(0, "Scanning for bootable devices...\n");
+	printf("Scanning for bootable devices...\n");
 
 	for (short position = 0; position < sizeof(boot_chain) / sizeof(enum boot_src_e); position++) {
 		bootable[position] = false;
@@ -380,12 +431,11 @@ void boot_screen() {
 		if (is_bootable(boot_chain[position], &boot_record[position])) {
 			boot_icon_highlight(position);
 			bootable[position] = true;
+			bootable_count++;
  
 			// Assign the boot source to this, if it hasn't already been bound
 			if (boot_source == BOOT_SRC_NONE) {
-				txt_print(0, "Default boot source: ");
-				txt_print(0, boot_source_name(boot_chain[position]));
-				txt_put(0, '\n');
+				printf("Default boot source: %s\n", boot_source_name(boot_chain[position]));
 				boot_source = boot_chain[position];
 				boot_position = position;
 			}
@@ -408,16 +458,46 @@ void boot_screen() {
 		}
 	}
 
-	txt_print(0, "\nPress SPACE to use default.\n");
+	// List out all the selectable boot sources
+	if (bootable_count > 1) {
+		printf("\nSelect a boot source:\n\n");
 
-	jiffies_target = timers_jiffies() + 60 * 10;
-	while (jiffies_target > timers_jiffies()) {
-		unsigned short scancode = kbd_get_scancode();
-		if (scancode == kbd_sc_space) {
-			break;
+		for (i = 0; i < sizeof(boot_chain) / sizeof(enum boot_src_e); i++) {
+			if (bootable[i]) {
+				sprintf(message, "\e[93mF%d\e[37m-%s\n", i+1, boot_source_name(boot_chain[i]));
+				chan_write(0, (uint8_t *)message, strlen(message));
+			}
 		}
 	}
 
+	sprintf(message, "\nPress \e[93mSPACE\e[37m for default.\n");
+	chan_write(0, (uint8_t *)message, strlen(message));
+
+	// Give the user time to press a key to select a boot source
+	// If the time expires, boot the default source (earliest in the boot chain)
+
+	jiffies_target = timers_jiffies() + 60 * 15;
+	while (jiffies_target > timers_jiffies()) {
+		unsigned short scancode = kbd_get_scancode();
+		if (scancode > 0) {
+			short selected = sc_to_function(scancode);
+
+			if (selected == 0x20) {
+				// SPACE was pressed... just boot the default
+				break;
+
+			} else if (selected > 0) {
+				if (bootable[selected - 1]) {
+					boot_position = selected - 1;
+					boot_source = boot_chain[boot_position];
+					break;
+				}
+			}
+		}
+
+	}
+
 	// And launch the system
+
 	boot_from(boot_source, boot_record[boot_position]);
 }

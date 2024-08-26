@@ -2,6 +2,34 @@
 #include "gabe_reg.h"
 #include "exp_reg.h"
 
+/**
+ * @brief Names of the various models, indexed by their model IDs
+ * 
+ */
+const char * sys_model_name[] = {
+	"C256 FMX",		// 0
+	"C256 U",
+	"F256 JR",
+	"F256 JRe",
+	"GenX",
+	"C256 U+",		// 5
+	"Reserved",
+	"Reserved",
+	"A2560 X",
+	"A2560 U+",
+	"A2560 M",		// 10
+	"A2560 K",		
+	"A2560 K40",
+	"A2560 K60",
+	"Reserved",
+	"Reserved",		// 15
+	"F256 P",
+	"F256 K2c",
+	"F256 K2",
+	"F256 Ke",
+	"F256 K2e"		// 20
+};
+
 /*
  * Fill out a s_MODEL_info structure with the information about the current system
  *
@@ -132,10 +160,6 @@ void sys_get_information(p_sys_info info) {
 
 #elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
 	machine_id = GABE_SYS_STAT->machine_id;
-	// TODO: be able to remove this line
-	if (machine_id == 0x13) {
-		machine_id = MODEL_FOENIX_F256K;
-	}
 
 	cpu = CPU_WDC65816;
 	clock_speed = SYSCLK_6MHZ;
@@ -269,26 +293,6 @@ void sys_get_information(p_sys_info info) {
     }
 
     switch (info->model) {
-		case MODEL_FOENIX_F256:
-		    info->model_name = "F256jr";
-            break;
-
-		case MODEL_FOENIX_F256K:
-		    info->model_name = "F256K";
-            break;
-
-		case MODEL_FOENIX_F256K2:
-		    info->model_name = "F256K2";
-            break;
-
-        case MODEL_FOENIX_FMX:
-            info->model_name = "C256 FMX";
-            break;
-
-        case MODEL_FOENIX_C256U:
-            info->model_name = "C256 U";
-            break;
-
         case MODEL_FOENIX_GENX:
             switch (genx_model_id) {
                 case 0: info->model_name = "GenX32 - PB"; break;
@@ -296,14 +300,6 @@ void sys_get_information(p_sys_info info) {
                 case 2: info->model_name = "GenX32 - CUBE"; break;
                 default: info->model_name = "GenX32"; break;
             }        
-            break;
-
-        case MODEL_FOENIX_C256U_PLUS:
-            info->model_name = "C256 U+";
-            break;
-
-        case MODEL_FOENIX_A2560U_PLUS:
-            info->model_name = "A2560 U+";
             break;
 
         case MODEL_FOENIX_A2560X:
@@ -315,16 +311,12 @@ void sys_get_information(p_sys_info info) {
             }
             break;
 
-        case MODEL_FOENIX_A2560U:
-            info->model_name = "A2560 U";
-            break;
-
-        case MODEL_FOENIX_A2560K:
-            info->model_name = "A2560 K";
-            break;
-
         default:
-            info->model_name = "UNKNOWN";
+			if (info->model < sizeof(sys_model_name) / sizeof(char *)) {
+				info->model_name = sys_model_name[info->model];
+			} else {
+				info->model_name = "UNKNOWN";
+			}
             break;
     }
 }
