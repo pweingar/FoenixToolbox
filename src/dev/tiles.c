@@ -7,16 +7,26 @@
 static t_tile_set tile_set_shadow[VKY_TILESET_MAX];
 static t_tile_map tile_map_shadow[VKY_TILEMAP_MAX];
 
+const uint32_t tile_set_memory_base = 0x002000;
+const uint32_t tile_map_memory_base = 0x003000;
+
 /**
  * @brief Setup a tile set
  * 
  * @param set the number of the tile set (0 - 7)
  * @param address pointer to the bitmap for the tile set
+ * @param size the number of bytes in the tile set
  * @param is_square if true, layout of image is square, if false it is 8 or 16 pixels wide
  */
-void tile_set_assign(uint8_t set, uint8_t * address, bool is_square) {
+void tile_set_assign(uint8_t set, uint8_t * address, int size, bool is_square) {
 	if (set <= VKY_TILESET_MAX) {
-		tile_set_shadow[set].address = (p_far24)address;
+
+		uint8_t * tile_set_ram = (uint8_t *)tile_set_memory_base;
+		for (int i = 0; i < size; i++) {
+			tile_set_ram[i] = address[i];
+		}
+
+		tile_set_shadow[set].address = (p_far24)tile_set_ram;
 		if (is_square) {
 			tile_set_shadow[set].control = VKY_TILESET_SQUARE;
 		} else {
@@ -55,7 +65,13 @@ void tile_init() {
  */
 void tile_map_assign(uint8_t map, uint16_t * address, uint8_t width, uint8_t height, uint8_t size) {
 	if (map <= VKY_TILEMAP_MAX) {
-		tile_map_shadow[map].address = (p_far24)address;
+
+		uint16_t * tile_map_ram = (uint8_t *)tile_map_memory_base;
+		for (int i = 0; i < width*height; i++) {
+			tile_map_ram[i] = address[i];
+		}
+
+		tile_map_shadow[map].address = (p_far24)tile_map_ram;
 		tile_map_shadow[map].width = width;
 		tile_map_shadow[map].height = height;
 		if (size == 0) {

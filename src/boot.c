@@ -20,6 +20,7 @@
 #include "dev/txt_screen.h"
 #include "dev/sprites.h"
 #include "dev/tiles.h"
+#include "gabe_reg.h"
 #include "timers.h"
 #include "vicky_general.h"
 #include "rsrc/sprites/boot_sprites.h"
@@ -27,6 +28,8 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#define MAX_BOOT_SRC 5
 
 const uint32_t boot_record_alignment = 8192;		// Number of bytes for boot record alignement
 const uint32_t boot_rom_location = 0xf80000;		// Location to check for a boot record in ROM
@@ -67,18 +70,12 @@ typedef struct boot_record_s {
 } boot_record_t, *boot_record_p;
 
 /**
- * @brief List bootable areas to check, in priority order
+ * @brief List bootable areas to check, in priority order (without RAM booting)
  * 
  */
-static enum boot_src_e boot_chain[] = {
-	BOOT_SRC_RAM,
-	BOOT_SRC_CARTRIDGE,
-	BOOT_SRC_SD0,
-	// BOOT_SRC_SD1,
-	BOOT_SRC_ROM,
-};
-
-static bool bootable[10];
+static enum boot_src_e boot_chain[MAX_BOOT_SRC];
+static bool bootable[MAX_BOOT_SRC];
+static short boot_src_cnt = 0;
 
 /**
  * @brief A holder for empty arguments list so we have something to point to when starting a binary file
@@ -265,7 +262,7 @@ static void boot_reset_screen() {
 	// txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE);
 	*tvky_mstr_ctrl = (uint16_t)(VKY_MCR_TEXT);
 
-	tile_set_assign(0, 0, false);
+	tile_set_assign(0, 0, 0, false);
 	tile_set_update(0);
 
 	tile_map_assign(0, 0, 0, 0, 0);
@@ -374,12 +371,27 @@ static short sc_to_function(unsigned short scancode) {
  */
 void boot_screen() {
 	enum boot_src_e boot_source = BOOT_SRC_NONE;
-	boot_record_p boot_record[10];
+	boot_record_p boot_record[MAX_BOOT_SRC];
 	short boot_position = 0;
 	short bootable_count = 0;
 	short i = 0;
 	long jiffies_target = 0;
 	char message[80];
+
+	// Check the DIP switches to see if we should include RAM booting
+	// Choose the correct boot chain accordingly
+
+	i = 0;
+	boot_src_cnt = 0;
+	if ((*GABE_DIP_REG & DIP_BOOT_RAM) == 0) {
+		boot_chain[0] = BOOT_SRC_RAM;
+		i = 1;
+		boot_src_cnt++;
+	}
+	boot_chain[i++] = BOOT_SRC_CARTRIDGE;
+	boot_chain[i++] = BOOT_SRC_SD0;
+	boot_chain[i++] = BOOT_SRC_ROM;
+	boot_src_cnt += 3;
 
 	// Make sure that ANSI escape codes will be honored
 	chan_ioctrl(0, CON_IOCTRL_ANSI_ON, 0, 0);
@@ -403,7 +415,7 @@ void boot_screen() {
 	tile_init();
 	sprite_init();
 
-	tile_set_assign(0, (uint8_t *)boot_tiles_pixels, false);
+	tile_set_assign(0, (uint8_t *)boot_tiles_pixels, 8 * (256 + 8), false);
 	tile_set_update(0);
 
 	tile_map_assign(0, (uint16_t *)boot_tiles_map, 42, 32, 1);
@@ -425,7 +437,7 @@ void boot_screen() {
 
 	printf("Scanning for bootable devices...\n");
 
-	for (short position = 0; position < sizeof(boot_chain) / sizeof(enum boot_src_e); position++) {
+	for (short position = 0; position < boot_src_cnt; position++) {
 		bootable[position] = false;
 		boot_icon(position, boot_chain[position]);
 		if (is_bootable(boot_chain[position], &boot_record[position])) {
@@ -442,18 +454,20 @@ void boot_screen() {
 
 			// If there is a boot icon specified in the boot record, change to that icon
 			if (boot_record[position] != 0) {
-				if (boot_record[position]->icon_address != 0) {
-					sprite_assign(position, (uint8_t *)(boot_record[position]->icon_address), 0, 0);
+				// TODO: fix cartridge icon issue
+				
+				// if (boot_record[position]->icon_address != 0) {
+				// 	sprite_assign(position, (uint8_t *)(boot_record[position]->icon_address), 0, 0);
 
-					// If there is a CLUT defined for the boot record, switch to use that clut
-					if (boot_record[position]->clut_address != 0) {
-						for (i = 0; i < 4 * 256; i++) {
-							uint8_t * source_clut = (uint8_t *)boot_record[position]->clut_address;
-							VKY_GR_CLUT_2[i] = source_clut[i];
-						}
-						sprite_clut(position, 2);
-					}
-				}
+				// 	// If there is a CLUT defined for the boot record, switch to use that clut
+				// 	if (boot_record[position]->clut_address != 0) {
+				// 		for (i = 0; i < 4 * 256; i++) {
+				// 			uint8_t * source_clut = (uint8_t *)boot_record[position]->clut_address;
+				// 			VKY_GR_CLUT_2[i] = source_clut[i];
+				// 		}
+				// 		sprite_clut(position, 2);
+				// 	}
+				// }
 			}
 		}
 	}
@@ -462,7 +476,7 @@ void boot_screen() {
 	if (bootable_count > 1) {
 		printf("\nSelect a boot source:\n\n");
 
-		for (i = 0; i < sizeof(boot_chain) / sizeof(enum boot_src_e); i++) {
+		for (i = 0; i < boot_src_cnt; i++) {
 			if (bootable[i]) {
 				sprintf(message, "\e[93mF%d\e[37m-%s\n", i+1, boot_source_name(boot_chain[i]));
 				chan_write(0, (uint8_t *)message, strlen(message));

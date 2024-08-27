@@ -2,7 +2,7 @@
 DEBUGGER=../module/Calypsi-remote-debug/src
 
 UNIT := F256K
-MEMORY := RAM
+MEMORY := ROM
 
 # Define OS-dependent variables
 

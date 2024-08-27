@@ -20,9 +20,10 @@
  * 
  * @param set the number of the tile set (0 - 7)
  * @param address pointer to the bitmap for the tile set
+ * @param size the number of bytes in the tile set
  * @param is_square if true, layout of image is square, if false it is 8 or 16 pixels wide
  */
-extern void tile_set_assign(uint8_t set, uint8_t * address, bool is_square);
+extern void tile_set_assign(uint8_t set, uint8_t * address, int size, bool is_square);
 
 /**
  * @brief Update the hardware tile set from its shadow

@@ -1,14 +1,19 @@
 (define memories
   '(
 	(memory flash
-		(address (#xf80000 . #xfdffff))
+		(address (#xfc0000 . #xffdfff))
 		(type ROM)
 		(fill #xff)
 	    (section
-			(jumptable #xf80000)
 			data_init_table
 			data
 			ifar))
+
+	(memory flash-high
+		(address (#xffe000 . #xfffeff))
+		(type ROM)
+		(fill #xff)
+		(section jumptable))
 
 	(memory flash-shadow
 		(address (#xffff00 . #xffffff))
@@ -42,12 +47,12 @@
 		(placement-group bits (section data near)))
 
 	(memory stackram
-		(address (#x00c000 . #x00cfff))
+		(address (#x00edeb . #xfdeb))
 		(type RAM)
 		(section stack))
 
     (memory DirectPage
-		(address (#x00bf00 . #x00bfff))
+		(address (#x00fe00 . #x00feff))
         (section (registers ztiny)))
 
     (block stack (size #x1000))

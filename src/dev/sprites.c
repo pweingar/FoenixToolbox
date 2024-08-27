@@ -19,6 +19,8 @@
 
 static t_sprite sprite_shadow[SPRITE_MAX];
 
+const uint32_t sprite_ram_base = 0x000000;
+
 /**
  * @brief Update a sprite's hardware registers from the shadow registers
  * 
@@ -38,7 +40,13 @@ static void sprite_update(uint8_t sprite) {
  */
 void sprite_assign(uint8_t sprite, const uint8_t * address, uint8_t size, uint8_t layer) {
 	if (sprite < SPRITE_MAX) {
-		sprite_shadow[sprite].address = (p_far24)address;
+
+		uint8_t * sprite_mem = (uint8_t *)(sprite_ram_base + 32 * 32 * sprite);
+		for (int i = 0; i < 32 * 32; i++) {
+			sprite_mem[i] = address[i];
+		}
+
+		sprite_shadow[sprite].address = (p_far24)sprite_mem;
 		uint8_t tmp = sprite_shadow[sprite].control & 0x87;	// Mask off the size and layer bits
 		tmp |= (size & 0x03) << 5;							// Add in the new size
 		tmp |= (layer & 0x03) << 3;							// Add in the new layer
