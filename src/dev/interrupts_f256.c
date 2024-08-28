@@ -93,6 +93,9 @@ p_int_handler int_handle_25;
 p_int_handler int_handle_26;
 p_int_handler int_handle_27;
 
+uint32_t * irq_ram_vector = (uint32_t *)0x00fdec;
+uint32_t * nmi_ram_vector = (uint32_t *)0x00fdf4;
+
 /**
  * @brief Mapping of FoenixMCP interrupt numbers to F256 GABE group numbers (0xff indicates an unassigned interrupt number)
  * 
@@ -133,6 +136,10 @@ unsigned short int_mask(unsigned short n) {
 void int_init() {
 	int i;
 	p_int_handler * int_handlers = &int_handle_00;
+
+	// Zero out the interrupt ram vectors
+	*irq_ram_vector = 0;
+	*nmi_ram_vector = 0;
 
 	// Clear all the interrupt handlers
 	for (i = 0; i < 4 * 8; i++) {
@@ -475,6 +482,12 @@ SYSTEMCALL void int_clear(unsigned short n) {
 void int_handle_irq() {
 	uint8_t mask_bits = 0;
 
+	if (*irq_ram_vector != 0) {
+		p_int_handler handler = (p_int_handler)(*irq_ram_vector);
+		handler();
+		return;
+	}
+
 	// Process any pending interrupts in group 0
 	mask_bits = *PENDING_GRP0;
 	if (mask_bits) {
@@ -531,4 +544,9 @@ void int_handle_irq() {
  * __attribute__((interrupt(0xffea)))  
  */
 void int_handle_nmi() {
+	if (*nmi_ram_vector != 0) {
+		p_int_handler handler = (p_int_handler)(*nmi_ram_vector);
+		handler();
+		return;
+	}
 }

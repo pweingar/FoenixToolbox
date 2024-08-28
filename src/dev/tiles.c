@@ -66,7 +66,7 @@ void tile_init() {
 void tile_map_assign(uint8_t map, uint16_t * address, uint8_t width, uint8_t height, uint8_t size) {
 	if (map <= VKY_TILEMAP_MAX) {
 
-		uint16_t * tile_map_ram = (uint8_t *)tile_map_memory_base;
+		uint16_t * tile_map_ram = (uint16_t *)tile_map_memory_base;
 		for (int i = 0; i < width*height; i++) {
 			tile_map_ram[i] = address[i];
 		}

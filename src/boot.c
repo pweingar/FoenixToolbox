@@ -259,6 +259,14 @@ const char * boot_source_name(enum boot_src_e device) {
 }
 
 static void boot_reset_screen() {
+	// Reset the region
+	t_rect boot_text_window;
+	boot_text_window.origin.x = 0;
+	boot_text_window.origin.y = 0;
+	boot_text_window.size.width = 0;
+	boot_text_window.size.height = 0;
+	txt_set_region(0, &boot_text_window);
+
 	// txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE);
 	*tvky_mstr_ctrl = (uint16_t)(VKY_MCR_TEXT);
 
@@ -278,6 +286,7 @@ static void boot_reset_screen() {
 
 	// Clear the text screen
 	txt_clear(0, 2);
+	txt_set_xy(0, 0, 0);
 }
 
 void boot_from(enum boot_src_e device, boot_record_p boot_record) {
