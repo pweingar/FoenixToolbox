@@ -446,7 +446,7 @@ void test_psg() {
 void test_sysinfo() {
 	// 8 x 22 region
 	t_rect region;
-	region.size.height = 9;
+	region.size.height = 8;
 	region.size.width = 23;
 	region.origin.x = 80 - region.size.width;
 	region.origin.y = 60 - region.size.height;
@@ -455,9 +455,8 @@ void test_sysinfo() {
 	
 	printf("Foenix Retro Systems\n");
 	printf("Model   %s\n", info.model_name);
-	printf("MID     %x\n", info.model);
 	printf("CPU     %s\n", info.cpu_name);
-	printf("Clock   %lu MHz\n", info.cpu_clock_khz / (long)1024);
+	printf("Clock   %lu MHz\n", info.cpu_clock_khz / (long)1000);
 	printf("Memory  %d MB\n", (int)(info.system_ram_size / ((long)1024 * (long)1024)));
 	printf("FPGA    %04X %04X.%04X\n", info.fpga_model, info.fpga_version, info.fpga_subver);
 	printf("Toolbox v%d.%02d.%04d\n", info.mcp_version, info.sub_model, info.mcp_build);

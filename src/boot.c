@@ -187,8 +187,8 @@ bool is_bootable(enum boot_src_e device, boot_record_p * boot_record) {
  * @param device the ID of the boot device
  */
 void boot_icon(short position, enum boot_src_e device) {
-	short base_x = 14*8;
-	short base_y = 21*8;
+	short base_x = 11*8;
+	short base_y = 23*8;
 	uint8_t x = base_x + 32*position;
 
 	switch(device) {
@@ -424,7 +424,7 @@ void boot_screen() {
 	tile_init();
 	sprite_init();
 
-	tile_set_assign(0, (uint8_t *)boot_tiles_pixels, 8 * (256 + 8), false);
+	tile_set_assign(0, (uint8_t *)boot_tiles_pixels, 8 * 272, false);
 	tile_set_update(0);
 
 	tile_map_assign(0, (uint16_t *)boot_tiles_map, 42, 32, 1);
@@ -438,10 +438,10 @@ void boot_screen() {
 
 	// Set up the text window for the boot messaging
 	t_rect boot_text_window;
-	boot_text_window.origin.x = 20;
-	boot_text_window.origin.y = 19;
-	boot_text_window.size.width = 40;
-	boot_text_window.size.height = 12;
+	boot_text_window.origin.x = 14;
+	boot_text_window.origin.y = 18;
+	boot_text_window.size.width = 52;
+	boot_text_window.size.height = 17;
 	txt_set_region(0, &boot_text_window);
 
 	printf("Scanning for bootable devices...\n");
