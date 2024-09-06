@@ -40,19 +40,19 @@ else ifeq ($(UNIT),C256_FMX)
 else ifeq ($(UNIT),F256)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s
-	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large
+	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s 
+	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large --target f256
 
 	ifeq ($(MEMORY),ROM)
-		LDFLAGS_FOR_UNIT=C256/f256-flash.scm clib-lc-ld.a --rtattr printf=medium
+		LDFLAGS_FOR_UNIT=C256/f256-flash.scm clib-lc-ld.a --rtattr printf=medium --cstartup=f256
 	else
-		LDFLAGS_FOR_UNIT=C256/f256-ld_lc.scm clib-lc-ld.a --rtattr printf=medium
+		LDFLAGS_FOR_UNIT=C256/f256-ld_lc.scm clib-lc-ld.a --rtattr printf=medium --cstartup=f256
 	endif
 else ifeq ($(UNIT),F256K)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
 	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s 
-	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large
+	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target f256
 
 	ifeq ($(MEMORY),ROM)
 		LDFLAGS_FOR_UNIT=C256/f256-flash.scm clib-lc-ld.a --rtattr printf=medium --cstartup=f256
@@ -92,13 +92,13 @@ toolbox.raw: $(OBJS) $(LIBS)
 	$(LD) $(LDFLAGS) --raw-multiple-memories --output-format raw -o $@ $^
 
 dev/devices.a:
-	$(MAKE) --directory=dev
+	$(MAKE) UNIT=$(UNIT) --directory=dev
 
 snd/sound.a:
-	$(MAKE) --directory=snd
+	$(MAKE) UNIT=$(UNIT) --directory=snd
 
 fatfs/fatfs.a:
-	$(MAKE) --directory=fatfs
+	$(MAKE) UNIT=$(UNIT) --directory=fatfs
 
 # Build the object files from C
 %.o: %.c

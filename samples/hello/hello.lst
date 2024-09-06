@@ -1,0 +1,72 @@
+###############################################################################
+#                                                                             #
+# Calypsi ISO C compiler for 65816                                version 5.5 #
+#                                                       03/Sep/2024  22:57:21 #
+# Command line: -I. -I./include -DMODEL=17 -DCPU=255 --code-model large       #
+#               --data-model large --target f256 -l -o hello.o hello.c        #
+#                                                                             #
+###############################################################################
+
+    \ 000000                      .rtmodel version,"1"
+    \ 000000                      .rtmodel codeModel,"large"
+    \ 000000                      .rtmodel dataModel,"large"
+    \ 000000                      .rtmodel core,"65816"
+    \ 000000                      .rtmodel huge,"0"
+    \ 000000                      .rtmodel target,"f256"
+    \ 000000                      .extern _Dp
+    \ 000000                      .extern _Vfp
+    \ 000000                      .extern strlen
+    \ 000000                      .extern sys_chan_write
+0001                  #include "../../client/src/include/toolbox.h"
+0002                  
+0003                  #include <string.h>
+0004                  
+0005                  int main(int c, char * argv[]) {
+    \ 000000                      .section farcode,text
+    \ 000000                      .public main
+    \ 000000          main:
+    \ 000000 d4..                 pei     dp:.tiny (_Dp+8)
+    \ 000002 d4..                 pei     dp:.tiny (_Dp+10)
+0006                  	char * message = "Hello, Foenix Toolbox!\n";
+    \ 000004 a9....               lda     ##.word0 `_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]`
+    \ 000007 85..                 sta     dp:.tiny (_Dp+8)
+    \ 000009 a9....               lda     ##.word2 `_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]`
+    \ 00000c 85..                 sta     dp:.tiny (_Dp+10)
+0007                  	sys_chan_write(0, (uint8_t *)message, strlen(message));
+    \ 00000e a5..                 lda     dp:.tiny (_Dp+8)
+    \ 000010 85..                 sta     dp:.tiny _Dp
+    \ 000012 a5..                 lda     dp:.tiny (_Dp+10)
+    \ 000014 85..                 sta     dp:.tiny (_Dp+2)
+    \ 000016 22......             jsl     long:strlen
+    \ 00001a 48                   pha
+    \ 00001b a5..                 lda     dp:.tiny (_Dp+10)
+    \ 00001d 48                   pha
+    \ 00001e a5..                 lda     dp:.tiny (_Dp+8)
+    \ 000020 48                   pha
+    \ 000021 a90000               lda     ##0
+    \ 000024 22......             jsl     long:sys_chan_write
+0008                  
+0009                  	while (1) ;
+    \ 000028 68                   pla
+    \ 000029 68                   pla
+    \ 00002a 68                   pla
+    \ 00002b 80fe     `?L4`:      bra     `?L4`
+    \ 000000                      .section cfar,rodata
+    \ 000000                      .pubweak `_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]`
+    \ 000000          `_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]`:
+    \ 000000 48656c6c             .byte   72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10,0
+    \ 000004 6f2c2046
+    \ 000008 6f656e69
+    \ 00000c 7820546f
+    \ 000010 6f6c626f
+    \ 000014 78210a00
+0010                  }
+
+##########################
+#                        #
+# Memory sizes (decimal) #
+#                        #
+##########################
+
+Executable        (Text): 45 bytes
+Constant   __far        : 24 bytes
