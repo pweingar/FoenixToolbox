@@ -1,7 +1,7 @@
 (define memories
   '(
 	(memory LoMem
-  		(address (#x0000 . #xbfff))
+  		(address (#xa000 . #xcfff))
 		(type ANY))
     (memory Vector (address (#xffe4 . #xffff)))
     (memory Banks
@@ -9,7 +9,7 @@
 		(type ANY)
 		(section (header #x10000)))
     (memory DirectPage
-		(address (#x00c000 . #x00c0ff))
+		(address (#x000100 . #x0001ff))
         (section (registers ztiny)))
 
     (block stack (size #x1000))

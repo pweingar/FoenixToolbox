@@ -17,13 +17,13 @@ endif
 ifeq ($(UNIT),F256K)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT= 
-	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target f256
+	SRCS_FOR_UNIT=
+	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large
 
 	ifeq ($(MEMORY),ROM)
-		LDFLAGS_FOR_UNIT=clib-lc-ld.a --rtattr printf=medium --cstartup=f256 # C256/f256-flash.scm 
+		LDFLAGS_FOR_UNIT=clib-lc-ld.a --rtattr printf=medium --target=f256 # C256/f256-flash.scm 
 	else
-		LDFLAGS_FOR_UNIT=f256-plain.scm clib-lc-ld.a --rtattr printf=medium --cstartup=f256
+		LDFLAGS_FOR_UNIT=f256-plain.scm clib-lc-ld.a --rtattr printf=medium --target=f256
 	endif
 endif
 
@@ -44,7 +44,7 @@ else
 	LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file toolbox.map
 endif
 
-SRCS = hello.c header.s $(SRCS_FOR_UNIT) # $(C_SRCS_DEBUGGER)
+SRCS = hello.c header.s $(SRCS_FOR_UNIT) # $(C_SRCS_DEBUGGER)  ram-startup.s
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = ../../client/src/toolbox.a
@@ -52,7 +52,7 @@ LIBS = ../../client/src/toolbox.a
 .PHONY: clean
 
 hello.s37: $(OBJS) $(LIBS)
-	$(LD) $(LDFLAGS) --output-format s37 -o $@ $^
+	$(LD) $(LDFLAGS) --output-format s37 -o $@ $^ 
 
 # Build the object files from C
 %.o: %.c

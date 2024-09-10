@@ -21,9 +21,9 @@ ifeq ($(UNIT),F256K)
 	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large
 
 	ifeq ($(MEMORY),ROM)
-		LDFLAGS_FOR_UNIT=C256/f256-flash.scm clib-lc-ld.a --rtattr printf=medium --cstartup=f256
+		LDFLAGS_FOR_UNIT=C256/f256-flash.scm clib-lc-ld.a --rtattr printf=medium
 	else
-		LDFLAGS_FOR_UNIT=C256/f256-ld_lc.scm clib-lc-ld.a --rtattr printf=medium --cstartup=f256
+		LDFLAGS_FOR_UNIT=C256/f256-ld_lc.scm clib-lc-ld.a --rtattr printf=medium
 	endif
 endif
 
