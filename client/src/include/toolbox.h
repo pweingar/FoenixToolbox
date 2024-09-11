@@ -17,84 +17,71 @@
 #include "sys_macros.h"
 #include "sys_types.h"
 
-/*
+/**
  * Quit the current user process
  *
  * NOTE: at the moment, this relaunches the CLI. In the future, this
  *       may cause execution to return to the program that started
  *       the user process.
  *
- * Inputs:
- * result = the code to return to the kernel
+ * @param result the code to return to the kernel
  */
 extern SYSTEMCALL void sys_exit(short result);
 
-/*
+/**
  * Enable all interrupts
- *
- * NOTE: this is actually provided in the low level assembly
  */
 extern SYSTEMCALL void sys_int_enable_all();
 
-/*
+/**
  * Disable all interrupts
- *
- * NOTE: this is actually provided in the low level assembly
  */
 extern SYSTEMCALL void sys_int_disable_all();
 
-/*
+/**
  * Disable an interrupt by masking it
  *
- * Inputs:
- * n = the number of the interrupt: n[7..4] = group number, n[3..0] = individual number.
+ * @param n the number of the interrupt: n[7..4] = group number, n[3..0] = individual number.
  */
 extern SYSTEMCALL void sys_int_disable(unsigned short n);
 
-/*
+/**
  * Enable an interrupt
  *
- * Inputs:
- * n = the number of the interrupt
+ * @param n the number of the interrupt
  */
 extern SYSTEMCALL void sys_int_enable(unsigned short n);
 
-/*
+/**
  * Register a handler for a given interrupt.
  *
- * Inputs:
- * n = the number of the interrupt
- * handler = pointer to the interrupt handler to register
+ * @param n the number of the interrupt
+ * @param handler pointer to the interrupt handler to register
  *
- * Returns:
- * the pointer to the previous interrupt handler
+ * @return the pointer to the previous interrupt handler
  */
 extern SYSTEMCALL p_int_handler sys_int_register(unsigned short n, p_int_handler handler);
 
-/*
+/**
  * Return true (non-zero) if an interrupt is pending for the given interrupt
  *
- * Inputs:
- * n = the number of the interrupt: n[7..4] = group number, n[3..0] = individual number.
+ * @param n the number of the interrupt: n[7..4] = group number, n[3..0] = individual number.
  *
- * Returns:
- * non-zero if interrupt n is pending, 0 if not
+ * @return non-zero if interrupt n is pending, 0 if not
  */
 extern SYSTEMCALL short sys_int_pending(unsigned short n);
 
-/*
+/**
  * Fill out a s_sys_info structure with the information about the current system
  *
- * Inputs:
- * info = pointer to a s_sys_info structure to fill out
+ * @param info pointer to a s_sys_info structure to fill out
  */
 extern SYSTEMCALL void sys_get_info(p_sys_info info);
 
-/*
+/**
  * Acknowledge an interrupt (clear out its pending flag)
  *
- * Inputs:
- * n = the number of the interrupt: n[7..4] = group number, n[3..0] = individual number.
+ * @param n the number of the interrupt: n[7..4] = group number, n[3..0] = individual number.
  */
 extern SYSTEMCALL void sys_int_clear(unsigned short n);
 
@@ -102,137 +89,115 @@ extern SYSTEMCALL void sys_int_clear(unsigned short n);
  *** Channel system calls
  ***/
 
-/*
+/**
  * Read a single byte from the channel
  *
- * Inputs:
- *  channel = the number of the channel
+ * @param channel the number of the channel
  *
- * Returns:
- *  the value read (if negative, error)
+ * @return the value read (if negative, error)
  */
 extern SYSTEMCALL short sys_chan_read_b(short channel);
 
-/*
+/**
  * Read bytes from the channel
  *
- * Inputs:
- *  channel = the number of the channel
- *  buffer = the buffer into which to copy the channel data
- *  size = the size of the buffer.
+ * @param channel the number of the channel
+ * @param buffer the buffer into which to copy the channel data
+ * @param size the size of the buffer.
  *
- * Returns:
- *  number of bytes read, any negative number is an error code
+ * @return number of bytes read, any negative number is an error code
  */
 extern SYSTEMCALL short sys_chan_read(short channel, unsigned char * buffer, short size);
 
-/*
+/**
  * Read a line of text from the channel
  *
- * Inputs:
- *  channel = the number of the channel
- *  buffer = the buffer into which to copy the channel data
- *  size = the size of the buffer
+ * @param channel the number of the channel
+ * @param buffer the buffer into which to copy the channel data
+ * @param size the size of the buffer
  *
- * Returns:
- *  number of bytes read, any negative number is an error code
+ * @return number of bytes read, any negative number is an error code
  */
 extern SYSTEMCALL short sys_chan_readline(short channel, unsigned char * buffer, short size);
 
-/*
+/**
  * Write a single byte to the device
  *
- * Inputs:
- *  channel = the number of the channel
- *  b = the byte to write
+ * @param channel the number of the channel
+ * @param b the byte to write
  *
- * Returns:
- *  0 on success, a negative value on error
+ * @return 0 on success, a negative value on error
  */
 extern SYSTEMCALL short sys_chan_write_b(short channel, uint8_t b);
 
-/*
+/**
  * Write a byte to the channel
  *
- * Inputs:
- *  channel = the number of the channel
- *  b = the byte to write
+ * @param channel the number of the channel
+ * @param b the byte to write
  *
- * Returns:
- *  number of bytes written, any negative number is an error code
+ * @return number of bytes written, any negative number is an error code
  */
 extern SYSTEMCALL short sys_chan_write(short channel, const uint8_t * buffer, short size);
 
-/*
+/**
  * Return the status of the channel device
  *
- * Inputs:
- *  channel = the number of the channel
+ * @param channel the number of the channel
  *
- * Returns:
- *  the status of the device
+ * @return the status of the device
  */
 extern SYSTEMCALL short sys_chan_status(short channel);
 
-/*
+/**
  * Ensure that any pending writes to teh device have been completed
  *
- * Inputs:
- *  channel = the number of the channel
+ * @param channel the number of the channel
  *
- * Returns:
- *  0 on success, any negative number is an error code
+ * @return 0 on success, any negative number is an error code
  */
 extern SYSTEMCALL short sys_chan_flush(short channel);
 
-/*
+/**
  * Attempt to set the position of the channel cursor (if supported)
  *
- * Inputs:
- *  channel = the number of the channel
- *  position = the position of the cursor
- *  base = whether the position is absolute or relative to the current position
+ * @param channel the number of the channel
+ * @param position the position of the cursor
+ * @param base whether the position is absolute or relative to the current position
  *
- * Returns:
- *  0 = success, a negative number is an error.
+ * @return 0 = success, a negative number is an error.
  */
 extern SYSTEMCALL short sys_chan_seek(short channel, long position, short base);
 
-/*
+/**
  * Issue a control command to the device
  *
- * Inputs:
- *  channel = the number of the channel
- *  command = the number of the command to send
- *  buffer = pointer to bytes of additional data for the command
- *  size = the size of the buffer
+ * @param channel the number of the channel
+ * @param command the number of the command to send
+ * @param buffer pointer to bytes of additional data for the command
+ * @param size the size of the buffer
  *
- * Returns:
- *  0 on success, any negative number is an error code
+ * @return 0 on success, any negative number is an error code
  */
 extern SYSTEMCALL short sys_chan_ioctrl(short channel, short command, uint8_t * buffer, short size);
 
-/*
+/**
  * Open a channel
  *
- * Inputs:
- * dev = the device number to have a channel opened
- * path = a "path" describing how the device is to be open
- * mode = is the device to be read, written, both? (0x01 = READ flag, 0x02 = WRITE flag, 0x03 = READ and WRITE)
+ * @param dev the device number to have a channel opened
+ * @param path a "path" describing how the device is to be open
+ * @param mode s the device to be read, written, both? (0x01 = READ flag, 0x02 = WRITE flag, 0x03 = READ and WRITE)
  *
- * Returns:
- * the number of the channel opened, negative number on error
+ * @return the number of the channel opened, negative number on error
  */
 extern SYSTEMCALL short sys_chan_open(short dev, const char * path, short mode);
 
-/*
+/**
  * Close a channel
  *
- * Inputs:
- * chan = the number of the channel to close
+ * @param chan the number of the channel to close
  *
- * Returns:
- * nothing useful
+ * @return nothing useful
  */
 extern SYSTEMCALL short sys_chan_close(short chan);
 
@@ -256,12 +221,11 @@ extern SYSTEMCALL short sys_chan_swap(short channel1, short channel2);
  */
 extern SYSTEMCALL short sys_chan_device(short channel);
 
-/*
+/**
  * Compute the size information for the text screen based on the current settings in VICKY
  * These settings are needed to correctly position text on the screen.
  *
- * Inputs:
- * screen = the screen number 0 for channel A, 1 for channel B
+ * @param screen the screen number 0 for channel A, 1 for channel B
  */
 extern SYSTEMCALL void sys_text_setsizes(short chan);
 
@@ -269,75 +233,62 @@ extern SYSTEMCALL void sys_text_setsizes(short chan);
  *** Block device system calls
  ***/
 
-//
-// Register a block device driver
-//
+/**
+ * Register a block device driver
+ * 
+ * @param device pointer to the description of the device to register
+ * @return 0 on succes, negative number on error
+ */
 extern SYSTEMCALL short sys_bdev_register(p_dev_block device);
 
-//
-// Read a block from the device
-//
-// Inputs:
-//  dev = the number of the device
-//  lba = the logical block address of the block to read
-//  buffer = the buffer into which to copy the block data
-//  size = the size of the buffer.
-//
-// Returns:
-//  number of bytes read, any negative number is an error code
-//
+/**
+ * Read a block from the device
+ * 
+ * @param dev the number of the device
+ * @param lba the logical block address of the block to read
+ * @param buffer the buffer into which to copy the block data
+ * @param size the size of the buffer.
+ * @return number of bytes read, any negative number is an error code 
+ */
 extern SYSTEMCALL short sys_bdev_read(short dev, long lba, uint8_t * buffer, short size);
 
-//
-// Write a block from the device
-//
-// Inputs:
-//  dev = the number of the device
-//  lba = the logical block address of the block to write
-//  buffer = the buffer containing the data to write
-//  size = the size of the buffer.
-//
-// Returns:
-//  number of bytes written, any negative number is an error code
-//
+/**
+ * Write a block to the device
+ * 
+ * @param dev the number of the device
+ * @param lba the logical block address of the block to write
+ * @param buffer the buffer containing the data to write
+ * @param size the size of the buffer.
+ * @return number of bytes written, any negative number is an error code 
+ */
 extern SYSTEMCALL short sys_bdev_write(short dev, long lba, const uint8_t * buffer, short size);
 
-//
-// Return the status of the block device
-//
-// Inputs:
-//  dev = the number of the device
-//
-// Returns:
-//  the status of the device
-//
+/**
+ * Return the status of the block device 
+ * 
+ * @param dev the number of the device
+ * @return the status of the device 
+ */
 extern SYSTEMCALL short sys_bdev_status(short dev);
 
-//
-// Ensure that any pending writes to teh device have been completed
-//
-// Inputs:
-//  dev = the number of the device
-//
-// Returns:
-//  0 on success, any negative number is an error code
-//
+/**
+ * Ensure that any pending writes to the device have been completed 
+ * 
+ * @param dev the number of the device
+ * @return 0 on success, any negative number is an error code 
+ */
 extern SYSTEMCALL short sys_bdev_flush(short dev);
 
-//
-// Issue a control command to the device
-//
-// Inputs:
-//  dev = the number of the device
-//  command = the number of the command to send
-//  buffer = pointer to bytes of additional data for the command
-//  size = the size of the buffer
-//
-// Returns:
-//  0 on success, any negative number is an error code
-//
+/**
+ * Issue a control command to the device 
+ * 
+ * @param dev the number of the device
+ * @param command the number of the command to send
+ * @param buffer pointer to bytes of additional data for the command
+ * @param size the size of the buffer
+ * @return 0 on success, any negative number is an error code 
+ */
 extern SYSTEMCALL short sys_bdev_ioctrl(short dev, short command, uint8_t * buffer, short size);
-
 
 /*
  * File System Calls
@@ -346,212 +297,180 @@ extern SYSTEMCALL short sys_bdev_ioctrl(short dev, short command, uint8_t * buff
 /**
  * Attempt to open a file given the path to the file and the mode.
  *
- * Inputs:
- * path = the ASCIIZ string containing the path to the file.
- * mode = the mode (e.g. r/w/create)
+ * @param path the ASCIIZ string containing the path to the file.
+ * @param mode the mode (e.g. r/w/create)
  *
- * Returns:
- * the channel ID for the open file (negative if error)
+ *@return the channel ID for the open file (negative if error)
  */
 extern SYSTEMCALL short sys_fsys_open(const char * path, short mode);
 
 /**
  * Close access to a previously open file.
  *
- * Inputs:
- * fd = the channel ID for the file
+ * @param fd the channel ID for the file
  *
- * Returns:
- * 0 on success, negative number on failure
+ * @return 0 on success, negative number on failure
  */
 extern SYSTEMCALL short sys_fsys_close(short fd);
 
 /**
  * Attempt to open a directory for scanning
  *
- * Inputs:
- * path = the path to the directory to open
+ * @param path the path to the directory to open
  *
- * Returns:
- * the handle to the directory if >= 0. An error if < 0
+ * @return the handle to the directory if >= 0. An error if < 0
  */
 extern SYSTEMCALL short sys_fsys_opendir(const char * path);
 
 /**
  * Close access to a previously open file.
  *
- * Inputs:
- * fd = the channel ID for the file
+ * @param fd the channel ID for the file
  *
- * Returns:
- * 0 on success, negative number on failure
+ * @return 0 on success, negative number on failure
  */
 extern SYSTEMCALL short sys_fsys_close(short fd);
 
 /**
  * Attempt to open a directory for scanning
  *
- * Inputs:
- * path = the path to the directory to open
+ * @param path the path to the directory to open
  *
- * Returns:
- * the handle to the directory if >= 0. An error if < 0
+ * @return the handle to the directory if >= 0. An error if < 0
  */
 extern SYSTEMCALL short sys_fsys_opendir(const char * path);
 
 /**
  * Close a previously open directory
  *
- * Inputs:
- * dir = the directory handle to close
+ * @param dir the directory handle to close
  *
- * Returns:
- * 0 on success, negative number on error
+ * @return 0 on success, negative number on error
  */
 extern SYSTEMCALL short sys_fsys_closedir(short dir);
 
 /**
  * Attempt to read an entry from an open directory
  *
- * Inputs:
- * dir = the handle of the open directory
- * file = pointer to the t_file_info structure to fill out.
+ * @param dir the handle of the open directory
+ * @param file pointer to the t_file_info structure to fill out.
  *
- * Returns:
- * 0 on success, negative number on failure
+ * @return 0 on success, negative number on failure
  */
 extern SYSTEMCALL short sys_fsys_readdir(short dir, p_file_info file);
 
 /**
  * Open a directory given the path and search for the first file matching the pattern.
  *
- * Inputs:
- * path = the path to the directory to search
- * pattern = the file name pattern to search for
- * file = pointer to the t_file_info structure to fill out
+ * @param path the path to the directory to search
+ * @param pattern the file name pattern to search for
+ * @param file pointer to the t_file_info structure to fill out
  *
- * Returns:
- * the directory handle to use for subsequent calls if >= 0, error if negative
+ * @return the directory handle to use for subsequent calls if >= 0, error if negative
  */
 extern SYSTEMCALL short sys_fsys_findfirst(const char * path, const char * pattern, p_file_info file);
 
 /**
  * Open a directory given the path and search for the first file matching the pattern.
  *
- * Inputs:
- * dir = the handle to the directory (returned by fsys_findfirst) to search
- * file = pointer to the t_file_info structure to fill out
+ * @param dir the handle to the directory (returned by fsys_findfirst) to search
+ * @param file pointer to the t_file_info structure to fill out
  *
- * Returns:
- * 0 on success, error if negative
+ * @return 0 on success, error if negative
  */
 extern SYSTEMCALL short sys_fsys_findnext(short dir, p_file_info file);
 
-/*
+/**
  * Get the label for the drive holding the path
  *
- * Inputs:
- * path = path to the drive
- * label = buffer that will hold the label... should be at least 35 bytes
+ * @param path path to the drive
+ * @param label buffer that will hold the label... should be at least 35 bytes
+ * @return 0 on success, error if negative
  */
 extern SYSTEMCALL short sys_fsys_get_label(const char * path, char * label);
 
-/*
+/**
  * Set the label for the drive holding the path
  *
- * Inputs:
- * drive = drive number
- * label = buffer that holds the label
+ * @param drive drive number
+ * @param label buffer that holds the label
+ * @return 0 on success, error if negative
  */
 extern SYSTEMCALL short sys_fsys_set_label(short drive, const char * label);
 
 /**
  * Create a directory
  *
- * Inputs:
- * path = the path of the directory to create.
+ * @param path the path of the directory to create.
  *
- * Returns:
- * 0 on success, negative number on failure.
+ * @return 0 on success, negative number on failure.
  */
 extern SYSTEMCALL short sys_fsys_mkdir(const char * path);
 
 /**
  * Delete a file or directory
  *
- * Inputs:
- * path = the path of the file or directory to delete.
+ * @param path the path of the file or directory to delete.
  *
- * Returns:
- * 0 on success, negative number on failure.
+ * @return 0 on success, negative number on failure.
  */
 extern SYSTEMCALL short sys_fsys_delete(const char * path);
 
 /**
  * Rename a file or directory
  *
- * Inputs:
- * old_path = the current path to the file
- * new_path = the new path for the file
+ * @param old_path he current path to the file
+ * @param new_path the new path for the file
  *
- * Returns:
- * 0 on success, negative number on failure.
+ * @return 0 on success, negative number on failure.
  */
 extern SYSTEMCALL short sys_fsys_rename(const char * old_path, const char * new_path);
 
 /**
  * Change the current working directory (and drive)
  *
- * Inputs:
- * path = the path that should be the new current
+ * @param path the path that should be the new current
  *
- * Returns:
- * 0 on success, negative number on failure.
+ * @return 0 on success, negative number on failure.
  */
 extern SYSTEMCALL short sys_fsys_set_cwd(const char * path);
 
 /**
  * Get the current working drive and directory
  *
- * Inputs:
- * path = the buffer in which to store the directory
- * size = the size of the buffer in bytes
+ * @param path the buffer in which to store the directory
+ * @param size the size of the buffer in bytes
  *
- * Returns:
- * 0 on success, negative number on failure.
+ * @return 0 on success, negative number on failure.
  */
 extern SYSTEMCALL short sys_fsys_get_cwd(char * path, short size);
 
-/*
+/**
  * Load a file into memory at the designated destination address.
  *
  * If destination = 0, the file must be in a recognized binary format
  * that specifies its own loading address.
  *
- * Inputs:
- * path = the path to the file to load
- * destination = the destination address (0 for use file's address)
- * start = pointer to the long variable to fill with the starting address
+ * @param path the path to the file to load
+ * @param destination the destination address (0 for use file's address)
+ * @param start pointer to the long variable to fill with the starting address
  *         (0 if not an executable, any other number if file is executable
  *         with a known starting address)
  *
- * Returns:
- * 0 on success, negative number on error
+ * @return 0 on success, negative number on error
  */
 extern SYSTEMCALL short sys_fsys_load(const char * path, uint32_t destination, uint32_t * start);
 
-/*
+/**
  * Register a file loading routine
  *
  * A file loader, takes a channel number to load from and returns a
  * short that is the status of the load.
  *
- * Inputs:
- * extension = the file extension to map to
- * loader = pointer to the file load routine to add
+ * @param extension the file extension to map to
+ * @param loader pointer to the file load routine to add
  *
- * Returns:
- * 0 on success, negative number on error
+ * @return 0 on success, negative number on error
  */
 extern SYSTEMCALL short sys_fsys_register_loader(const char * extension, p_file_loader loader);
 
@@ -590,45 +509,47 @@ extern SYSTEMCALL uint32_t sys_mem_reserve(uint32_t bytes);
  * Miscellaneous
  */
 
-/*
+/**
  * Get the number of jiffies since the system last booted.
  *
  * NOTE: a jiffie is 1/60 of a second. This timer will not be
  *       100% precise, so it should be used for timeout purposes
  *       where precision is not critical.
  *
- * Returns:
- * the number of jiffies since the last reset
+ * @return the number of jiffies since the last reset
  */
 extern SYSTEMCALL uint32_t sys_time_jiffies();
 
-/*
+/**
  * Set the time on the RTC
  *
- * Inputs:
- * time = pointer to a t_time record containing the correct time
+ * @param time pointer to a t_time record containing the correct time
  */
 extern SYSTEMCALL void sys_rtc_set_time(p_time time);
 
-/*
+/**
  * Get the time on the RTC
  *
- * Inputs:
- * time = pointer to a t_time record in which to put the current time
+ * @param time pointer to a t_time record in which to put the current time
  */
 extern SYSTEMCALL void sys_rtc_get_time(p_time time);
 
-/*
- * Return the next scan code from the keyboard... 0 if nothing pending
+/**
+ * Check for any keypress and return the scancode for the key
+ * 
+ * @return the next scan code from the keyboard... 0 if nothing pending
  */
 extern SYSTEMCALL uint16_t sys_kbd_scancode();
 
-/*
+/**
  * Return an error message given an error number
+ *
+ * @param err_number the error number
+ * @return pointer to a string describing the error
  */
 extern SYSTEMCALL const char * sys_err_message(short err_number);
 
-/*
+/**
  * Set the keyboard translation tables
  *
  * The translation tables provided to the keyboard consist of eight
@@ -646,8 +567,9 @@ extern SYSTEMCALL const char * sys_err_message(short err_number);
  * - ALT-SHIFT: Used when ALT is pressed and either CAPSLOCK is down
  *   or SHIFT is pressed (but not both)
  *
- * Inputs:
- * tables = pointer to the keyboard translation tables
+ * @param tables pointer to the keyboard translation tables
+ * @return 0 on success, negative number on error
+ * 
  */
 extern SYSTEMCALL short sys_kbd_layout(const char * tables);
 

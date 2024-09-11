@@ -125,7 +125,7 @@ extern SYSTEMCALL short fsys_stat(const char * path, p_file_info file);
  * path = path to the drive
  * label = buffer that will hold the label... should be at least 35 bytes
  */
-extern SYSTEMCALL short fsys_getlabel(char * path, char * label);
+extern SYSTEMCALL short fsys_get_label(char * path, char * label);
 
 /*
  * Set the label for the drive holding the path
@@ -134,7 +134,7 @@ extern SYSTEMCALL short fsys_getlabel(char * path, char * label);
  * drive = drive number
  * label = buffer that holds the label
  */
-extern SYSTEMCALL short fsys_setlabel(short drive, const char * label);
+extern SYSTEMCALL short fsys_set_label(short drive, const char * label);
 
 /*
  * Format a drive

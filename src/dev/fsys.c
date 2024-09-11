@@ -848,7 +848,7 @@ short fsys_mount(short bdev) {
  * path = path to the drive
  * label = buffer that will hold the label... should be at least 35 bytes
  */
-short fsys_getlabel(char * path, char * label) {
+SYSTEMCALL short fsys_get_label(char * path, char * label) {
     TRACE("fsys_getlabel");
 
 	// If the drive being queried is the floppy drive, make sure the FDC status
@@ -870,7 +870,7 @@ short fsys_getlabel(char * path, char * label) {
  * drive = drive number
  * label = buffer that holds the label
  */
-short fsys_setlabel(short drive, const char * label) {
+SYSTEMCALL short fsys_set_label(short drive, const char * label) {
     FRESULT fres;
     char buffer[80];
 
@@ -899,7 +899,7 @@ unsigned char workspace[FF_MAX_SS * 4];
  * drive = drive number
  * label = the label to apply to the drive
  */
-short fsys_mkfs(short drive, char * label) {
+SYSTEMCALL short fsys_mkfs(short drive, char * label) {
     char buffer[80];
     FRESULT fres;
 
@@ -1404,7 +1404,7 @@ static short fsys_load_ext(const char * path, const char * extension, long desti
  * Returns:
  * 0 on success, negative number on error
  */
-short fsys_load(const char * path, long destination, long * start) {
+SYSTEMCALL short fsys_load(const char * path, long destination, long * start) {
     int i;
     char extension[MAX_EXT];
     char spath[MAX_PATH_LEN];
@@ -1476,7 +1476,7 @@ short fsys_load(const char * path, long destination, long * start) {
  * Returns:
  * 0 on success, negative number on error
  */
-short fsys_register_loader(const char * extension, p_file_loader loader) {
+SYSTEMCALL short fsys_register_loader(const char * extension, p_file_loader loader) {
     int i, j;
 
     for (i = 0; i < MAX_LOADERS; i++) {
