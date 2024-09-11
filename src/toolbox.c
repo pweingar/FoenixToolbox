@@ -67,7 +67,7 @@
 #include "rsrc/font/MSX_CP437_8x8.h"
 #include "rsrc/bitmaps/splash_c256_u.h"
 
-const char* VolumeStr[FF_VOLUMES] = { "sd0" };
+const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1" };
 
 extern unsigned long __memory_start;
 

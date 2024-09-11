@@ -152,6 +152,21 @@ int _Stub_close(int fd) {
 }
 
 /****************************************************************************
+* Name: _Stub_lseek
+*
+* Description:
+* Change position in a file
+*
+* Returns the new position in the file in bytes from the beginning of the
+* file, or -1 on failure.
+*
+****************************************************************************/
+
+long _Stub_lseek(int fd, long offset, int whence) {
+	return 0;
+}
+
+/****************************************************************************
  * Name: _Stub_read
  *
  * Description:

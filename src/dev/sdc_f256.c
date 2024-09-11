@@ -47,6 +47,7 @@
 #define CMD58	(58)		/* READ_OCR */
 
 static t_sd_card_info sd0_card_info;
+static t_sd_card_info sd1_card_info;
 
 /**
  * @brief Transmit Busy Flag Check
@@ -552,9 +553,13 @@ short sdc_install() {
     // int_register(INT_SDC_INS, sdc_handler);
     // int_enable(INT_SDC_INS);
 
-	sd0_card_info.reg = SD1_REG;
+	sd0_card_info.reg = SD0_REG;
 	sd0_card_info.status = 0;
 	sd0_card_info.type = 0;
+
+	sd1_card_info.reg = SD1_REG;
+	sd1_card_info.status = 0;
+	sd1_card_info.type = 0;
 
     dev.number = BDEV_SD0;
     dev.name = "SD0";
@@ -566,5 +571,14 @@ short sdc_install() {
     dev.status = sdc_status;
     dev.ioctrl = sdc_ioctrl;
 
-    return bdev_register(&dev);
+    short result = bdev_register(&dev);
+	if (result == 0) {
+		dev.number = BDEV_SD1;
+		dev.name = "SD1";
+		dev.data = &sd1_card_info;
+		
+		result = bdev_register(&dev);
+	}
+
+	return result;
 }
