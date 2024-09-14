@@ -4,9 +4,20 @@
 
 			.cpu "65816"
 
-			.include "macros.s"
 			.include "toolbox.s"
-			.include "tb_params.s"
+
+setdbr      .macro          ; Set the B (Data bank) register 
+			pea #((\1) * 256) + (\1)
+			plb
+			plb
+			.databank \1
+			.endm 
+
+setaxl      .macro
+			rep #$30        ; set A&X long 
+			.al
+			.xl
+			.endm
 
 * = $10000
 

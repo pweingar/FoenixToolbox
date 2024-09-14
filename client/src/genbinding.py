@@ -9,7 +9,7 @@ table_entry_size = 4
 table_address = 0xffe000
 syscalls = {}
 
-with open("..\src\C256\syscalls.txt", "r") as input:
+with open("..\..\src\C256\syscalls.txt", "r") as input:
 	for line in input:
 		# Remove comments
 		index = line.find("#")
@@ -35,4 +35,4 @@ with open("bindings.s", "w") as output:
 
 	for name in syscalls.keys():
 		address = syscalls[name]
-		output.write("{0}:\t.equlab\t0x{1:06X}\n".format(name, address))
+		output.write("{0:<30} .equlab 0x{1:06X}\n".format(name + ":", address))
