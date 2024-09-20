@@ -70,7 +70,7 @@ endif
 
 INCLUDES=-I. -I./include
 CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) -l # -l -D_CALYPSI_MCP_DEBUGGER
-ASFLAGS=$(INCLUDES) --data-model large --code-model large
+ASFLAGS=$(INCLUDES) --data-model large --code-model large -l
 
 ifeq ($(MEMORY),ROM)
 	LDFLAGS=--rom-code $(LDFLAGS_FOR_UNIT) --list-file toolbox.map

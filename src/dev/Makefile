@@ -50,7 +50,7 @@ endif
 
 INCLUDES=-I.. -I../include
 CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) -l
-ASFLAGS=$(INCLUDES)
+ASFLAGS=$(INCLUDES) -l
 
 SRCS = block.c channel.c console.c fsys.c sprites.c tiles.c txt_screen.c rtc.c uart.c $(SRCS_FOR_UNIT) # pata.c bitmap.c dma.c ps2.c sdc.c 
 OBJS = $(patsubst %.c,%.o,$(SRCS))

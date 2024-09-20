@@ -518,7 +518,6 @@ void boot_screen() {
 
 	jiffies_target = timers_jiffies() + 60 * 15;
 	while (jiffies_target > timers_jiffies()) {
-		// kbd_handle_irq();
 		unsigned short scancode = kbd_get_scancode();
 		if (scancode > 0) {
 			short selected = sc_to_function(scancode);

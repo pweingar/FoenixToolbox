@@ -1,0 +1,255 @@
+
+; 64tass Turbo Assembler Macro V1.58.2974 listing file
+; 64tass --nostart --flat --s-record --list=hello.lst -o optical.s37 optical.s
+; Sun Sep 15 20:17:28 2024
+
+;Offset	;Hex		;Monitor	;Source
+
+;******  Processing input file: optical.s
+
+
+;******  Processing file: toolbox.s
+
+
+;******  Processing file: bindings.s
+
+=$000000				sys_exit = $000000
+=$ffe004				sys_int_enable_all = $ffe004
+=$ffe008				sys_int_disable_all = $ffe008
+=$ffe00c				sys_int_disable = $ffe00c
+=$ffe010				sys_int_enable = $ffe010
+=$ffe014				sys_int_register = $ffe014
+>0001					handler         .dword ?      ; pointer to the interrupt handler to register
+=$ffe018				sys_int_pending = $ffe018
+=$ffe01c				sys_get_info = $ffe01c
+=$ffe020				sys_int_clear = $ffe020
+=$ffe024				sys_chan_read_b = $ffe024
+=$ffe028				sys_chan_read = $ffe028
+>0001					buffer          .dword ?      ; the buffer into which to copy the channel data
+>0005					size            .word ?       ; the size of the buffer.
+=$ffe02c				sys_chan_readline = $ffe02c
+>0001					buffer          .dword ?      ; the buffer into which to copy the channel data
+>0005					size            .word ?       ; the size of the buffer
+=$ffe030				sys_chan_write_b = $ffe030
+>0001					b               .byte ?       ; the byte to write
+=$ffe034				sys_chan_write = $ffe034
+>0001					buffer          .dword ?      ;
+>0005					size            .word ?       ;
+=$ffe038				sys_chan_status = $ffe038
+=$ffe03c				sys_chan_flush = $ffe03c
+=$ffe040				sys_chan_seek = $ffe040
+>0001					position        .dword ?      ; the position of the cursor
+>0005					base            .word ?       ; whether the position is absolute or relative to the current position
+=$ffe044				sys_chan_ioctrl = $ffe044
+>0001					command         .word ?       ; the number of the command to send
+>0003					buffer          .dword ?      ; pointer to bytes of additional data for the command
+>0007					size            .word ?       ; the size of the buffer
+=$ffe048				sys_chan_open = $ffe048
+>0001					path            .dword ?      ; a "path" describing how the device is to be open
+>0005					mode            .word ?       ; s the device to be read, written, both? (0x01 = READ flag, 0x02 = WRITE flag, 0x03 = READ and WRITE)
+=$ffe04c				sys_chan_close = $ffe04c
+=$ffe050				sys_chan_swap = $ffe050
+>0001					channel2        .word ?       ; the ID of the other channel
+=$ffe054				sys_chan_device = $ffe054
+=$000000				sys_text_setsizes = $000000
+=$ffe05c				sys_bdev_register = $ffe05c
+=$ffe060				sys_bdev_read = $ffe060
+>0001					lba             .dword ?      ; the logical block address of the block to read
+>0005					buffer          .dword ?      ; the buffer into which to copy the block data
+>0009					size            .word ?       ; the size of the buffer.
+=$ffe064				sys_bdev_write = $ffe064
+>0001					lba             .dword ?      ; the logical block address of the block to write
+>0005					buffer          .dword ?      ; the buffer containing the data to write
+>0009					size            .word ?       ; the size of the buffer.
+=$ffe068				sys_bdev_status = $ffe068
+=$ffe06c				sys_bdev_flush = $ffe06c
+=$ffe070				sys_bdev_ioctrl = $ffe070
+>0001					command         .word ?       ; the number of the command to send
+>0003					buffer          .dword ?      ; pointer to bytes of additional data for the command
+>0007					size            .word ?       ; the size of the buffer
+=$ffe074				sys_fsys_open = $ffe074
+>0001					mode            .word ?       ; the mode (e.g. r/w/create)
+=$ffe078				sys_fsys_close = $ffe078
+=$ffe07c				sys_fsys_opendir = $ffe07c
+=$ffe080				sys_fsys_closedir = $ffe080
+=$ffe084				sys_fsys_readdir = $ffe084
+>0001					file            .dword ?      ; pointer to the t_file_info structure to fill out.
+=$ffe088				sys_fsys_findfirst = $ffe088
+>0001					pattern         .dword ?      ; the file name pattern to search for
+>0005					file            .dword ?      ; pointer to the t_file_info structure to fill out
+=$ffe08c				sys_fsys_findnext = $ffe08c
+>0001					file            .dword ?      ; pointer to the t_file_info structure to fill out
+=$ffe090				sys_fsys_get_label = $ffe090
+>0001					label           .dword ?      ; buffer that will hold the label... should be at least 35 bytes
+=$ffe094				sys_fsys_set_label = $ffe094
+>0001					label           .dword ?      ; buffer that holds the label
+=$ffe098				sys_fsys_mkdir = $ffe098
+=$ffe09c				sys_fsys_delete = $ffe09c
+=$ffe0a0				sys_fsys_rename = $ffe0a0
+>0001					new_path        .dword ?      ; the new path for the file
+=$ffe0a4				sys_fsys_set_cwd = $ffe0a4
+=$ffe0a8				sys_fsys_get_cwd = $ffe0a8
+>0001					size            .word ?       ; the size of the buffer in bytes
+=$ffe0ac				sys_fsys_load = $ffe0ac
+>0001					destination     .dword ?      ; the destination address (0 for use file's address)
+>0005					start           .dword ?      ; pointer to the long variable to fill with the starting address
+=$ffe0b0				sys_fsys_register_loader = $ffe0b0
+>0001					loader          .dword ?      ; pointer to the file load routine to add
+=$ffe0b4				sys_fsys_stat = $ffe0b4
+>0001					file            .dword ?      ; pointer to a file info record to fill in, if the file is found.
+=$ffe0b8				sys_mem_get_ramtop = $ffe0b8
+=$ffe0bc				sys_mem_reserve = $ffe0bc
+=$ffe0c0				sys_time_jiffies = $ffe0c0
+=$ffe0c4				sys_rtc_set_time = $ffe0c4
+=$ffe0c8				sys_rtc_get_time = $ffe0c8
+=$ffe0cc				sys_kbd_scancode = $ffe0cc
+=$ffe0d4				sys_kbd_layout = $ffe0d4
+=$ffe0d8				sys_proc_run = $ffe0d8
+>0001					argc            .dword ?      ; the number of arguments passed
+>0005					argv            .dword ?      ; the array of string arguments
+=$ffe0e0				sys_txt_set_mode = $ffe0e0
+>0001					mode            .word ?       ; a bitfield of desired display mode options
+=$ffe0e8				sys_txt_set_xy = $ffe0e8
+>0001					x               .word ?       ; the column for the cursor
+>0003					y               .word ?       ; the row for the cursor
+=$ffe0ec				sys_txt_get_xy = $ffe0ec
+>0001					position        .dword ?      ; pointer to a t_point record to fill out
+=$ffe0f0				sys_txt_get_region = $ffe0f0
+>0001					region          .dword ?      ; pointer to a t_rect describing the rectangular region (using character cells for size and size)
+=$ffe0f4				sys_txt_set_region = $ffe0f4
+>0001					region          .dword ?      ; pointer to a t_rect describing the rectangular region (using character cells for size and size)
+=$ffe0f8				sys_txt_set_color = $ffe0f8
+>0001					foreground      .byte ?       ; the Text LUT index of the new current foreground color (0 - 15)
+>0002					background      .byte ?       ; the Text LUT index of the new current background color (0 - 15)
+=$ffe0fc				sys_txt_get_color = $ffe0fc
+>0001					foreground      .dword ?      ; the Text LUT index of the new current foreground color (0 - 15)
+>0005					background      .dword ?      ; the Text LUT index of the new current background color (0 - 15)
+=$ffe100				sys_txt_set_cursor_visible = $ffe100
+>0001					is_visible      .word ?       ; TRUE if the cursor should be visible, FALSE (0) otherwise
+=$ffe104				sys_txt_set_font = $ffe104
+>0001					width           .word ?       ; width of a character in pixels
+>0003					height          .word ?       ; of a character in pixels
+>0005					data            .dword ?      ; pointer to the raw font data to be loaded
+=$ffe108				sys_txt_get_sizes = $ffe108
+>0001					text_size       .dword ?      ; the size of the screen in visible characters (may be null)
+>0005					pixel_size      .dword ?      ; the size of the screen in pixels (may be null)
+=$ffe10c				sys_txt_set_border = $ffe10c
+>0001					width           .word ?       ; the horizontal size of one side of the border (0 - 32 pixels)
+>0003					height          .word ?       ; the vertical size of one side of the border (0 - 32 pixels)
+=$ffe110				sys_txt_set_border_color = $ffe110
+>0001					red             .byte ?       ; the red component of the color (0 - 255)
+>0002					green           .byte ?       ; the green component of the color (0 - 255)
+>0003					blue            .byte ?       ; the blue component of the color (0 - 255)
+=$ffe114				sys_txt_put = $ffe114
+>0001					c               .byte ?       ; the character to print
+=$ffe118				sys_txt_print = $ffe118
+>0001					message         .dword ?      ; the ASCII Z string to print
+
+;******  Return to file: toolbox.s
+
+
+;******  Return to file: optical.s
+
+
+;******  Processing file: macros.s
+
+
+;******  Return to file: optical.s
+
+=$f01dc0				kbd_opt_data = $f01dc0		; 8-bit
+=$f01dc1				kbd_opt_stat = $f01dc1		; 8-bit
+=$f01dc2				kbd_opt_cnt = $f01dc2		; 16-bit
+=$f04000				vky_text = $f04000
+>0000					save_a		.word ?
+>0002					kbd_stat	.byte ?
+>0003					scancode	.word ?
+>0005					offset		.word ?
+>0007					code		.word ?
+>0009					count		.word ?
+>000b					tmp			.word ?
+>010000	f8 16				header:		.byte $f8, $16		; Signature
+>010002	00							.byte 0				; Version
+>010003	17 00 01 00						.dword start		; Starting address
+>010007	00 00 00 00						.dword 0			; Icon address
+>01000b	00 00 00 00						.dword 0			; Icon palette address
+>01000f	6f 70 74 69 63 61 6c 00					.null "optical"		; Name of the file
+.010017	18		clc		start:		clc
+.010018	fb		xce					xce
+.010019	f4 01 01	pea #$0101	                PEA #((`start) * 256) + (`start)
+.01001c	ab		plb		                PLB
+.01001d	ab		plb		                PLB
+.01001e	c2 30		rep #$30	                REP #$30        ; set A&X long
+.010020	a9 50 00	lda #$0050	wait_line:	lda #80
+.010023	85 05		sta $05					sta offset
+.010025	e2 20		sep #$20	                SEP #$20        ; set A short
+.010027	af c1 1d f0	lda $f01dc1				lda @l kbd_opt_stat
+.01002b	20 9b 00	jsr $01009b				jsr puthex8
+.01002e	a9 20		lda #$20				lda #' '
+.010030	20 6d 00	jsr $01006d				jsr putc
+.010033					wait:
+.010033	e2 20		sep #$20	                SEP #$20        ; set A short
+.010035	af c1 1d f0	lda $f01dc1				lda @l kbd_opt_stat
+.010039	29 01		and #$01				and #$01
+.01003b	c9 01		cmp #$01				cmp #$01
+.01003d	f0 f4		beq $010033				beq wait
+.01003f	c2 20		rep #$20	                REP #$20        ; set A long
+.010041	af c2 1d f0	lda $f01dc2				lda @l kbd_opt_cnt
+.010045	85 09		sta $09					sta count
+.010047	e2 20		sep #$20	                SEP #$20        ; set A short
+.010049	af c0 1d f0	lda $f01dc0				lda @l kbd_opt_data
+.01004d	20 9b 00	jsr $01009b				jsr puthex8
+.010050	e2 20		sep #$20	                SEP #$20        ; set A short
+.010052	af c0 1d f0	lda $f01dc0				lda @l kbd_opt_data
+.010056	20 9b 00	jsr $01009b				jsr puthex8
+.010059	e2 20		sep #$20	                SEP #$20        ; set A short
+.01005b	a9 20		lda #$20				lda #' '
+.01005d	20 6d 00	jsr $01006d				jsr putc
+.010060	c2 20		rep #$20	                REP #$20        ; set A long
+.010062	c6 09		dec $09					dec count
+.010064	c6 09		dec $09					dec count
+.010066	f0 b8		beq $010020				beq wait_line
+.010068	80 c9		bra $010033				bra wait
+.01006a	ea		nop		loop:		nop
+.01006b	80 fd		bra $01006a				bra loop
+.01006d					putc:
+.01006d	08		php					php
+.01006e	da		phx					phx
+.01006f	a6 05		ldx $05					ldx offset
+.010071	9f 00 40 f0	sta $f04000,x				sta vky_text,x
+.010075	e6 05		inc $05					inc offset
+.010077	fa		plx					plx
+.010078	28		plp					plp
+.010079	60		rts					rts
+>01007a	30 31 32 33 34 35 36 37		hexdigits:	.null '0123456789ABCDEF'
+>010082	38 39 41 42 43 44 45 46 00
+.01008b					puthex4:
+.01008b	da		phx					phx
+.01008c	08		php					php
+.01008d	e2 30		sep #$30	                SEP #$30        ; set A&X short
+.01008f	29 0f		and #$0f				and #$0f
+.010091	aa		tax					tax
+.010092	bd 7a 00	lda $01007a,x				lda hexdigits,x
+.010095	20 6d 00	jsr $01006d				jsr putc
+.010098	28		plp					plp
+.010099	fa		plx					plx
+.01009a	60		rts					rts
+.01009b					puthex8:
+.01009b	08		php					php
+.01009c	e2 20		sep #$20	                SEP #$20        ; set A short
+.01009e	85 00		sta $00					sta save_a
+.0100a0	4a		lsr a					lsr a
+.0100a1	4a		lsr a					lsr a
+.0100a2	4a		lsr a					lsr a
+.0100a3	4a		lsr a					lsr a
+.0100a4	29 0f		and #$0f				and #$0f
+.0100a6	20 8b 00	jsr $01008b				jsr puthex4
+.0100a9	a5 00		lda $00					lda save_a
+.0100ab	29 0f		and #$0f				and #$0f
+.0100ad	20 8b 00	jsr $01008b				jsr puthex4
+.0100b0	28		plp					plp
+.0100b1	60		rts					rts
+>0100b2	48 65 6c 6c 6f 2c 20 46		message: 	.null "Hello, Foenix Toolbox (64TASS)!",13,10
+>0100ba	6f 65 6e 69 78 20 54 6f 6f 6c 62 6f 78 20 28 36
+>0100ca	34 54 41 53 53 29 21 0d 0a 00
+
+;******  End of listing

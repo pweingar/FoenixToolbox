@@ -471,6 +471,8 @@ SYSTEMCALL void int_clear(unsigned short n) {
 	}
 }
 
+#define vky_text_matrix		((volatile __attribute__((far)) char *)0xf04000)
+
 /**
  * @brief Handle incomming IRQ signal
  * 
@@ -482,11 +484,15 @@ SYSTEMCALL void int_clear(unsigned short n) {
 void int_handle_irq() {
 	uint8_t mask_bits = 0;
 
-	if (*irq_ram_vector != 0) {
-		p_int_handler handler = (p_int_handler)(*irq_ram_vector);
-		handler();
-		return;
-	}
+	// vky_text_matrix[0] += 1;
+
+	// if (*irq_ram_vector != 0) {
+	// 	p_int_handler handler = (p_int_handler)(*irq_ram_vector);
+	// 	handler();
+	// 	return;
+	// }
+
+	// vky_text_matrix[1] += 1;
 
 	// Process any pending interrupts in group 0
 	mask_bits = *PENDING_GRP0;
@@ -544,9 +550,9 @@ void int_handle_irq() {
  * __attribute__((interrupt(0xffea)))  
  */
 void int_handle_nmi() {
-	if (*nmi_ram_vector != 0) {
-		p_int_handler handler = (p_int_handler)(*nmi_ram_vector);
-		handler();
-		return;
-	}
+	// if (*nmi_ram_vector != 0) {
+	// 	p_int_handler handler = (p_int_handler)(*nmi_ram_vector);
+	// 	handler();
+	// 	return;
+	// }
 }

@@ -394,26 +394,6 @@ sys_fsys_opendir = $ffe07c
 
 
 ;
-; extern SYSTEMCALL short sys_fsys_close(short fd);
-; 
-; fd goes in A[15..0]
-;
-; 0 bytes needed for the stack parameters
-;
-sys_fsys_close = $000000
-
-
-;
-; extern SYSTEMCALL short sys_fsys_opendir(const char * path);
-; 
-; path goes in X[15..0]:A[15..0]
-;
-; 0 bytes needed for the stack parameters
-;
-sys_fsys_opendir = $000000
-
-
-;
 ; extern SYSTEMCALL short sys_fsys_closedir(short dir);
 ; 
 ; dir goes in A[15..0]
@@ -584,7 +564,7 @@ start           .dword ?      ; pointer to the long variable to fill with the st
 ;
 sys_fsys_register_loader = $ffe0b0
 
-fsys_register_loader.namespace
+fsys_register_loader	.namespace
                 .virtual 1,s
 loader          .dword ?      ; pointer to the file load routine to add
                 .endv
@@ -802,7 +782,7 @@ background      .dword ?      ; the Text LUT index of the new current background
 ;
 sys_txt_set_cursor_visible = $ffe100
 
-txt_set_cursor_visible.namespace
+txt_set_cursor_visible	.namespace
                 .virtual 1,s
 is_visible      .word ?       ; TRUE if the cursor should be visible, FALSE (0) otherwise
                 .endv
@@ -866,7 +846,7 @@ height          .word ?       ; the vertical size of one side of the border (0 -
 ;
 sys_txt_set_border_color = $ffe110
 
-txt_set_border_color.namespace
+txt_set_border_color	.namespace
                 .virtual 1,s
 red             .byte ?       ; the red component of the color (0 - 255)
 green           .byte ?       ; the green component of the color (0 - 255)

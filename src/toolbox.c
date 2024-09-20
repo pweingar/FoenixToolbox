@@ -412,9 +412,9 @@ void test_kbd_sc() {
 }
 
 void test_kbd() {
+	printf("Keyboard test... press RUN/STOP or CTRL-C for boot:\n");
 	printf("> ");
 	do {
-		kbd_handle_irq();
 		char c = kbd_getc();
 		if (c != 0) {
 			txt_put(0, c);
@@ -476,73 +476,12 @@ int main(int argc, char * argv[]) {
 	char message[256];
 
     initialize();
+
 	kbd_init();
 
 	test_sysinfo();
-
-	// printf("Foenix Toolbox v%d.%04d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
-
-	// const char * test_data = "Hello, world!";
-
-	// volatile uint8_t * cartridge = ((volatile uint8_t *)0xf40000);
-
-	// short cartridge_id = cart_id();
-	// switch(cartridge_id) {
-	// 	case CART_ID_NONE:
-	// 		printf("No cartridge detected.\n");
-	// 		break;
-
-	// 	case CART_ID_RAM:
-	// 		printf("RAM cartridge detected.\n");
-	// 		break;
-
-	// 	case CART_ID_FLASH:
-	// 		printf("FLASH cartridge detected.\n");
-	// 		// printf("Attempting to erase the flash cartridge.\n");
-	// 		// cart_erase();
-	// 		// printf("Attempting to program the flash cartridge.\n");
-	// 		// for (int i = 0; i < strlen(test_data); i++) {
-	// 		// 	cart_write(0xf40000 + i, test_data[i]);
-	// 		// }
-
-	// 		// for (int j = 0; j < strlen(test_data); j++) {
-	// 		// 	txt_put(0, cartridge[j]);
-	// 		// }
-
-	// 		// printf("\n");
-	// 		break;
-
-	// 	default:
-	// 		printf("Unable to determine whether a cartridge is present.\n");
-	// 		break;
-	// }
-
 	// test_kbd();
-
 	boot_screen();
-
-	while (1) ;
-
-
-
-	// printf("Initializing IEC\n");
-	// result = iec_init();
-	// if (result != 0) {
-	// 	printf("Error initializing IEC.\n");
-	// }
-
-	// printf("Attempting to get status for IEC drive #8: ");
-	// short n = iec_status(8, message, 256);
-	// printf("\"%s\"\n", message);
-
-	// printf("Attempting to write to the printer.\n");
-	// iec_print(4, "\e1THIS IS PRINTED FROM AN F256K OVER THE IEC PORT!\r");
-
-	// Attempt to start up the user code
-    // log(LOG_INFO, "Looking for user startup code:");
-	// boot_launch();
-
-	printf("Done.\n");
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);

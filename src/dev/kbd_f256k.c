@@ -19,6 +19,7 @@
 #include "ring_buffer.h"
 #include "dev/kbd_f256k.h"
 #include "F256/via_f256.h"
+#include "F256/kbd_opt_f256.h"
 #include "gabe_reg.h"
 #include "simpleio.h"
 #include "vicky_general.h"
@@ -81,6 +82,7 @@ static const uint8_t kbd_scan_codes[KBD_ROWS][KBD_COLUMNS] = {
 // Driver variables
 //
 
+static bool is_optical = false;
 static uint16_t kbd_stat[KBD_MATRIX_SIZE];
 static short counter = 0;
 static uint8_t last_press = 0;
@@ -216,10 +218,10 @@ unsigned short kbd_get_scancode() {
 }
 
 /**
- * @brief Handle an IRQ to query the keyboard
+ * @brief Scan the state of the keys on the mechanical keyboard
  * 
  */
-void kbd_handle_irq() {
+void kbd_scan_mechanical() {
 	uint8_t ifr = via0->ifr;
 	uint8_t counter_low = via0->t1c_l;
 
@@ -245,6 +247,69 @@ void kbd_handle_irq() {
 	}
 }
 
+/**
+ * @brief Query the optical keyboard to get the scanned keyboard matrix (if it has any pending data)
+ * 
+ */
+void kbd_scan_optical() {
+	if ((KBD_OPTICAL->status & KBD_OPT_STAT_EMPTY) == 0) {
+		// If there is data pending in the keyboard buffer...
+
+		// Read in all the bytes available and fill out the column matrix
+		uint16_t count = KBD_OPTICAL->count;
+		for (int x = 0; x < count; x += 2) {
+			// Get two data bytes
+			uint8_t byte_hi = KBD_OPTICAL->data;
+			uint8_t byte_low = KBD_OPTICAL->data;
+
+			// Separate out the row number and the column status bits
+			uint8_t row = (byte_hi >> 4) & 0x07;
+			uint16_t columns_stat = ((uint16_t)byte_hi << 8 | (uint16_t)byte_low) & 0x01ff;
+
+			// Determine which columns have changed on this row
+			uint16_t columns_eor = kbd_stat[row] ^ columns_stat;
+			if (columns_eor != 0) {
+				// If columns have changed...
+				short column = 0;
+
+				// Record the new column values
+				kbd_stat[row] = columns_stat;
+				while (columns_eor != 0) {
+					if (columns_eor & 0x01) {
+						// Current key changed
+						kbd_process_key(column, row, columns_stat & 0x01);
+					}
+
+					columns_stat = columns_stat >> 1;
+					columns_eor = columns_eor >> 1;
+					column++;
+				}
+			}
+		}
+	}
+}
+
+/**
+ * @brief Handle an IRQ to query the keyboard
+ * 
+ */
+void kbd_handle_irq() {
+	// The scanning process is different depending on the keyboard type:
+	//
+	// The mechanical keyboard is a simple matrix of keys, and we need to scan it to see
+	// which keys are pressed and which are not.
+	//
+	// The optical keyboard does more processing for us. If it detects a change, it will
+	// indicate that it has data for us and then let us read the entire state of the matrix
+	// as a sequence of bytes.
+
+	if (is_optical) {
+		kbd_scan_optical();
+	} else {
+		kbd_scan_mechanical();
+	}
+}
+
 /*
  * Check to see if a BREAK code has been pressed recently
  * If so, return true and reset the internal flag.
@@ -265,6 +330,12 @@ bool kbd_break() {
  *
  */
 short kbd_sc_init() {
+	if (KBD_OPTICAL->status & KBD_OPT_STAT_MECH) {
+		is_optical = false;
+	} else {
+		is_optical = true;
+	}
+
 	// Initialize VIA0 -- we'll just read from PB7
 	via0->ddra = 0x00;
 	via0->ddrb = 0x00;
@@ -272,8 +343,13 @@ short kbd_sc_init() {
 	via0->pcr = 0x00;
 	via0->ier = 0x00;
 
-	// Initialize VIA1 -- we'll write to all of PB
-	via1->ddra = 0xff;
+	// Initialize VIA1 -- we'll write to all of PB only if the keyboard is mechanical
+	if (is_optical) {
+		// For an optical keyboard, make it read only just to be safe
+		via1->ddra = 0x00;
+	} else {
+		via1->ddra = 0xff;
+	}
 	via1->ddrb = 0x00;
 	via1->acr = 0x00;
 	via1->pcr = 0x00;
@@ -291,14 +367,16 @@ short kbd_sc_init() {
 	// Set up and clear out the buffer for the scan codes
 	rb_word_init(&scan_code_buffer);
 
-	int_register(INT_VIA0, kbd_handle_irq);
+	// int_register(INT_VIA0, kbd_handle_irq);
+	int_register(INT_SOF_A, kbd_handle_irq);
 
-	via0->acr = 0x40;								// Timer #0 in free running mode
-	via0->ier = VIA_INT_TIMER1 | VIA_INT_IRQ;		// Allow timer #0 interrupts
-	via0->t1c_l = 0xff;								// Set timer count
-	via0->t1c_h = 0xff;
+	// via0->acr = 0x40;								// Timer #0 in free running mode
+	// via0->ier = VIA_INT_TIMER1 | VIA_INT_IRQ;		// Allow timer #0 interrupts
+	// via0->t1c_l = 0xff;								// Set timer count
+	// via0->t1c_h = 0xff;
 
-	int_enable(INT_VIA0);
+	// int_enable(INT_VIA0);
+	int_enable(INT_SOF_A);
 
 	return 1;
 }

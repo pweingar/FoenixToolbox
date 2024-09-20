@@ -188,7 +188,7 @@ class Function:
 				parameter.emit_asm(output)
 
 			output.write("                .endv\n")
-			output.write("                .endn\n")	
+			output.write("                .endn\n")
 
 
 comments = []
