@@ -27,7 +27,7 @@ extern void kbd_handle_irq();
  * Returns:
  *      The next scancode to be processed, 0 if nothing.
  */
-extern unsigned short kbd_get_scancode();
+extern SYSTEMCALL unsigned short kbd_get_scancode();
 
 /*
  * Check to see if a BREAK code has been pressed recently

@@ -1,14 +1,15 @@
-#  A  list of system calls to be used to autogenerate the various jump tables and sys calls stubs\
+#  A  list of system calls to be used to autogenerate the various jump tables and sys calls stubs
 
 proc_exit
 int_enable_all
 int_disable_all
+int_restore_all
 int_disable
 int_enable
 int_register
 int_pending
-get_info
 int_clear
+get_info,sys_get_information
 
 chan_read_b
 chan_read
@@ -23,7 +24,7 @@ chan_open
 chan_close
 chan_swap
 chan_device
-chan_register
+cdev_register
 
 bdev_register
 bdev_read
@@ -44,24 +45,23 @@ fsys_set_label
 fsys_mkdir
 fsys_delete
 fsys_rename
-fsys_set_cwd
-fsys_get_cwd
 fsys_load
 fsys_register_loader
 fsys_stat
 
 mem_get_ramtop
 mem_reserve
-time_jiffies
+time_jiffies,timers_jiffies
 rtc_set_time
 rtc_get_time
-kbd_scancode
+kbd_scancode,kbd_get_scancode
 err_message
 kbd_layout
 proc_run
 
 txt_get_capabilities
 txt_set_mode
+txt_set_resolution
 txt_setsizes
 txt_set_xy
 txt_get_xy
@@ -69,6 +69,7 @@ txt_get_region
 txt_set_region
 txt_set_color
 txt_get_color
+txt_set_cursor
 txt_set_cursor_visible
 txt_set_font
 txt_get_sizes

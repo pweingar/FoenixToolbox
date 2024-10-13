@@ -35,44 +35,6 @@
 #define CDEV_SEEK_END       2       /* Seek from teh end of the file */
 
 /*
- * Structure defining a channel
- */
-
-typedef struct s_channel {
-    short number;                   // The number of the channel
-    short dev;                      // The number of the channel's device
-    uint8_t data[CHAN_DATA_SIZE];   // A block of state data that the channel code can use for its own purposes
-} t_channel, *p_channel;
-
-typedef short (*FUNC_CBS_2_S)(p_channel, uint8_t *, short);
-typedef short (*FUNC_C_2_S)(p_channel);
-typedef short (*FUNC_CcBS_2_S)(p_channel, const uint8_t *, short);
-typedef short (*FUNC_CB_2_S)(p_channel, uint8_t);
-typedef short (*FUNC_CLS_2_S)(p_channel, long, short);
-typedef short (*FUNC_CSBS_2_S)(p_channel, short, uint8_t *, short);
-
-/*
- * Structure defining a channel device's functions
- */
-
-typedef struct s_dev_chan {
-    short number;           // The number of the device (assigned by registration)
-    char * name;            // The name of the device
-    FUNC_V_2_S init;        // short init() -- Initialize the device
-    FUNC_CcBS_2_S open;     // short open(t_channel * chan, const uint8_t * path, short mode) -- open a channel for the device
-    FUNC_V_2_S close;       // short close(t_channel * chan) -- called when a channel is closed
-    FUNC_CBS_2_S read;      // short read(t_channel *, uint8_t * buffer, short size) -- Read a a buffer from the device
-    FUNC_CBS_2_S readline;  // short readline(t_channel *, uint8_t * buffer, short size) -- Read a line of text from the device
-    FUNC_C_2_S read_b;      // short read_b(t_channel *) -- read a single uint8_t from the device
-    FUNC_CcBS_2_S write;    // short write(t_channel *, const uint8_t * buffer, short size) -- Write a buffer to the device
-    FUNC_CB_2_S write_b;    // short write_b(t_channel *, const uint8_t b) -- Write a single uint8_t to the device
-    FUNC_C_2_S status;      // short status(t_channel *) -- Get the status of the device
-    FUNC_C_2_S flush;       // short flush(t_channel *) -- Ensure that any pending writes to teh device have been completed
-    FUNC_CLS_2_S seek;      // short cdev_seek(t_channel *, long position, short base) -- attempt to move the "cursor" position in the channel
-    FUNC_CSBS_2_S ioctrl;   // short ioctrl(t_channel *, short command, uint8_t * buffer, short size)) -- Issue a control command to the device
-} t_dev_chan, *p_dev_chan;
-
-/*
  * Initialize the channel driver system
  */
 extern void cdev_init_system();

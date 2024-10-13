@@ -1,12 +1,12 @@
 
 ;
-; extern SYSTEMCALL void sys_exit(short result);
+; extern SYSTEMCALL void sys_proc_exit(short result);
 ; 
 ; result goes in A[15..0]
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_exit = $000000
+sys_proc_exit = $ffe000
 
 
 ;
@@ -54,7 +54,7 @@ sys_int_enable = $ffe010
 ;
 sys_int_register = $ffe014
 
-int_register    .namespace
+int_register     .namespace
                 .virtual 1,s
 handler         .dword ?      ; pointer to the interrupt handler to register
                 .endv
@@ -109,7 +109,7 @@ sys_chan_read_b = $ffe024
 ;
 sys_chan_read = $ffe028
 
-chan_read       .namespace
+chan_read        .namespace
                 .virtual 1,s
 buffer          .dword ?      ; the buffer into which to copy the channel data
 size            .word ?       ; the size of the buffer.
@@ -125,7 +125,7 @@ size            .word ?       ; the size of the buffer.
 ;
 sys_chan_readline = $ffe02c
 
-chan_readline   .namespace
+chan_readline    .namespace
                 .virtual 1,s
 buffer          .dword ?      ; the buffer into which to copy the channel data
 size            .word ?       ; the size of the buffer
@@ -141,7 +141,7 @@ size            .word ?       ; the size of the buffer
 ;
 sys_chan_write_b = $ffe030
 
-chan_write_b    .namespace
+chan_write_b     .namespace
                 .virtual 1,s
 b               .byte ?       ; the byte to write
                 .endv
@@ -156,7 +156,7 @@ b               .byte ?       ; the byte to write
 ;
 sys_chan_write = $ffe034
 
-chan_write      .namespace
+chan_write       .namespace
                 .virtual 1,s
 buffer          .dword ?      ; 
 size            .word ?       ; 
@@ -192,7 +192,7 @@ sys_chan_flush = $ffe03c
 ;
 sys_chan_seek = $ffe040
 
-chan_seek       .namespace
+chan_seek        .namespace
                 .virtual 1,s
 position        .dword ?      ; the position of the cursor
 base            .word ?       ; whether the position is absolute or relative to the current position
@@ -208,7 +208,7 @@ base            .word ?       ; whether the position is absolute or relative to 
 ;
 sys_chan_ioctrl = $ffe044
 
-chan_ioctrl     .namespace
+chan_ioctrl      .namespace
                 .virtual 1,s
 command         .word ?       ; the number of the command to send
 buffer          .dword ?      ; pointer to bytes of additional data for the command
@@ -225,7 +225,7 @@ size            .word ?       ; the size of the buffer
 ;
 sys_chan_open = $ffe048
 
-chan_open       .namespace
+chan_open        .namespace
                 .virtual 1,s
 path            .dword ?      ; a "path" describing how the device is to be open
 mode            .word ?       ; s the device to be read, written, both? (0x01 = READ flag, 0x02 = WRITE flag, 0x03 = READ and WRITE)
@@ -251,7 +251,7 @@ sys_chan_close = $ffe04c
 ;
 sys_chan_swap = $ffe050
 
-chan_swap       .namespace
+chan_swap        .namespace
                 .virtual 1,s
 channel2        .word ?       ; the ID of the other channel
                 .endv
@@ -296,7 +296,7 @@ sys_bdev_register = $ffe05c
 ;
 sys_bdev_read = $ffe060
 
-bdev_read       .namespace
+bdev_read        .namespace
                 .virtual 1,s
 lba             .dword ?      ; the logical block address of the block to read
 buffer          .dword ?      ; the buffer into which to copy the block data
@@ -313,7 +313,7 @@ size            .word ?       ; the size of the buffer.
 ;
 sys_bdev_write = $ffe064
 
-bdev_write      .namespace
+bdev_write       .namespace
                 .virtual 1,s
 lba             .dword ?      ; the logical block address of the block to write
 buffer          .dword ?      ; the buffer containing the data to write
@@ -350,7 +350,7 @@ sys_bdev_flush = $ffe06c
 ;
 sys_bdev_ioctrl = $ffe070
 
-bdev_ioctrl     .namespace
+bdev_ioctrl      .namespace
                 .virtual 1,s
 command         .word ?       ; the number of the command to send
 buffer          .dword ?      ; pointer to bytes of additional data for the command
@@ -367,7 +367,7 @@ size            .word ?       ; the size of the buffer
 ;
 sys_fsys_open = $ffe074
 
-fsys_open       .namespace
+fsys_open        .namespace
                 .virtual 1,s
 mode            .word ?       ; the mode (e.g. r/w/create)
                 .endv
@@ -394,26 +394,6 @@ sys_fsys_opendir = $ffe07c
 
 
 ;
-; extern SYSTEMCALL short sys_fsys_close(short fd);
-; 
-; fd goes in A[15..0]
-;
-; 0 bytes needed for the stack parameters
-;
-sys_fsys_close = $000000
-
-
-;
-; extern SYSTEMCALL short sys_fsys_opendir(const char * path);
-; 
-; path goes in X[15..0]:A[15..0]
-;
-; 0 bytes needed for the stack parameters
-;
-sys_fsys_opendir = $000000
-
-
-;
 ; extern SYSTEMCALL short sys_fsys_closedir(short dir);
 ; 
 ; dir goes in A[15..0]
@@ -432,7 +412,7 @@ sys_fsys_closedir = $ffe080
 ;
 sys_fsys_readdir = $ffe084
 
-fsys_readdir    .namespace
+fsys_readdir     .namespace
                 .virtual 1,s
 file            .dword ?      ; pointer to the t_file_info structure to fill out.
                 .endv
@@ -447,7 +427,7 @@ file            .dword ?      ; pointer to the t_file_info structure to fill out
 ;
 sys_fsys_findfirst = $ffe088
 
-fsys_findfirst  .namespace
+fsys_findfirst   .namespace
                 .virtual 1,s
 pattern         .dword ?      ; the file name pattern to search for
 file            .dword ?      ; pointer to the t_file_info structure to fill out
@@ -463,7 +443,7 @@ file            .dword ?      ; pointer to the t_file_info structure to fill out
 ;
 sys_fsys_findnext = $ffe08c
 
-fsys_findnext   .namespace
+fsys_findnext    .namespace
                 .virtual 1,s
 file            .dword ?      ; pointer to the t_file_info structure to fill out
                 .endv
@@ -478,7 +458,7 @@ file            .dword ?      ; pointer to the t_file_info structure to fill out
 ;
 sys_fsys_get_label = $ffe090
 
-fsys_get_label  .namespace
+fsys_get_label   .namespace
                 .virtual 1,s
 label           .dword ?      ; buffer that will hold the label... should be at least 35 bytes
                 .endv
@@ -493,7 +473,7 @@ label           .dword ?      ; buffer that will hold the label... should be at 
 ;
 sys_fsys_set_label = $ffe094
 
-fsys_set_label  .namespace
+fsys_set_label   .namespace
                 .virtual 1,s
 label           .dword ?      ; buffer that holds the label
                 .endv
@@ -528,7 +508,7 @@ sys_fsys_delete = $ffe09c
 ;
 sys_fsys_rename = $ffe0a0
 
-fsys_rename     .namespace
+fsys_rename      .namespace
                 .virtual 1,s
 new_path        .dword ?      ; the new path for the file
                 .endv
@@ -553,7 +533,7 @@ sys_fsys_set_cwd = $ffe0a4
 ;
 sys_fsys_get_cwd = $ffe0a8
 
-fsys_get_cwd    .namespace
+fsys_get_cwd     .namespace
                 .virtual 1,s
 size            .word ?       ; the size of the buffer in bytes
                 .endv
@@ -568,7 +548,7 @@ size            .word ?       ; the size of the buffer in bytes
 ;
 sys_fsys_load = $ffe0ac
 
-fsys_load       .namespace
+fsys_load        .namespace
                 .virtual 1,s
 destination     .dword ?      ; the destination address (0 for use file's address)
 start           .dword ?      ; pointer to the long variable to fill with the starting address
@@ -584,7 +564,7 @@ start           .dword ?      ; pointer to the long variable to fill with the st
 ;
 sys_fsys_register_loader = $ffe0b0
 
-fsys_register_loader.namespace
+fsys_register_loader .namespace
                 .virtual 1,s
 loader          .dword ?      ; pointer to the file load routine to add
                 .endv
@@ -599,7 +579,7 @@ loader          .dword ?      ; pointer to the file load routine to add
 ;
 sys_fsys_stat = $ffe0b4
 
-fsys_stat       .namespace
+fsys_stat        .namespace
                 .virtual 1,s
 file            .dword ?      ; pointer to a file info record to fill in, if the file is found.
                 .endv
@@ -678,7 +658,7 @@ sys_kbd_layout = $ffe0d4
 ;
 sys_proc_run = $ffe0d8
 
-proc_run        .namespace
+proc_run         .namespace
                 .virtual 1,s
 argc            .dword ?      ; the number of arguments passed
 argv            .dword ?      ; the array of string arguments
@@ -694,7 +674,7 @@ argv            .dword ?      ; the array of string arguments
 ;
 sys_txt_set_mode = $ffe0e0
 
-txt_set_mode    .namespace
+txt_set_mode     .namespace
                 .virtual 1,s
 mode            .word ?       ; a bitfield of desired display mode options
                 .endv
@@ -709,7 +689,7 @@ mode            .word ?       ; a bitfield of desired display mode options
 ;
 sys_txt_set_xy = $ffe0e8
 
-txt_set_xy      .namespace
+txt_set_xy       .namespace
                 .virtual 1,s
 x               .word ?       ; the column for the cursor
 y               .word ?       ; the row for the cursor
@@ -725,7 +705,7 @@ y               .word ?       ; the row for the cursor
 ;
 sys_txt_get_xy = $ffe0ec
 
-txt_get_xy      .namespace
+txt_get_xy       .namespace
                 .virtual 1,s
 position        .dword ?      ; pointer to a t_point record to fill out
                 .endv
@@ -740,7 +720,7 @@ position        .dword ?      ; pointer to a t_point record to fill out
 ;
 sys_txt_get_region = $ffe0f0
 
-txt_get_region  .namespace
+txt_get_region   .namespace
                 .virtual 1,s
 region          .dword ?      ; pointer to a t_rect describing the rectangular region (using character cells for size and size)
                 .endv
@@ -755,7 +735,7 @@ region          .dword ?      ; pointer to a t_rect describing the rectangular r
 ;
 sys_txt_set_region = $ffe0f4
 
-txt_set_region  .namespace
+txt_set_region   .namespace
                 .virtual 1,s
 region          .dword ?      ; pointer to a t_rect describing the rectangular region (using character cells for size and size)
                 .endv
@@ -770,7 +750,7 @@ region          .dword ?      ; pointer to a t_rect describing the rectangular r
 ;
 sys_txt_set_color = $ffe0f8
 
-txt_set_color   .namespace
+txt_set_color    .namespace
                 .virtual 1,s
 foreground      .byte ?       ; the Text LUT index of the new current foreground color (0 - 15)
 background      .byte ?       ; the Text LUT index of the new current background color (0 - 15)
@@ -786,7 +766,7 @@ background      .byte ?       ; the Text LUT index of the new current background
 ;
 sys_txt_get_color = $ffe0fc
 
-txt_get_color   .namespace
+txt_get_color    .namespace
                 .virtual 1,s
 foreground      .dword ?      ; the Text LUT index of the new current foreground color (0 - 15)
 background      .dword ?      ; the Text LUT index of the new current background color (0 - 15)
@@ -802,7 +782,7 @@ background      .dword ?      ; the Text LUT index of the new current background
 ;
 sys_txt_set_cursor_visible = $ffe100
 
-txt_set_cursor_visible.namespace
+txt_set_cursor_visible .namespace
                 .virtual 1,s
 is_visible      .word ?       ; TRUE if the cursor should be visible, FALSE (0) otherwise
                 .endv
@@ -817,7 +797,7 @@ is_visible      .word ?       ; TRUE if the cursor should be visible, FALSE (0) 
 ;
 sys_txt_set_font = $ffe104
 
-txt_set_font    .namespace
+txt_set_font     .namespace
                 .virtual 1,s
 width           .word ?       ; width of a character in pixels
 height          .word ?       ; of a character in pixels
@@ -834,7 +814,7 @@ data            .dword ?      ; pointer to the raw font data to be loaded
 ;
 sys_txt_get_sizes = $ffe108
 
-txt_get_sizes   .namespace
+txt_get_sizes    .namespace
                 .virtual 1,s
 text_size       .dword ?      ; the size of the screen in visible characters (may be null)
 pixel_size      .dword ?      ; the size of the screen in pixels (may be null)
@@ -850,7 +830,7 @@ pixel_size      .dword ?      ; the size of the screen in pixels (may be null)
 ;
 sys_txt_set_border = $ffe10c
 
-txt_set_border  .namespace
+txt_set_border   .namespace
                 .virtual 1,s
 width           .word ?       ; the horizontal size of one side of the border (0 - 32 pixels)
 height          .word ?       ; the vertical size of one side of the border (0 - 32 pixels)
@@ -866,7 +846,7 @@ height          .word ?       ; the vertical size of one side of the border (0 -
 ;
 sys_txt_set_border_color = $ffe110
 
-txt_set_border_color.namespace
+txt_set_border_color .namespace
                 .virtual 1,s
 red             .byte ?       ; the red component of the color (0 - 255)
 green           .byte ?       ; the green component of the color (0 - 255)
@@ -883,7 +863,7 @@ blue            .byte ?       ; the blue component of the color (0 - 255)
 ;
 sys_txt_put = $ffe114
 
-txt_put         .namespace
+txt_put          .namespace
                 .virtual 1,s
 c               .byte ?       ; the character to print
                 .endv
@@ -898,7 +878,7 @@ c               .byte ?       ; the character to print
 ;
 sys_txt_print = $ffe118
 
-txt_print       .namespace
+txt_print        .namespace
                 .virtual 1,s
 message         .dword ?      ; the ASCII Z string to print
                 .endv

@@ -200,6 +200,21 @@ SYSTEMCALL short int_disable_all() {
 }
 
 /*
+ * Restore interrupt masking state returned by a previous call to int_enable/int_disable
+ *
+ * NOTE: this is actually provided in the low level assembly
+ *
+ * Inputs:
+ * state = a machine dependent representation of the interrupt masking to restore
+ */
+SYSTEMCALL void int_restore_all(short state) {
+	// NOTE: this code uses Calypsi specific intrinsic functions
+	//       and does a cast that may not be valid
+
+	__restore_interrupt_state((__interrupt_state_t)state);
+}
+
+/*
  * Disable an interrupt by masking it
  *
  * Interrupt number is made by the group number and number within the group.

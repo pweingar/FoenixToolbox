@@ -1,0 +1,603 @@
+###############################################################################
+#                                                                             #
+# Calypsi ISO C compiler for 65816                                version 5.5 #
+#                                                       24/Sep/2024  17:04:27 #
+# Command line: -I. -I./include -DMODEL=17 -DCPU=255 --code-model large       #
+#               --data-model large -l -o stubs.o stubs.c                      #
+#                                                                             #
+###############################################################################
+
+    \ 000000                      .rtmodel version,"1"
+    \ 000000                      .rtmodel codeModel,"large"
+    \ 000000                      .rtmodel dataModel,"large"
+    \ 000000                      .rtmodel core,"65816"
+    \ 000000                      .rtmodel huge,"0"
+    \ 000000                      .extern _Dp
+    \ 000000                      .extern _Mul16
+    \ 000000                      .extern _Vfp
+    \ 000000                      .extern errno
+    \ 000000                      .extern sys_chan_read
+    \ 000000                      .extern sys_chan_write
+    \ 000000                      .extern sys_fsys_close
+    \ 000000                      .extern sys_fsys_delete
+    \ 000000                      .extern sys_fsys_open
+    \ 000000                      .extern sys_fsys_rename
+0001                  /**
+0002                   * @file stubs.c
+0003                   * @brief Stubs for Calypsi I/O routines
+0004                   * @version 0.1
+0005                   * @date 2024-09-02
+0006                   * 
+0007                   * @copyright Copyright (c) 2024
+0008                   * 
+0009                   */
+0010                  
+0011                  #include "include/toolbox.h"
+0012                  
+0013                  #include <errno.h>
+0014                  #include <fcntl.h>
+0015                  #include <stdbool.h>
+0016                  #include <stdint.h>
+0017                  #include <stubs.h>
+0018                  
+0019                  #define MAX_FD 16
+0020                  
+0021                  struct s_file_descriptor {
+0022                  	bool is_open;
+0023                  	int public_fd;
+0024                  	short toolbox_fd;
+0025                  };
+0026                  
+0027                  static bool is_inited = false;
+    \ 000000                      .section zfar,bss
+    \ 000000          is_inited:  .space  2
+0028                  static struct s_file_descriptor file_descriptor[MAX_FD];
+    \ 000000                      .section zfar,bss
+    \ 000000          file_descriptor:
+    \ 000000                      .space  96
+0029                  
+0030                  static void init() {
+0031                  	if (!is_inited) {
+0032                  		is_inited = true;
+0033                  
+0034                  		// Define stdin
+0035                  		file_descriptor[0].is_open = true;
+0036                  		file_descriptor[0].public_fd = 0;
+0037                  		file_descriptor[0].toolbox_fd = 0;
+0038                  
+0039                  		// Define stdout
+0040                  		file_descriptor[1].is_open = true;
+0041                  		file_descriptor[1].public_fd = 0;
+0042                  		file_descriptor[1].toolbox_fd = 0;
+0043                  
+0044                  		// Define stderr
+0045                  		file_descriptor[2].is_open = true;
+0046                  		file_descriptor[2].public_fd = 0;
+0047                  		file_descriptor[2].toolbox_fd = 0;
+0048                  
+0049                  		for (int i = 3; i < MAX_FD; i++) {
+0050                  			file_descriptor[i].is_open = false;
+0051                  			file_descriptor[i].public_fd = 0;
+0052                  			file_descriptor[i].toolbox_fd = 0;
+0053                  		}
+0054                  	}
+0055                  }
+0056                  
+0057                  /**
+0058                   * @brief Find a free file descriptor
+0059                   * 
+0060                   * @return int the index of the available (closed) file descriptor (-1 for error)
+0061                   */
+0062                  static int find_fd() {
+    \ 000000                      .section farcode,text
+    \ 000000 5a       find_fd:    phy
+0063                  	for (int i = 3; i < MAX_FD; i++) {
+    \ 000001 a90300               lda     ##3
+    \ 000004 8301                 sta     1,s
+    \ 000006 a301                 lda     1,s
+    \ 000008 8301                 sta     1,s
+    \ 00000a a301     `?L15`:     lda     1,s
+    \ 00000c 38                   sec
+    \ 00000d e91000               sbc     ##16
+    \ 000010 5003                 bvc     `?L82`
+    \ 000012 490080               eor     ##-32768
+    \ 000015 3005     `?L82`:     bmi     `?L14`
+0064                  		if (!file_descriptor[i].is_open) {
+0065                  			// Found one that is closed... return it's public ID
+0066                  			return file_descriptor[i].public_fd;
+0067                  		}
+0068                  	}
+0069                  
+0070                  	// Return an error
+0071                  	return -1;
+    \ 000017 a9ffff               lda     ##-1
+    \ 00001a 8031                 bra     `?L13`
+    \ 00001c a301     `?L14`:     lda     1,s
+    \ 00001e a20600               ldx     ##6
+    \ 000021 22......             jsl     long:_Mul16
+    \ 000025 aa                   tax
+    \ 000026 bf......             lda     long:file_descriptor,x
+    \ 00002a d023                 bne     `?L18`
+    \ 00002c a9....               lda     ##.word0 file_descriptor
+    \ 00002f 85..                 sta     dp:.tiny _Dp
+    \ 000031 a9....               lda     ##.word2 file_descriptor
+    \ 000034 85..                 sta     dp:.tiny (_Dp+2)
+    \ 000036 a301                 lda     1,s
+    \ 000038 a20600               ldx     ##6
+    \ 00003b 22......             jsl     long:_Mul16
+    \ 00003f 85..                 sta     dp:.tiny (_Dp+4)
+    \ 000041 18                   clc
+    \ 000042 a5..                 lda     dp:.tiny _Dp
+    \ 000044 65..                 adc     dp:.tiny (_Dp+4)
+    \ 000046 85..                 sta     dp:.tiny _Dp
+    \ 000048 a00200               ldy     ##2
+    \ 00004b b7..                 lda     [.tiny _Dp],y
+    \ 00004d          `?L13`:
+0072                  }
+    \ 00004d 7a                   ply
+    \ 00004e 6b                   rtl
+    \ 00004f a301     `?L18`:     lda     1,s
+    \ 000051 1a                   inc     a
+    \ 000052 8301                 sta     1,s
+    \ 000054 80b4                 bra     `?L15`
+0073                  
+0074                  /****************************************************************************
+0075                   * Name: _Stub_open
+0076                   *
+0077                   * Description:
+0078                   *   Open a file.
+0079                   *   The oflag argument are POSIX style mode flags, e.g O_RDONLY which
+0080                   *   are defined in fcntl.h.
+0081                   *   This function is variadic as it optionally can take a mode_t that
+0082                   *   are permissions, e.g 0666. If the file system does not handle
+0083                   *   permissions you can ignore that this function is variadic.
+0084                   *   The return file descriptor shall be a positive number, larger
+0085                   *   than 2 (as 0-2 are used for stdin, stdout and stderr).
+0086                   *   The actual number does not matter and they need not to be
+0087                   *   consequtive, multiple numeric series with gaps between can be used.
+0088                   *
+0089                   * Return the obtained file descriptor or EOF (-1) on failure and set
+0090                   * errno according to the error.
+0091                   *
+0092                   ****************************************************************************/
+0093                  
+0094                  int _Stub_open(const char *path, int oflag, ...) {
+    \ 000000                      .section farcode,text
+    \ 000000                      .public _Stub_open
+    \ 000000          _Stub_open:
+    \ 000000 d4..                 pei     dp:.tiny (_Dp+8)
+    \ 000002 d4..                 pei     dp:.tiny (_Dp+10)
+    \ 000004 5a                   phy
+    \ 000005 5a                   phy
+    \ 000006 5a                   phy
+    \ 000007 8303                 sta     3,s
+    \ 000009 a5..                 lda     dp:.tiny _Dp
+    \ 00000b 85..                 sta     dp:.tiny (_Dp+8)
+    \ 00000d a5..                 lda     dp:.tiny (_Dp+2)
+    \ 00000f 85..                 sta     dp:.tiny (_Dp+10)
+0095                  	int fd = find_fd();
+    \ 000011 22......             jsl     long:find_fd
+    \ 000015 8305                 sta     5,s
+0096                  	if (fd >= 0) {
+    \ 000017 a305                 lda     5,s
+    \ 000019 1003                 bpl     `?L103`
+    \ 00001b 4c....               jmp     .kbank `?L26`
+    \ 00001e          `?L103`:
+0097                  		int mode = 0;
+    \ 00001e a90000               lda     ##0
+    \ 000021 8301                 sta     1,s
+0098                  
+0099                  		if ((oflag & O_RDONLY) == O_RDONLY) {
+    \ 000023 a90100               lda     ##1
+    \ 000026 2303                 and     3,s
+    \ 000028 c90100               cmp     ##1
+    \ 00002b d00b                 bne     `?L29`
+0100                  			mode = FSYS_READ | FSYS_OPEN_EXISTING;
+    \ 00002d a90100               lda     ##1
+    \ 000030 8301                 sta     1,s
+    \ 000032 a301                 lda     1,s
+    \ 000034 8301                 sta     1,s
+    \ 000036 8004                 bra     `?L30`
+    \ 000038 a301     `?L29`:     lda     1,s
+    \ 00003a 8301                 sta     1,s
+    \ 00003c          `?L30`:
+0101                  		}
+0102                  
+0103                  		if ((oflag & O_WRONLY) == O_WRONLY) {
+    \ 00003c a90200               lda     ##2
+    \ 00003f 2303                 and     3,s
+    \ 000041 c90200               cmp     ##2
+    \ 000044 d00b                 bne     `?L32`
+0104                  			mode = FSYS_WRITE;
+    \ 000046 a90200               lda     ##2
+    \ 000049 8301                 sta     1,s
+    \ 00004b a301                 lda     1,s
+    \ 00004d 8301                 sta     1,s
+    \ 00004f 8004                 bra     `?L33`
+    \ 000051 a301     `?L32`:     lda     1,s
+    \ 000053 8301                 sta     1,s
+    \ 000055          `?L33`:
+0105                  		}
+0106                  
+0107                  		if ((oflag & O_RDWR) == O_RDWR) {
+    \ 000055 a90300               lda     ##3
+    \ 000058 2303                 and     3,s
+    \ 00005a c90300               cmp     ##3
+    \ 00005d d00b                 bne     `?L35`
+0108                  			mode = FSYS_READ | FSYS_WRITE;
+    \ 00005f a90300               lda     ##3
+    \ 000062 8301                 sta     1,s
+    \ 000064 a301                 lda     1,s
+    \ 000066 8301                 sta     1,s
+    \ 000068 8004                 bra     `?L36`
+    \ 00006a a301     `?L35`:     lda     1,s
+    \ 00006c 8301                 sta     1,s
+    \ 00006e          `?L36`:
+0109                  		}
+0110                  
+0111                  		if ((oflag & O_CREAT) == O_CREAT) {
+    \ 00006e a90400               lda     ##4
+    \ 000071 2303                 and     3,s
+    \ 000073 c90400               cmp     ##4
+    \ 000076 d00d                 bne     `?L38`
+0112                  			mode |= FSYS_CREATE_NEW | FSYS_CREATE_ALWAYS;
+    \ 000078 a90c00               lda     ##12
+    \ 00007b 0301                 ora     1,s
+    \ 00007d 8301                 sta     1,s
+    \ 00007f a301                 lda     1,s
+    \ 000081 8301                 sta     1,s
+    \ 000083 8004                 bra     `?L39`
+    \ 000085 a301     `?L38`:     lda     1,s
+    \ 000087 8301                 sta     1,s
+    \ 000089          `?L39`:
+0113                  		}
+0114                  
+0115                  		short toolbox_fd = sys_fsys_open(path, mode);
+    \ 000089 a301                 lda     1,s
+    \ 00008b 48                   pha
+    \ 00008c a6..                 ldx     dp:.tiny (_Dp+10)
+    \ 00008e a5..                 lda     dp:.tiny (_Dp+8)
+    \ 000090 22......             jsl     long:sys_fsys_open
+    \ 000094 aa                   tax
+    \ 000095 68                   pla
+    \ 000096 8a                   txa
+    \ 000097 8301                 sta     1,s
+0116                  		if (toolbox_fd >= 0) {
+    \ 000099 a301                 lda     1,s
+    \ 00009b 3038                 bmi     `?L41`
+0117                  			file_descriptor[fd].is_open = true;
+    \ 00009d a305                 lda     5,s
+    \ 00009f a20600               ldx     ##6
+    \ 0000a2 22......             jsl     long:_Mul16
+    \ 0000a6 aa                   tax
+    \ 0000a7 a90100               lda     ##1
+    \ 0000aa 9f......             sta     long:file_descriptor,x
+0118                  			file_descriptor[fd].toolbox_fd = toolbox_fd;
+    \ 0000ae a2....               ldx     ##.word0 file_descriptor
+    \ 0000b1 86..                 stx     dp:.tiny _Dp
+    \ 0000b3 a2....               ldx     ##.word2 file_descriptor
+    \ 0000b6 86..                 stx     dp:.tiny (_Dp+2)
+    \ 0000b8 a305                 lda     5,s
+    \ 0000ba a20600               ldx     ##6
+    \ 0000bd 22......             jsl     long:_Mul16
+    \ 0000c1 85..                 sta     dp:.tiny (_Dp+4)
+    \ 0000c3 18                   clc
+    \ 0000c4 a5..                 lda     dp:.tiny _Dp
+    \ 0000c6 65..                 adc     dp:.tiny (_Dp+4)
+    \ 0000c8 85..                 sta     dp:.tiny _Dp
+    \ 0000ca a301                 lda     1,s
+    \ 0000cc a00400               ldy     ##4
+    \ 0000cf 97..                 sta     [.tiny _Dp],y
+0119                  
+0120                  			return fd;
+    \ 0000d1 a305                 lda     5,s
+    \ 0000d3 800f                 bra     `?L25`
+    \ 0000d5          `?L41`:
+0121                  		} else {
+0122                  			return -1;
+    \ 0000d5 a9ffff               lda     ##-1
+    \ 0000d8 800a                 bra     `?L25`
+    \ 0000da          `?L26`:
+0123                  		}
+0124                  
+0125                  	} else {
+0126                  		errno = ENFILE;
+    \ 0000da a91700               lda     ##23
+    \ 0000dd 8f......             sta     long:errno
+0127                  		return -1;
+    \ 0000e1 a9ffff               lda     ##-1
+    \ 0000e4          `?L25`:
+0128                  	}
+0129                  }
+    \ 0000e4 7a                   ply
+    \ 0000e5 7a                   ply
+    \ 0000e6 7a                   ply
+    \ 0000e7 7a                   ply
+    \ 0000e8 84..                 sty     dp:.tiny (_Dp+10)
+    \ 0000ea 7a                   ply
+    \ 0000eb 84..                 sty     dp:.tiny (_Dp+8)
+    \ 0000ed 6b                   rtl
+0130                  
+0131                  /****************************************************************************
+0132                   * Name: _Stub_close
+0133                   *
+0134                   * Description:
+0135                   *   Close a file
+0136                   *
+0137                   * Return 0 if operation was OK, EOF otherwise and set errno according to
+0138                   * the error.
+0139                   * Note: This will only be invoked for streams opened by _Stub_open(),
+0140                   *       there is no need to check for the standard descriptor 0-2.
+0141                   *
+0142                   ****************************************************************************/
+0143                  
+0144                  int _Stub_close(int fd) {
+    \ 000000                      .section farcode,text
+    \ 000000                      .public _Stub_close
+    \ 000000          _Stub_close:
+    \ 000000 5a                   phy
+    \ 000001 8301                 sta     1,s
+0145                  	if (file_descriptor[fd].is_open) {
+    \ 000003 a301                 lda     1,s
+    \ 000005 a20600               ldx     ##6
+    \ 000008 22......             jsl     long:_Mul16
+    \ 00000c aa                   tax
+    \ 00000d bf......             lda     long:file_descriptor,x
+    \ 000011 f05a                 beq     `?L50`
+0146                  		sys_fsys_close(file_descriptor[fd].toolbox_fd);
+    \ 000013 a9....               lda     ##.word0 file_descriptor
+    \ 000016 85..                 sta     dp:.tiny _Dp
+    \ 000018 a9....               lda     ##.word2 file_descriptor
+    \ 00001b 85..                 sta     dp:.tiny (_Dp+2)
+    \ 00001d a301                 lda     1,s
+    \ 00001f a20600               ldx     ##6
+    \ 000022 22......             jsl     long:_Mul16
+    \ 000026 85..                 sta     dp:.tiny (_Dp+4)
+    \ 000028 18                   clc
+    \ 000029 a5..                 lda     dp:.tiny _Dp
+    \ 00002b 65..                 adc     dp:.tiny (_Dp+4)
+    \ 00002d 85..                 sta     dp:.tiny _Dp
+    \ 00002f a00400               ldy     ##4
+    \ 000032 b7..                 lda     [.tiny _Dp],y
+    \ 000034 22......             jsl     long:sys_fsys_close
+0147                  		file_descriptor[fd].toolbox_fd = 0;
+    \ 000038 a2....               ldx     ##.word0 file_descriptor
+    \ 00003b 86..                 stx     dp:.tiny _Dp
+    \ 00003d a2....               ldx     ##.word2 file_descriptor
+    \ 000040 86..                 stx     dp:.tiny (_Dp+2)
+    \ 000042 a301                 lda     1,s
+    \ 000044 a20600               ldx     ##6
+    \ 000047 22......             jsl     long:_Mul16
+    \ 00004b 85..                 sta     dp:.tiny (_Dp+4)
+    \ 00004d 18                   clc
+    \ 00004e a5..                 lda     dp:.tiny _Dp
+    \ 000050 65..                 adc     dp:.tiny (_Dp+4)
+    \ 000052 85..                 sta     dp:.tiny _Dp
+    \ 000054 a90000               lda     ##0
+    \ 000057 a00400               ldy     ##4
+    \ 00005a 97..                 sta     [.tiny _Dp],y
+0148                  		file_descriptor[fd].is_open = false;
+    \ 00005c a301                 lda     1,s
+    \ 00005e a20600               ldx     ##6
+    \ 000061 22......             jsl     long:_Mul16
+    \ 000065 aa                   tax
+    \ 000066 a90000               lda     ##0
+    \ 000069 9f......             sta     long:file_descriptor,x
+    \ 00006d          `?L50`:
+    \ 00006d          `?L51`:
+0149                  	}
+0150                  	
+0151                  	return 0;
+    \ 00006d a90000               lda     ##0
+0152                  }
+    \ 000070 7a                   ply
+    \ 000071 6b                   rtl
+0153                  
+0154                  /****************************************************************************
+0155                  * Name: _Stub_lseek
+0156                  *
+0157                  * Description:
+0158                  * Change position in a file
+0159                  *
+0160                  * Returns the new position in the file in bytes from the beginning of the
+0161                  * file, or -1 on failure.
+0162                  *
+0163                  ****************************************************************************/
+0164                  
+0165                  long _Stub_lseek(int fd, long offset, int whence) {
+    \ 000000                      .section farcode,text
+    \ 000000                      .public _Stub_lseek
+    \ 000000          _Stub_lseek:
+0166                  	return 0;
+    \ 000000 a90000               lda     ##0
+    \ 000003 a20000               ldx     ##0
+0167                  }
+    \ 000006 6b                   rtl
+0168                  
+0169                  /****************************************************************************
+0170                   * Name: _Stub_read
+0171                   *
+0172                   * Description:
+0173                   *   Read from a file
+0174                   *
+0175                   * Returns the number of characters read. Return -1 on failure and set
+0176                   * errno according to the error.
+0177                   *
+0178                   ****************************************************************************/
+0179                  
+0180                  size_t _Stub_read(int fd, void *buf, size_t count) {
+    \ 000000                      .section farcode,text
+    \ 000000                      .public _Stub_read
+    \ 000000 5a       _Stub_read: phy
+    \ 000001 8301                 sta     1,s
+0181                  	if (file_descriptor[fd].is_open) {
+    \ 000003 a301                 lda     1,s
+    \ 000005 a20600               ldx     ##6
+    \ 000008 22......             jsl     long:_Mul16
+    \ 00000c aa                   tax
+    \ 00000d bf......             lda     long:file_descriptor,x
+    \ 000011 f035                 beq     `?L61`
+0182                  		short n = sys_chan_read(file_descriptor[fd].toolbox_fd, (unsigned char *)buf, (short)count);
+    \ 000013 a5..                 lda     dp:.tiny (_Dp+4)
+    \ 000015 48                   pha
+    \ 000016 a5..                 lda     dp:.tiny (_Dp+2)
+    \ 000018 48                   pha
+    \ 000019 a5..                 lda     dp:.tiny _Dp
+    \ 00001b 48                   pha
+    \ 00001c a9....               lda     ##.word0 file_descriptor
+    \ 00001f 85..                 sta     dp:.tiny _Dp
+    \ 000021 a9....               lda     ##.word2 file_descriptor
+    \ 000024 85..                 sta     dp:.tiny (_Dp+2)
+    \ 000026 a307                 lda     7,s
+    \ 000028 a20600               ldx     ##6
+    \ 00002b 22......             jsl     long:_Mul16
+    \ 00002f 85..                 sta     dp:.tiny (_Dp+4)
+    \ 000031 18                   clc
+    \ 000032 a5..                 lda     dp:.tiny _Dp
+    \ 000034 65..                 adc     dp:.tiny (_Dp+4)
+    \ 000036 85..                 sta     dp:.tiny _Dp
+    \ 000038 a00400               ldy     ##4
+    \ 00003b b7..                 lda     [.tiny _Dp],y
+    \ 00003d 22......             jsl     long:sys_chan_read
+    \ 000041 aa                   tax
+    \ 000042 68                   pla
+    \ 000043 68                   pla
+    \ 000044 68                   pla
+0183                  		return n;
+    \ 000045 8a                   txa
+    \ 000046 8003                 bra     `?L60`
+    \ 000048          `?L61`:
+0184                  	} else {
+0185                  		return -1;
+    \ 000048 a9ffff               lda     ##-1
+    \ 00004b          `?L60`:
+0186                  	}
+0187                  }
+    \ 00004b 7a                   ply
+    \ 00004c 6b                   rtl
+0188                  
+0189                  /****************************************************************************
+0190                   * Name: _Stub_write
+0191                   *
+0192                   * Description:
+0193                   *   Write to a file
+0194                   *
+0195                   * Returns the number of characters actually written. Return -1 on failure and
+0196                   * set errno according to the error.
+0197                   *
+0198                   ****************************************************************************/
+0199                  
+0200                  size_t _Stub_write(int fd, const void *buf, size_t count) {
+    \ 000000                      .section farcode,text
+    \ 000000                      .public _Stub_write
+    \ 000000          _Stub_write:
+    \ 000000 5a                   phy
+    \ 000001 8301                 sta     1,s
+0201                  	if (file_descriptor[fd].is_open) {
+    \ 000003 a301                 lda     1,s
+    \ 000005 a20600               ldx     ##6
+    \ 000008 22......             jsl     long:_Mul16
+    \ 00000c aa                   tax
+    \ 00000d bf......             lda     long:file_descriptor,x
+    \ 000011 f035                 beq     `?L69`
+0202                  		short n = sys_chan_write(file_descriptor[fd].toolbox_fd, (unsigned char *)buf, (short)count);
+    \ 000013 a5..                 lda     dp:.tiny (_Dp+4)
+    \ 000015 48                   pha
+    \ 000016 a5..                 lda     dp:.tiny (_Dp+2)
+    \ 000018 48                   pha
+    \ 000019 a5..                 lda     dp:.tiny _Dp
+    \ 00001b 48                   pha
+    \ 00001c a9....               lda     ##.word0 file_descriptor
+    \ 00001f 85..                 sta     dp:.tiny _Dp
+    \ 000021 a9....               lda     ##.word2 file_descriptor
+    \ 000024 85..                 sta     dp:.tiny (_Dp+2)
+    \ 000026 a307                 lda     7,s
+    \ 000028 a20600               ldx     ##6
+    \ 00002b 22......             jsl     long:_Mul16
+    \ 00002f 85..                 sta     dp:.tiny (_Dp+4)
+    \ 000031 18                   clc
+    \ 000032 a5..                 lda     dp:.tiny _Dp
+    \ 000034 65..                 adc     dp:.tiny (_Dp+4)
+    \ 000036 85..                 sta     dp:.tiny _Dp
+    \ 000038 a00400               ldy     ##4
+    \ 00003b b7..                 lda     [.tiny _Dp],y
+    \ 00003d 22......             jsl     long:sys_chan_write
+    \ 000041 aa                   tax
+    \ 000042 68                   pla
+    \ 000043 68                   pla
+    \ 000044 68                   pla
+0203                  		return n;
+    \ 000045 8a                   txa
+    \ 000046 8003                 bra     `?L68`
+    \ 000048          `?L69`:
+0204                  	} else {
+0205                  		return -1;
+    \ 000048 a9ffff               lda     ##-1
+    \ 00004b          `?L68`:
+0206                  	}
+0207                  }
+    \ 00004b 7a                   ply
+    \ 00004c 6b                   rtl
+0208                  
+0209                  /****************************************************************************
+0210                   * Name: _Stub_rename
+0211                   *
+0212                   * Description:
+0213                   *   Rename a file or directory
+0214                   *
+0215                   * Return 0 on success, -1 otherwise and set errno according to the
+0216                   * error.
+0217                   *
+0218                   ****************************************************************************/
+0219                  
+0220                  int _Stub_rename(const char *oldpath, const char *newpath) {
+    \ 000000                      .section farcode,text
+    \ 000000                      .public _Stub_rename
+    \ 000000          _Stub_rename:
+0221                  	short result = sys_fsys_rename(oldpath, newpath);
+    \ 000000 a5..                 lda     dp:.tiny (_Dp+6)
+    \ 000002 48                   pha
+    \ 000003 a5..                 lda     dp:.tiny (_Dp+4)
+    \ 000005 48                   pha
+    \ 000006 a6..                 ldx     dp:.tiny (_Dp+2)
+    \ 000008 a5..                 lda     dp:.tiny _Dp
+    \ 00000a 22......             jsl     long:sys_fsys_rename
+    \ 00000e aa                   tax
+    \ 00000f 68                   pla
+    \ 000010 68                   pla
+0222                  	return result;
+    \ 000011 8a                   txa
+0223                  }
+    \ 000012 6b                   rtl
+0224                  
+0225                  /****************************************************************************
+0226                   * Name: _Stub_remove
+0227                   *
+0228                   * Description:
+0229                   *   Remove a file or directory
+0230                   *
+0231                   * Return 0 on success, -1 otherwise and set errno according to the
+0232                   * error.
+0233                   *
+0234                   ****************************************************************************/
+0235                  
+0236                  int _Stub_remove(const char *path) {
+    \ 000000                      .section farcode,text
+    \ 000000                      .public _Stub_remove
+    \ 000000          _Stub_remove:
+0237                  	short result = sys_fsys_delete(path);
+    \ 000000 a6..                 ldx     dp:.tiny (_Dp+2)
+    \ 000002 a5..                 lda     dp:.tiny _Dp
+    \ 000004 22......             jsl     long:sys_fsys_delete
+0238                  	return result;
+0239                  }
+    \ 000008 6b                   rtl
+
+##########################
+#                        #
+# Memory sizes (decimal) #
+#                        #
+##########################
+
+Executable              (Text): 627 bytes
+Zero initialized __far   (BSS):  98 bytes

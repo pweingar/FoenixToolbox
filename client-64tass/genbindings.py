@@ -181,7 +181,7 @@ class Function:
 				short_name = self.name()
 			stack_parameters = self.parameters()[1:]
 
-			output.write("{0:<16}.namespace\n".format(short_name))
+			output.write("{0:<16} .namespace\n".format(short_name))
 			output.write("                .virtual 1,s\n")
 
 			for parameter in stack_parameters:
@@ -269,6 +269,8 @@ with open(sys.argv[2], "r") as addresses:
 		if m:
 			func_name = m.group(1).strip()
 			func_address = int(m.group(2), 16)
+
+			print("Name: {0}, Address: {1}".format(func_name, func_address))
 
 			for func in functions:
 				if func.name() == func_name:

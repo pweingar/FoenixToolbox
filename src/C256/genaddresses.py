@@ -12,6 +12,9 @@ with open("addresses.csv", "w") as addresses:
 				line = line[index - 1:]
 
 			line = line.strip()
+			elements = line.split(",")
+			if len(elements) > 1:
+				line = elements[0].strip()
 
 			# Process only actual names
 			if len(line) > 0:

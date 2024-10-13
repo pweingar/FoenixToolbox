@@ -258,9 +258,9 @@ extern SYSTEMCALL short int_disable_all();
  * NOTE: this is actually provided in the low level assembly
  *
  * Inputs:
- * int_mask = machine dependent representation of the interrupt masking
+ * state = a machine dependent representation of the interrupt masking to restore
  */
-extern SYSTEMCALL void int_restore(short int_mask);
+extern SYSTEMCALL void int_restore_all(short state);
 
 /*
  * Disable an interrupt by masking it

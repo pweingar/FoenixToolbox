@@ -209,7 +209,7 @@ static void kbd_process_key(short column, short row, bool is_pressed) {
  * Returns:
  *      The next scancode to be processed, 0 if nothing.
  */
-unsigned short kbd_get_scancode() {
+SYSTEMCALL unsigned short kbd_get_scancode() {
 	if (rb_word_empty(&scan_code_buffer)) {
 		return 0;
 	} else {

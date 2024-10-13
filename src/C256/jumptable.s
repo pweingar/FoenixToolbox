@@ -1,6 +1,7 @@
 	.public sys_proc_exit
 	.public sys_int_enable_all
 	.public sys_int_disable_all
+	.public sys_int_restore_all
 	.public sys_int_disable
 	.public sys_int_enable
 	.public sys_int_register
@@ -20,7 +21,7 @@
 	.public sys_chan_close
 	.public sys_chan_swap
 	.public sys_chan_device
-	.public sys_chan_register
+	.public sys_cdev_register
 	.public sys_bdev_register
 	.public sys_bdev_read
 	.public sys_bdev_write
@@ -55,6 +56,7 @@
 	.public sys_proc_run
 	.public sys_txt_get_capabilities
 	.public sys_txt_set_mode
+	.public sys_txt_set_resolution
 	.public sys_txt_setsizes
 	.public sys_txt_set_xy
 	.public sys_txt_get_xy
@@ -62,6 +64,7 @@
 	.public sys_txt_set_region
 	.public sys_txt_set_color
 	.public sys_txt_get_color
+	.public sys_txt_set_cursor
 	.public sys_txt_set_cursor_visible
 	.public sys_txt_set_font
 	.public sys_txt_get_sizes
@@ -73,6 +76,7 @@
 	.extern proc_exit
 	.extern int_enable_all
 	.extern int_disable_all
+	.extern int_restore_all
 	.extern int_disable
 	.extern int_enable
 	.extern int_register
@@ -127,6 +131,7 @@
 	.extern proc_run
 	.extern txt_get_capabilities
 	.extern txt_set_mode
+	.extern txt_set_resolution
 	.extern txt_setsizes
 	.extern txt_set_xy
 	.extern txt_get_xy
@@ -134,6 +139,7 @@
 	.extern txt_set_region
 	.extern txt_set_color
 	.extern txt_get_color
+	.extern txt_set_cursor
 	.extern txt_set_cursor_visible
 	.extern txt_set_font
 	.extern txt_get_sizes
@@ -147,6 +153,7 @@
 sys_proc_exit:                	jmp long:proc_exit
 sys_int_enable_all:           	jmp long:int_enable_all
 sys_int_disable_all:          	jmp long:int_disable_all
+sys_int_restore_all:          	jmp long:int_restore_all
 sys_int_disable:              	jmp long:int_disable
 sys_int_enable:               	jmp long:int_enable
 sys_int_register:             	jmp long:int_register
@@ -166,7 +173,7 @@ sys_chan_open:                	jmp long:chan_open
 sys_chan_close:               	jmp long:chan_close
 sys_chan_swap:                	jmp long:chan_swap
 sys_chan_device:              	jmp long:chan_device
-sys_chan_register:            	jmp long:cdev_register
+sys_cdev_register:            	jmp long:cdev_register
 sys_bdev_register:            	jmp long:bdev_register
 sys_bdev_read:                	jmp long:bdev_read
 sys_bdev_write:               	jmp long:bdev_write
@@ -201,6 +208,7 @@ sys_kbd_layout:               	jmp long:kbd_layout
 sys_proc_run:                 	jmp long:proc_run
 sys_txt_get_capabilities:     	jmp long:txt_get_capabilities
 sys_txt_set_mode:             	jmp long:txt_set_mode
+sys_txt_set_resolution:       	jmp long:txt_set_resolution
 sys_txt_setsizes:             	jmp long:txt_setsizes
 sys_txt_set_xy:               	jmp long:txt_set_xy
 sys_txt_get_xy:               	jmp long:txt_get_xy
@@ -208,6 +216,7 @@ sys_txt_get_region:           	jmp long:txt_get_region
 sys_txt_set_region:           	jmp long:txt_set_region
 sys_txt_set_color:            	jmp long:txt_set_color
 sys_txt_get_color:            	jmp long:txt_get_color
+sys_txt_set_cursor:           	jmp long:txt_set_cursor
 sys_txt_set_cursor_visible:   	jmp long:txt_set_cursor_visible
 sys_txt_set_font:             	jmp long:txt_set_font
 sys_txt_get_sizes:            	jmp long:txt_get_sizes

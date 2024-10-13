@@ -26,7 +26,7 @@
  *
  * @param result the code to return to the kernel
  */
-extern SYSTEMCALL void sys_exit(short result);
+extern SYSTEMCALL void sys_proc_exit(short result);
 
 /**
  * Enable all interrupts
@@ -303,24 +303,6 @@ extern SYSTEMCALL short sys_bdev_ioctrl(short dev, short command, uint8_t * buff
  *@return the channel ID for the open file (negative if error)
  */
 extern SYSTEMCALL short sys_fsys_open(const char * path, short mode);
-
-/**
- * Close access to a previously open file.
- *
- * @param fd the channel ID for the file
- *
- * @return 0 on success, negative number on failure
- */
-extern SYSTEMCALL short sys_fsys_close(short fd);
-
-/**
- * Attempt to open a directory for scanning
- *
- * @param path the path to the directory to open
- *
- * @return the handle to the directory if >= 0. An error if < 0
- */
-extern SYSTEMCALL short sys_fsys_opendir(const char * path);
 
 /**
  * Close access to a previously open file.

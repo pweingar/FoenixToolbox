@@ -63,15 +63,6 @@ typedef struct s_color4 {
  */
 
 typedef void  (*FUNC_V_2_V)();
-typedef short (*FUNC_V_2_S)();
-typedef short (*FUNC_S_2_S)(char *);
-typedef short (*FUNC_BS_2_S)(unsigned char *, short);
-typedef short (*FUNC_cBS_2_S)(const unsigned char *, short);
-typedef short (*FUNC_B_2_S)(const unsigned short);
-typedef short (*FUNC_LBS_2_S)(long, unsigned char *, short);
-typedef short (*FUNC_LcBS_2_S)(long, const unsigned char *, short);
-typedef short (*FUNC_SBS_2_S)(short, unsigned char *, short);
-typedef short (*FUNC_LB_2_S)(long, short);
 
 /*
  * Type declaration for an interrupt handler
@@ -104,6 +95,38 @@ typedef struct s_sys_info {
     bool has_ethernet;              /* TRUE if an ethernet port is present */
     uint16_t screens;         		/* How many screens are on this computer */
 } t_sys_info, *p_sys_info;
+
+/*
+ * Structure defining a channel device's functions
+ */
+
+
+/*
+ * Structure defining a channel
+ */
+
+typedef struct s_channel {
+    short number;                   // The number of the channel
+    short dev;                      // The number of the channel's device
+    uint8_t data[32];   // A block of state data that the channel code can use for its own purposes
+} t_channel, *p_channel;
+
+typedef struct s_dev_chan {
+    short number;           // The number of the device (assigned by registration)
+    char * name;            // The name of the device
+    short (*init)();        // Initialize the device
+    short (*open)(t_channel * chan, const uint8_t * path, short mode); //  -- open a channel for the device
+    short (*close)(t_channel * chan);	// Called when a channel is closed
+    short (*read)(t_channel * chan, uint8_t * buffer, short size);	// Read a a buffer from the device
+    short (*readline)(t_channel * chan, uint8_t * buffer, short size);	// Read a line of text from the device
+    short (*read_b)(t_channel * chan);      //  -- read a single uint8_t from the device
+    short (*write)(t_channel * chan, const uint8_t * buffer, short size);	// Write a buffer to the device
+    short (*write_b)(t_channel * chan, const uint8_t b) ; // Write a single uint8_t to the device
+    short (*status)(t_channel * chan); // Get the status of the device
+    short (*flush)(t_channel * chan); // Ensure that any pending writes to teh device have been completed
+    short (*seek)(t_channel * chan, long position, short base); // Attempt to move the "cursor" position in the channel
+    short (*ioctrl)(t_channel * chan, short command, uint8_t * buffer, short size); // Issue a control command to the device
+} t_dev_chan, *p_dev_chan;
 
 /*
  * Structure defining a block device's functions
