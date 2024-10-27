@@ -11,6 +11,7 @@
 
 #include <ctype.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1009,13 +1010,13 @@ unsigned short atoi_hex(char * hex) {
 short fsys_pgz_loader(short chan, long destination, long * start) {
     unsigned char * chunk = 0;
     unsigned char * dest = 0;
-    long file_idx = 0;          /* Offset within the file */
-    long segment_idx = 0;       /* Offset within a segment */
-    long address = -1;          /* Current segment address */
-    long count = -1;            /* Current segment size */
-    short use_32bits = 0;       /* File format is either 24-bit or 32-bit */
-    short size_idx = 0;         /* Expected offset for first byte of the size */
-    short data_idx = 0;         /* Expected offset for the first byte of the data */
+    uint32_t file_idx = 0;          /* Offset within the file */
+    uint32_t segment_idx = 0;       /* Offset within a segment */
+    uint32_t address = 0xffffffff;  /* Current segment address */
+    uint32_t count = 0xffffffff;    /* Current segment size */
+    short use_32bits = 0;           /* File format is either 24-bit or 32-bit */
+    uint32_t size_idx = 0;          /* Expected offset for first byte of the size */
+    uint32_t data_idx = 0;          /* Expected offset for the first byte of the data */
     short result = 0;
 
     TRACE("fsys_pgz_loader");
@@ -1058,19 +1059,19 @@ short fsys_pgz_loader(short chan, long destination, long * start) {
                             /* We're in the address bytes */
                             switch (segment_idx) {
                                 case 0:
-                                    address = chunk[i];
+                                    address = (uint32_t)chunk[i];
                                     count = -1;
                                     break;
                                 case 1:
-                                    address = address | chunk[i] << 8;
+                                    address = address | ((uint32_t)chunk[i])  << 8;
                                     break;
                                 case 2:
-                                    address = address | (long) chunk[i] << 16;
-                                    log_num(LOG_INFO, "PGZ 24-bit address: ", address);
+                                    address = address | ((uint32_t)chunk[i]) << 16;
+                                    INFO1("PGZ 24-bit address: %06lx", address);
                                     break;
                                 case 3:
-                                    address = address | (long) chunk[i] << 24;
-                                    log_num(LOG_INFO, "PGZ 32-bit address: ", address);
+                                    address = address | ((uint32_t)chunk[i]) << 24;
+                                    INFO1("PGZ 32-bit address: %08lx", address);
                                     break;
                             }
 
@@ -1079,24 +1080,26 @@ short fsys_pgz_loader(short chan, long destination, long * start) {
                             switch (segment_idx - size_idx) {
                                 case 0:
                                     dest = (unsigned char *)address;
-                                    count = chunk[i];
+                                    count = (uint32_t)chunk[i];
                                     break;
                                 case 1:
-                                    count = count | chunk[i] << 8;
+                                    count = count | ((uint32_t)chunk[i]) << 8;
                                     break;
                                 case 2:
-                                    count = count | (long) chunk[i] << 16;
+                                    count = count | ((uint32_t)chunk[i]) << 16;
                                     if (!use_32bits && count == 0) {
                                         *start = address;
+                                        INFO1("PGZ 24-bit start address: %06lx", start);
                                     }
-                                    log_num(LOG_INFO, "PGZ 24-bit count: ", count);
+                                    INFO1("PGZ 24-bit count: %06lx", count);
                                     break;
                                 case 3:
-                                    count = count | (long) chunk[i] << 24;
+                                    count = count | ((uint32_t)chunk[i]) << 24;
                                     if (use_32bits && count == 0) {
                                         *start = address;
+                                        INFO1("PGZ 32-bit start address: %08lx", start);
                                     }
-                                    log_num(LOG_INFO, "PGZ 32-bit count: ", count);
+                                    INFO1("PGZ 32-bit count: %08lx", count);
                                     break;
                             }
                         } else {
@@ -1120,6 +1123,7 @@ short fsys_pgz_loader(short chan, long destination, long * start) {
 
             } else {
                 /* We've reached the end of the file */
+                INFO("Reached end of PGZ file.");
                 break;
             }
         }
