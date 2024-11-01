@@ -293,7 +293,7 @@ void kbd_scan_optical() {
  * @brief Handle an IRQ to query the keyboard
  * 
  */
-void kbd_handle_irq() {
+SYSTEMCALL void kbd_handle_irq() {
 	// The scanning process is different depending on the keyboard type:
 	//
 	// The mechanical keyboard is a simple matrix of keys, and we need to scan it to see

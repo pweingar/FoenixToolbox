@@ -77,3 +77,5 @@ txt_set_border
 txt_set_border_color
 txt_put
 txt_print
+
+kbd_handle_irq

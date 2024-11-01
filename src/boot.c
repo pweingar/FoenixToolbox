@@ -168,9 +168,9 @@ bool is_bootable(enum boot_src_e device, boot_record_p * boot_record) {
 			break;
 
 		case BOOT_SRC_SD1:
-			// if (fsys_stat("/sd1/fnxboot.pgx", &file_info) || fsys_stat("/sd1/fnxboot.pgz", &file_info)) {
-			// 	return true;
-			// }
+			if (fsys_stat("/sd1/fnxboot.pgx", &file_info) || fsys_stat("/sd1/fnxboot.pgz", &file_info)) {
+				return true;
+			}
 			break;
 
 		default:
@@ -298,14 +298,17 @@ void boot_from(enum boot_src_e device, boot_record_p boot_record) {
 			if (fsys_stat("/sd0/fnxboot.pgz", &file_info) >= 0) {
 				printf("Booting: /sd0/fnxboot.pgz\n");
 				boot_reset_screen();
-				proc_run("/sd0/fnxboot.pgz", 0, boot_args);
+				result = proc_run("/sd0/fnxboot.pgz", 0, boot_args);
+				if (result != 0) {
+					printf("Could not load /sd0/fnxboot.pgz: %d\n", result);
+				}
 
 			} else if (fsys_stat("/sd0/fnxboot.pgx", &file_info) >= 0) {
 				printf("Booting: /sd0/fnxboot.pgx\n");
 				boot_reset_screen();
 				result = proc_run("/sd0/fnxboot.pgx", 0, boot_args);
 				if (result != 0) {
-					printf("proc_run error: %d\n", result);
+					printf("Could not load /sd0/fnxboot.pgx: %d\n", result);
 				}
 			}
 			break;
@@ -314,14 +317,17 @@ void boot_from(enum boot_src_e device, boot_record_p boot_record) {
 			if (fsys_stat("/sd1/fnxboot.pgz", &file_info) >= 0) {
 				printf("Booting: /sd1/fnxboot.pgz\n");
 				boot_reset_screen();
-				proc_run("/sd0/fnxboot.pgz", 0, boot_args);
+				result = proc_run("/sd1/fnxboot.pgz", 0, boot_args);
+				if (result != 0) {
+					printf("Could not load /sd1/fnxboot.pgz: %d\n", result);
+				}
 
 			} else if (fsys_stat("/sd1/fnxboot.pgx", &file_info) >= 0) {
 				printf("Booting: /sd1/fnxboot.pgx\n");
 				boot_reset_screen();
 				result = proc_run("/sd1/fnxboot.pgx", 0, boot_args);
 				if (result != 0) {
-					printf("proc_run error: %d\n", result);
+					printf("Could not load /sd1/fnxboot.pgx: %d\n", result);
 				}
 			}
 			break;

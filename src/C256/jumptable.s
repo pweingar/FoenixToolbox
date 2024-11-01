@@ -72,6 +72,7 @@
 	.public sys_txt_set_border_color
 	.public sys_txt_put
 	.public sys_txt_print
+	.public sys_kbd_handle_irq
 
 	.extern proc_exit
 	.extern int_enable_all
@@ -147,6 +148,7 @@
 	.extern txt_set_border_color
 	.extern txt_put
 	.extern txt_print
+	.extern kbd_handle_irq
 
 	.section jumptable
 
@@ -224,3 +226,4 @@ sys_txt_set_border:           	jmp long:txt_set_border
 sys_txt_set_border_color:     	jmp long:txt_set_border_color
 sys_txt_put:                  	jmp long:txt_put
 sys_txt_print:                	jmp long:txt_print
+sys_kbd_handle_irq:				jmp long:kbd_handle_irq

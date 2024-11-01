@@ -404,7 +404,7 @@ static void kbd_process_set2_bytecode(uint8_t byte_code) {
  * @brief Handle an IRQ to query the keyboard
  * 
  */
-void kbd_handle_irq() {
+SYSTEMCALL void kbd_handle_irq() {
 	// Check to see if there is a keyboard bytecode waiting... process it if so
 	if ((*PS2_STAT & PS2_STAT_KBD_EMP) == 0) {
 		kbd_process_set2_bytecode(*PS2_KBD_IN);

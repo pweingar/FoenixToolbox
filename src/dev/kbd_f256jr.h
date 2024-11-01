@@ -19,7 +19,7 @@
  * @brief Handle an IRQ to query the keyboard
  * 
  */
-extern void kbd_handle_irq();
+extern SYSTEMCALL void kbd_handle_irq();
 
 /*
  * Try to retrieve the next scancode from the keyboard.
