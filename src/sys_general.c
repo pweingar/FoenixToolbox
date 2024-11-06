@@ -36,7 +36,7 @@ const char * sys_model_name[] = {
  * Inputs:
  * info = pointer to a s_MODEL_info structure to fill out
  */
-void sys_get_information(p_sys_info info) {
+SYSTEMCALL void sys_get_information(p_sys_info info) {
     unsigned long gabe_id = 0;
     unsigned short genx_model_id = 0;
     unsigned short clock_speed = 0;

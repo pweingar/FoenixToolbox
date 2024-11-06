@@ -5,6 +5,7 @@
 #ifndef __SYS_GENERAL_H
 #define __SYS_GENERAL_H
 
+#include "sys_macros.h"
 #include "constants.h"
 #include "features.h"
 #include "sys_types.h"
@@ -65,7 +66,7 @@
  * Inputs:
  * info = pointer to a s_sys_info structure to fill out
  */
-extern void sys_get_information(p_sys_info info);
+extern SYSTEMCALL void sys_get_information(p_sys_info info);
 
 #if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X
 /*
