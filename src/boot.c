@@ -168,7 +168,7 @@ bool is_bootable(enum boot_src_e device, boot_record_p * boot_record) {
 			break;
 
 		case BOOT_SRC_SD1:
-			if (fsys_stat("/sd1/fnxboot.pgx", &file_info) || fsys_stat("/sd1/fnxboot.pgz", &file_info)) {
+			if ((fsys_stat("/sd1/fnxboot.pgx", &file_info) >= 0) || (fsys_stat("/sd1/fnxboot.pgz", &file_info) >= 0)) {
 				return true;
 			}
 			break;
