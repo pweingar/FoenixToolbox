@@ -6,8 +6,8 @@
 	.public sys_int_enable
 	.public sys_int_register
 	.public sys_int_pending
-	.public sys_get_info
 	.public sys_int_clear
+	.public sys_get_info
 	.public sys_chan_read_b
 	.public sys_chan_read
 	.public sys_chan_readline
@@ -40,8 +40,6 @@
 	.public sys_fsys_mkdir
 	.public sys_fsys_delete
 	.public sys_fsys_rename
-	.public sys_fsys_set_cwd
-	.public sys_fsys_get_cwd
 	.public sys_fsys_load
 	.public sys_fsys_register_loader
 	.public sys_fsys_stat
@@ -73,6 +71,9 @@
 	.public sys_txt_put
 	.public sys_txt_print
 	.public sys_kbd_handle_irq
+	.public sys_reboot
+	.public sys_proc_set_shell
+	.public sys_proc_get_result
 
 	.extern proc_exit
 	.extern int_enable_all
@@ -82,8 +83,8 @@
 	.extern int_enable
 	.extern int_register
 	.extern int_pending
-	.extern sys_get_information
 	.extern int_clear
+	.extern sys_get_information
 	.extern chan_read_b
 	.extern chan_read
 	.extern chan_readline
@@ -116,8 +117,6 @@
 	.extern fsys_mkdir
 	.extern fsys_delete
 	.extern fsys_rename
-	.extern fsys_set_cwd
-	.extern fsys_get_cwd
 	.extern fsys_load
 	.extern fsys_register_loader
 	.extern fsys_stat
@@ -149,6 +148,9 @@
 	.extern txt_put
 	.extern txt_print
 	.extern kbd_handle_irq
+	.extern reboot
+	.extern proc_set_shell
+	.extern proc_get_result
 
 	.section jumptable
 
@@ -160,8 +162,8 @@ sys_int_disable:              	jmp long:int_disable
 sys_int_enable:               	jmp long:int_enable
 sys_int_register:             	jmp long:int_register
 sys_int_pending:              	jmp long:int_pending
-sys_get_info:                 	jmp long:sys_get_information
 sys_int_clear:                	jmp long:int_clear
+sys_get_info:                 	jmp long:sys_get_information
 sys_chan_read_b:              	jmp long:chan_read_b
 sys_chan_read:                	jmp long:chan_read
 sys_chan_readline:            	jmp long:chan_readline
@@ -194,8 +196,6 @@ sys_fsys_set_label:           	jmp long:fsys_set_label
 sys_fsys_mkdir:               	jmp long:fsys_mkdir
 sys_fsys_delete:              	jmp long:fsys_delete
 sys_fsys_rename:              	jmp long:fsys_rename
-sys_fsys_set_cwd:             	jmp long:fsys_set_cwd
-sys_fsys_get_cwd:             	jmp long:fsys_get_cwd
 sys_fsys_load:                	jmp long:fsys_load
 sys_fsys_register_loader:     	jmp long:fsys_register_loader
 sys_fsys_stat:                	jmp long:fsys_stat
@@ -226,4 +226,7 @@ sys_txt_set_border:           	jmp long:txt_set_border
 sys_txt_set_border_color:     	jmp long:txt_set_border_color
 sys_txt_put:                  	jmp long:txt_put
 sys_txt_print:                	jmp long:txt_print
-sys_kbd_handle_irq:				jmp long:kbd_handle_irq
+sys_kbd_handle_irq:           	jmp long:kbd_handle_irq
+sys_reboot:                   	jmp long:reboot
+sys_proc_set_shell:           	jmp long:proc_set_shell
+sys_proc_get_result:          	jmp long:proc_get_result

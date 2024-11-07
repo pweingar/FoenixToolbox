@@ -321,6 +321,18 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
     }
 }
 
+/**
+ * @brief Force the system to reboot
+ * 
+ */
+SYSTEMCALL void reboot() {
+	// Authorize GABE to force a CPU reboot and trigger the reboot
+	uint8_t * reboot_auth = (uint8_t *)GABE_RST_AUTH;
+	reboot_auth[0] = 0xde;
+	reboot_auth[1] = 0xad;
+	*GABE_MSTR_CTRL |= GABE_CTRL_WRM_RST;
+}
+
 #if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X
 static short genx_leds = 0;
 

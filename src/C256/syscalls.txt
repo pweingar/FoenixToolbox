@@ -79,3 +79,6 @@ txt_put
 txt_print
 
 kbd_handle_irq
+reboot
+proc_set_shell
+proc_get_result
