@@ -17,12 +17,11 @@
 
 #include "sys_macros.h"
 
-/*
+/**
  * Initialize the memory management system
  *
- * @param top_of_ram initial value for the top of system RAM
  */
-extern void mem_init(unsigned long top_of_ram);
+extern void mem_init();
 
 /**
  * Return the top of system RAM... the user program must not use any

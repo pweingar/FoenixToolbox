@@ -442,6 +442,17 @@ void boot_screen() {
 	long jiffies_target = 0;
 	char message[80];
 
+	// Locate the tile maps based on the top of ram
+	uint32_t ram_index = mem_get_ramtop();
+	ram_index -= 8 * 272;
+	tile_set_memory_base = ram_index;
+	ram_index -= 2 * 42 * 32;
+	tile_map_memory_base = ram_index;
+
+	// Locate the sprites
+	ram_index -= 5 * (32 * 32);
+	sprite_ram_base = ram_index;
+
 	// Check the DIP switches to see if we should include RAM booting
 	// Choose the correct boot chain accordingly
 

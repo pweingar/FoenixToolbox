@@ -7,8 +7,8 @@
 static t_tile_set tile_set_shadow[VKY_TILESET_MAX];
 static t_tile_map tile_map_shadow[VKY_TILEMAP_MAX];
 
-const uint32_t tile_set_memory_base = 0x002000;
-const uint32_t tile_map_memory_base = 0x003000;
+uint32_t tile_set_memory_base = 0x002000;
+uint32_t tile_map_memory_base = 0x003000;
 
 /**
  * @brief Setup a tile set

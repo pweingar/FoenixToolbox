@@ -90,7 +90,7 @@ void initialize() {
 	sys_get_information(&info);
 
     /* Initialize the memory system */
-    mem_init(0x3d0000);
+    mem_init();
 
     // /* Hide the mouse */
     // mouse_set_visible(0);

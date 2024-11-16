@@ -15,6 +15,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+extern uint32_t tile_set_memory_base;
+extern uint32_t tile_map_memory_base;
+
 /**
  * @brief Setup a tile set
  * 
