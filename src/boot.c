@@ -77,6 +77,8 @@ static enum boot_src_e boot_chain[MAX_BOOT_SRC];
 static bool bootable[MAX_BOOT_SRC];
 static short boot_src_cnt = 0;
 
+extern t_sys_info info;
+
 /**
  * @brief A holder for empty arguments list so we have something to point to when starting a binary file
  * 
@@ -85,6 +87,37 @@ static char * boot_args[] = {
 	0,
 	0
 };
+
+/**
+ * @brief Display the system information
+ * 
+ */
+static void display_sysinfo() {
+	// 8 x 22 region
+	t_rect region;
+	region.size.height = 8;
+	region.size.width = 23;
+	region.origin.x = 80 - region.size.width;
+	region.origin.y = 60 - region.size.height;
+
+	txt_set_region(0, &region);
+	
+	printf("Foenix Retro Systems\n");
+	printf("Model   %s\n", info.model_name);
+	printf("CPU     %s\n", info.cpu_name);
+	printf("Clock   %lu MHz\n", info.cpu_clock_khz / (long)1000);
+	printf("Memory  %d KB\n", (int)(info.system_ram_size / ((long)1024 * (long)1024)));
+	printf("FPGA    %04X %04X.%04X\n", info.fpga_model, info.fpga_version, info.fpga_subver);
+	printf("Toolbox v%d.%02d.%04d\n", info.mcp_version, info.sub_model, info.mcp_build);
+
+	region.size.width = 0;
+	region.size.height = 0;
+	region.origin.x = 0;
+	region.origin.y = 0;
+
+	txt_set_region(0, &region);
+	txt_set_xy(0, 0, 0);
+}
 
 /**
  * @brief Check the memory indicated to validate it is a boot record... if so, launch the code indicated
@@ -458,6 +491,9 @@ void boot_screen() {
 	// Make tile map 0 the top layer
 
 	*tvky_layers = 0x0444;
+
+	// Display the system information;
+	display_sysinfo();
 
 	// Set up the text window for the boot messaging
 	t_rect boot_text_window;
