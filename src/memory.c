@@ -25,6 +25,10 @@ unsigned long mem_top_of_ram = 0;
 void mem_init() {
 #if MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
     mem_top_of_ram = 0x06ffff;
+#elif MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_FMX
+	mem_top_of_ram = 0x37ffff;
+#else
+	mem_top_of_ram = 0x37ffff;
 #endif
 }
 
