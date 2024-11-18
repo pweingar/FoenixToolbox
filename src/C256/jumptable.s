@@ -74,6 +74,17 @@
 	.public sys_reboot
 	.public sys_proc_set_shell
 	.public sys_proc_get_result
+	.public sys_iecll_ioinit
+	.public sys_iecll_in
+	.public sys_iecll_eoi
+	.public sys_iecll_out
+	.public sys_iecll_talk
+	.public sys_iecll_talk_sa
+	.public sys_iecll_untalk
+	.public sys_iecll_listen
+	.public sys_iecll_listen_sa
+	.public sys_iecll_unlisten
+	.public sys_iecll_reset
 
 	.extern proc_exit
 	.extern int_enable_all
@@ -151,6 +162,17 @@
 	.extern reboot
 	.extern proc_set_shell
 	.extern proc_get_result
+	.extern iecll_ioinit
+	.extern iecll_in
+	.extern iecll_eoi
+	.extern iecll_out
+	.extern iecll_talk
+	.extern iecll_talk_sa
+	.extern iecll_untalk
+	.extern iecll_listen
+	.extern iecll_listen_sa
+	.extern iecll_unlisten
+	.extern iecll_reset
 
 	.section jumptable
 
@@ -230,3 +252,14 @@ sys_kbd_handle_irq:           	jmp long:kbd_handle_irq
 sys_reboot:                   	jmp long:reboot
 sys_proc_set_shell:           	jmp long:proc_set_shell
 sys_proc_get_result:          	jmp long:proc_get_result
+sys_iecll_ioinit:             	jmp long:iecll_ioinit
+sys_iecll_in:                 	jmp long:iecll_in
+sys_iecll_eoi:                	jmp long:iecll_eoi
+sys_iecll_out:                	jmp long:iecll_out
+sys_iecll_talk:               	jmp long:iecll_talk
+sys_iecll_talk_sa:            	jmp long:iecll_talk_sa
+sys_iecll_untalk:             	jmp long:iecll_untalk
+sys_iecll_listen:             	jmp long:iecll_listen
+sys_iecll_listen_sa:          	jmp long:iecll_listen_sa
+sys_iecll_unlisten:           	jmp long:iecll_unlisten
+sys_iecll_reset:              	jmp long:iecll_reset

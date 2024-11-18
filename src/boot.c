@@ -108,7 +108,7 @@ static void display_sysinfo() {
 	printf("Clock   %lu MHz\n", info.cpu_clock_khz / (long)1000);
 	printf("Memory  %d KB\n", (int)(info.system_ram_size / ((long)1024 * (long)1024)));
 	printf("FPGA    %04X %04X.%04X\n", info.fpga_model, info.fpga_version, info.fpga_subver);
-	printf("Toolbox v%d.%02d.%04d\n", info.mcp_version, info.sub_model, info.mcp_build);
+	printf("Toolbox v%d.%02d.%04d\n", info.mcp_version, info.mcp_rev, info.mcp_build);
 
 	region.size.width = 0;
 	region.size.height = 0;

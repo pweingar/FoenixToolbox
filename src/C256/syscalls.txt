@@ -82,3 +82,15 @@ kbd_handle_irq
 reboot
 proc_set_shell
 proc_get_result
+
+iecll_ioinit
+iecll_in
+iecll_eoi
+iecll_out
+iecll_talk
+iecll_talk_sa
+iecll_untalk
+iecll_listen
+iecll_listen_sa
+iecll_unlisten
+iecll_reset
