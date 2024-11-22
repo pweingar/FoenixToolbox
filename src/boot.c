@@ -472,10 +472,9 @@ void boot_screen() {
 	// Make sure that ANSI escape codes will be honored
 	chan_ioctrl(0, CON_IOCTRL_ANSI_ON, 0, 0);
 
-	// TODO: debug this
-	// txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE | VKY_MCR_TILE);
-	*tvky_mstr_ctrl = (uint16_t)(VKY_MCR_TILE | VKY_MCR_SPRITE | VKY_MCR_GRAPHICS | VKY_MCR_TEXT_OVERLAY | VKY_MCR_TEXT);
-
+	txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE | TXT_MODE_TILE);
+	txt_set_resolution(0, 640, 480);
+	
 	tvky_bg_color->blue = 0;
 	tvky_bg_color->green = 0;
 	tvky_bg_color->red = 0;

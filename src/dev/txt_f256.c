@@ -63,10 +63,10 @@ t_extent f256_resolution;               /* The current display resolution */
 t_extent f256_font_size;                /* The current font size */
 t_extent f256_max_size;                 /* The size of the screen in characters (without border removed) */
 t_extent f256_visible_size;             /* The size of the visible screen in characters (with border removed) */
-uint8_t f256_border_width;              /* Width of the border on one side */
-uint8_t f256_border_height;             /* Height of the border on one side */
-uint8_t f256_color;               		/* The current color */
-uint16_t msr_shadow;               		/* A shadow register for the Master Control Register */
+uint8_t f256_border_width = 0;          /* Width of the border on one side */
+uint8_t f256_border_height = 0;         /* Height of the border on one side */
+uint8_t f256_color = 0;            		/* The current color */
+uint16_t mcr_shadow = 0;           		/* A shadow register for the Master Control Register */
 
 /**
  * Gets the description of a screen's capabilities
@@ -141,23 +141,45 @@ static void txt_f256_get_sizes(p_extent text_size, p_extent pixel_size) {
  */
 static short txt_f256_set_mode(short mode) {
     /* Turn off anything not set */
-    msr_shadow &= ~(TXT_MODE_SLEEP | TXT_MODE_TEXT);
+    mcr_shadow &= ~(VKY_MCR_SLEEP | VKY_MCR_TEXT | VKY_MCR_TEXT_OVERLAY | VKY_MCR_GRAPHICS
+		| VKY_MCR_BITMAP | VKY_MCR_TILE | VKY_MCR_SPRITE);
 
     if (mode & TXT_MODE_SLEEP) {
-        /* Put the monitor to sleep */
-        msr_shadow |= VKY_MCR_SLEEP;
-        *tvky_mstr_ctrl = msr_shadow;
-        return 0;
-
-    } else if (mode & TXT_MODE_TEXT) {
-        /* Put on text mode */
-        msr_shadow |= VKY_MCR_TEXT;
-        *tvky_mstr_ctrl = msr_shadow;
+        /* Put the monitor to sleep: overrides all other option bits */
+        mcr_shadow |= VKY_MCR_SLEEP;
+        *tvky_mstr_ctrl = mcr_shadow;
         return 0;
 
     } else {
-        /* Unsupported mode */
-        return -1;
+        if (mode & ~(TXT_MODE_TEXT | TXT_MODE_BITMAP | TXT_MODE_SPRITE | TXT_MODE_TILE)) {
+            /* A mode bit was set beside one of the supported ones... */
+            return -1;
+
+        } else {
+            if (mode & TXT_MODE_TEXT) {
+                mcr_shadow |= VKY_MCR_TEXT;
+            }
+
+            if (mode & TXT_MODE_BITMAP) {
+                mcr_shadow |= VKY_MCR_GRAPHICS | VKY_MCR_BITMAP;
+            }
+
+            if (mode & TXT_MODE_SPRITE) {
+                mcr_shadow |= VKY_MCR_GRAPHICS | VKY_MCR_SPRITE;
+            }
+
+            if (mode & TXT_MODE_TILE) {
+                mcr_shadow |= VKY_MCR_GRAPHICS | VKY_MCR_TILE;
+            }
+
+            if ((mcr_shadow & (VKY_MCR_GRAPHICS | VKY_MCR_TEXT)) == (VKY_MCR_GRAPHICS | VKY_MCR_TEXT)) {
+                mcr_shadow |= VKY_MCR_TEXT_OVERLAY;
+            }
+
+            *tvky_mstr_ctrl = mcr_shadow;
+			INFO1("Setting Vicky MCR: 0x%04x", mcr_shadow);
+            return 0;
+        }
     }
 }
 
@@ -174,50 +196,50 @@ static short txt_f256_set_resolution(short width, short height) {
 
     /* Turn off resolution bits */
     /* TODO: there gotta be a better way to do that */
-    msr_shadow &= ~(VKY_MCR_RES_MASK);
+    mcr_shadow &= ~(VKY_MCR_RES_MASK);
 
     if ((width == 640) && (height == 480)) {
-        msr_shadow |= VKY_MCR_RES_640x480;
+        mcr_shadow |= VKY_MCR_RES_640x480;
         f256_resolution.width = width;
         f256_resolution.height = height;
 
         // Recalculate the size of the screen
         txt_f256_set_sizes();
 
-        *tvky_mstr_ctrl = msr_shadow;
+        *tvky_mstr_ctrl = mcr_shadow;
         return 0;
     }
     else if ((width == 640) && (height == 400)) {
-        msr_shadow |= VKY_MCR_RES_640x400;
+        mcr_shadow |= VKY_MCR_RES_640x400;
         f256_resolution.width = width;
         f256_resolution.height = height;
 
         // Recalculate the size of the screen
         txt_f256_set_sizes();
 
-        *tvky_mstr_ctrl = msr_shadow;
+        *tvky_mstr_ctrl = mcr_shadow;
         return 0;
     }
     else if ((width == 320) && (height == 240)) {
-        msr_shadow |= VKY_MCR_RES_320x240;
+        mcr_shadow |= VKY_MCR_RES_320x240;
         f256_resolution.width = width;
         f256_resolution.height = height;
 
         // Recalculate the size of the screen
         txt_f256_set_sizes();
 
-        *tvky_mstr_ctrl = msr_shadow;
+        *tvky_mstr_ctrl = mcr_shadow;
         return 0;
     }
     else if ((width == 320) && (height == 200)) {
-        msr_shadow |= VKY_MCR_RES_320x200;
+        mcr_shadow |= VKY_MCR_RES_320x200;
         f256_resolution.width = width;
         f256_resolution.height = height;
 
         // Recalculate the size of the screen
         txt_f256_set_sizes();
 
-        *tvky_mstr_ctrl = msr_shadow;
+        *tvky_mstr_ctrl = mcr_shadow;
         return 0;
     }
 
@@ -583,7 +605,7 @@ static void txt_f256_init() {
     f256_enable_set_sizes = 0;
 
     /* Start with nothing on */
-    msr_shadow = 0;
+    mcr_shadow = 0;
 
     /* Define the capabilities */
 
