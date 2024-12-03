@@ -1,5 +1,5 @@
 
-UNIT := F256K
+UNIT := F256K2
 
 # Define OS-dependent variables
 
@@ -40,6 +40,13 @@ else ifeq ($(UNIT),F256)
 	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256jr.c indicators_c256.c interrupts_f256.c sdc_f256.c iec.c # timers_c256.c
 	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large --target f256
 else ifeq ($(UNIT),F256K)
+	CC=cc65816
+	AS=as65816
+	AR=nlib
+
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_f256.c iec.c # timers_c256.c 
+	CFLAGS_FOR_UNIT=-DMODEL=18 -DCPU=255 --code-model large --data-model large --target f256
+else ifeq ($(UNIT),F256K2)
 	CC=cc65816
 	AS=as65816
 	AR=nlib

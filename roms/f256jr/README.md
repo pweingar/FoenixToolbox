@@ -1,6 +1,6 @@
-# ROM Files for the F256jr
+# ROM Files for the F256JRe
 
-This directory contains BIN files for programming the F256jr flash memory with the Foenix Toolbox.
+This directory contains BIN files for programming the F256JRe flash memory with the Foenix Toolbox.
 
 ## How to Install
 

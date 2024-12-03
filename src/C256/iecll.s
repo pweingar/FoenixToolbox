@@ -102,7 +102,7 @@ release_RST:	release_bit IEC_RST_o
 ;;
 
 sleep_20us:		phx
-	            ldx #20
+	            ldx #14
 _loop$       	dex
 				bne _loop$
 				plx
@@ -635,7 +635,7 @@ iecll_eoi		php
 				rtl
 
 not_eoi$		plp
-				lda #0
+				lda ##0
 				rtl
 
 ;
