@@ -33,10 +33,21 @@ extern void proc_exec(long start, long stack, int argc, char * argv[]);
  */
 extern SYSTEMCALL void proc_exit(int result);
 
+/**
+ * @brief Set the address of the code that should handle a process exiting
+ * 
+ * By default, the address is 0, which means that the system should reboot when the process exits
+ * If any other number is provided, the code at that location will be called as a far call using the
+ * simplecall convention. The first argument will be the return result passed to proc_exit
+ * 
+ * @param address the address of the handler code for proc_exit
+ */
+extern SYSTEMCALL void proc_set_shell(uint32_t address);
+
 /*
  * Return the result code of the previously running user process
  */
-extern int proc_get_result();
+extern SYSTEMCALL int proc_get_result();
 
 /*
  * Find an executable binary matching the path, load it, and execute it

@@ -8,15 +8,17 @@
 
 #include "log_level.h"
 #ifndef DEFAULT_LOG_LEVEL
-    #define DEFAULT_LOG_LEVEL LOG_ERROR
+    #define DEFAULT_LOG_LEVEL LOG_INFO
 #endif
 
 #include "errors.h"
 #include "log.h"
+#include "sys_general.h"
 #include "dev/fsys.h"
 
 static const long k_default_stack = 0x00010000;     /* For now... we're just going to put the user stack under 0x00010000 */
-static int g_proc_result;
+static int g_proc_result = 0;
+uint32_t proc_shell_address = 0;
 
 /*
  * Assembly routine: reset the supervisor stack pointer and restart the CLI
@@ -54,6 +56,8 @@ void proc_exec(long start, long stack, int argc, char * argv[]) {
     call_user(start, stack, argc, argv);
 }
 
+typedef void (*thunk)();
+
 /*
  * Quit the current user process
  *
@@ -64,14 +68,40 @@ void proc_exec(long start, long stack, int argc, char * argv[]) {
  * Inputs:
  */
 SYSTEMCALL void proc_exit(int result) {
+	INFO1("proc_exit: %d", result);
     g_proc_result = result;
-    restart_cli();
+	if (proc_shell_address != 0) {
+		INFO("proc_exit: Attempting to call into shell");
+		call_user(proc_shell_address,  k_default_stack, 0, 0);
+		reboot();
+
+	} else {
+		// Otherwise ask GABE to reset the system
+		INFO("proc_exit: Attempting reboot");
+		reboot();
+	}
 }
 
-/*
- * Return the result code of the previously running user process
+/**
+ * @brief Set the address of the code that should handle a process exiting
+ * 
+ * By default, the address is 0, which means that the system should reboot when the process exits
+ * If any other number is provided, the code at that location will be called as a far call.
+ * 
+ * @param address the address of the handler code for proc_exit
  */
-int proc_get_result() {
+SYSTEMCALL void proc_set_shell(uint32_t address) {
+	INFO("proc_set_shell")
+	proc_shell_address = address;
+}
+
+/**
+ * Return the result code of the previously running user process
+ * 
+ * @return the result code of the previously running user process
+ */
+SYSTEMCALL int proc_get_result() {
+	INFO("proc_get_result")
     return g_proc_result;
 }
 

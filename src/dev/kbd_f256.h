@@ -12,6 +12,8 @@
 #ifndef __kbd_f256_h__
 #define __kbd_f256_h__
 
+#include "sys_general.h"
+
 #if MODEL == MODEL_FOENIX_F256
 #include "kbd_f256jr.h"
 #elif MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2

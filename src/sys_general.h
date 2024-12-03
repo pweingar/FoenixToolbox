@@ -68,6 +68,12 @@
  */
 extern SYSTEMCALL void sys_get_information(p_sys_info info);
 
+/**
+ * @brief Force the system to reboot
+ * 
+ */
+extern SYSTEMCALL void reboot();
+
 #if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X
 /*
  * Set the color of the LED for the floppy drive

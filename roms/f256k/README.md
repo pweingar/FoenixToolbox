@@ -1,6 +1,6 @@
-# ROM Files for the F256K
+# ROM Files for the F256Ke
 
-This directory contains BIN files for programming the F256K flash memory with the Foenix Toolbox.
+This directory contains BIN files for programming the F256Ke flash memory with the Foenix Toolbox.
 
 ## How to Install
 

@@ -6,8 +6,8 @@
 	.public sys_int_enable
 	.public sys_int_register
 	.public sys_int_pending
-	.public sys_get_info
 	.public sys_int_clear
+	.public sys_get_info
 	.public sys_chan_read_b
 	.public sys_chan_read
 	.public sys_chan_readline
@@ -40,8 +40,6 @@
 	.public sys_fsys_mkdir
 	.public sys_fsys_delete
 	.public sys_fsys_rename
-	.public sys_fsys_set_cwd
-	.public sys_fsys_get_cwd
 	.public sys_fsys_load
 	.public sys_fsys_register_loader
 	.public sys_fsys_stat
@@ -73,6 +71,20 @@
 	.public sys_txt_put
 	.public sys_txt_print
 	.public sys_kbd_handle_irq
+	.public sys_reboot
+	.public sys_proc_set_shell
+	.public sys_proc_get_result
+	.public sys_iecll_ioinit
+	.public sys_iecll_in
+	.public sys_iecll_eoi
+	.public sys_iecll_out
+	.public sys_iecll_talk
+	.public sys_iecll_talk_sa
+	.public sys_iecll_untalk
+	.public sys_iecll_listen
+	.public sys_iecll_listen_sa
+	.public sys_iecll_unlisten
+	.public sys_iecll_reset
 
 	.extern proc_exit
 	.extern int_enable_all
@@ -82,8 +94,8 @@
 	.extern int_enable
 	.extern int_register
 	.extern int_pending
-	.extern sys_get_information
 	.extern int_clear
+	.extern sys_get_information
 	.extern chan_read_b
 	.extern chan_read
 	.extern chan_readline
@@ -116,8 +128,6 @@
 	.extern fsys_mkdir
 	.extern fsys_delete
 	.extern fsys_rename
-	.extern fsys_set_cwd
-	.extern fsys_get_cwd
 	.extern fsys_load
 	.extern fsys_register_loader
 	.extern fsys_stat
@@ -149,6 +159,20 @@
 	.extern txt_put
 	.extern txt_print
 	.extern kbd_handle_irq
+	.extern reboot
+	.extern proc_set_shell
+	.extern proc_get_result
+	.extern iecll_ioinit
+	.extern iecll_in
+	.extern iecll_eoi
+	.extern iecll_out
+	.extern iecll_talk
+	.extern iecll_talk_sa
+	.extern iecll_untalk
+	.extern iecll_listen
+	.extern iecll_listen_sa
+	.extern iecll_unlisten
+	.extern iecll_reset
 
 	.section jumptable
 
@@ -160,8 +184,8 @@ sys_int_disable:              	jmp long:int_disable
 sys_int_enable:               	jmp long:int_enable
 sys_int_register:             	jmp long:int_register
 sys_int_pending:              	jmp long:int_pending
-sys_get_info:                 	jmp long:sys_get_information
 sys_int_clear:                	jmp long:int_clear
+sys_get_info:                 	jmp long:sys_get_information
 sys_chan_read_b:              	jmp long:chan_read_b
 sys_chan_read:                	jmp long:chan_read
 sys_chan_readline:            	jmp long:chan_readline
@@ -194,8 +218,6 @@ sys_fsys_set_label:           	jmp long:fsys_set_label
 sys_fsys_mkdir:               	jmp long:fsys_mkdir
 sys_fsys_delete:              	jmp long:fsys_delete
 sys_fsys_rename:              	jmp long:fsys_rename
-sys_fsys_set_cwd:             	jmp long:fsys_set_cwd
-sys_fsys_get_cwd:             	jmp long:fsys_get_cwd
 sys_fsys_load:                	jmp long:fsys_load
 sys_fsys_register_loader:     	jmp long:fsys_register_loader
 sys_fsys_stat:                	jmp long:fsys_stat
@@ -226,4 +248,18 @@ sys_txt_set_border:           	jmp long:txt_set_border
 sys_txt_set_border_color:     	jmp long:txt_set_border_color
 sys_txt_put:                  	jmp long:txt_put
 sys_txt_print:                	jmp long:txt_print
-sys_kbd_handle_irq:				jmp long:kbd_handle_irq
+sys_kbd_handle_irq:           	jmp long:kbd_handle_irq
+sys_reboot:                   	jmp long:reboot
+sys_proc_set_shell:           	jmp long:proc_set_shell
+sys_proc_get_result:          	jmp long:proc_get_result
+sys_iecll_ioinit:             	jmp long:iecll_ioinit
+sys_iecll_in:                 	jmp long:iecll_in
+sys_iecll_eoi:                	jmp long:iecll_eoi
+sys_iecll_out:                	jmp long:iecll_out
+sys_iecll_talk:               	jmp long:iecll_talk
+sys_iecll_talk_sa:            	jmp long:iecll_talk_sa
+sys_iecll_untalk:             	jmp long:iecll_untalk
+sys_iecll_listen:             	jmp long:iecll_listen
+sys_iecll_listen_sa:          	jmp long:iecll_listen_sa
+sys_iecll_unlisten:           	jmp long:iecll_unlisten
+sys_iecll_reset:              	jmp long:iecll_reset

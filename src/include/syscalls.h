@@ -202,6 +202,12 @@ extern SYSTEMCALL short sys_int_pending(unsigned short n);
  */
 extern SYSTEMCALL void sys_get_info(p_sys_info info);
 
+/**
+ * @brief Force the system to reboot
+ * 
+ */
+extern SYSTEMCALL void sys_reboot();
+
 /*
  * Acknowledge an interrupt (clear out its pending flag)
  *
@@ -774,21 +780,20 @@ extern SYSTEMCALL short sys_kbd_layout(const char * tables);
 extern SYSTEMCALL short sys_proc_run(const char * path, int argc, char * argv[]);
 
 /**
- * Set the value of a variable
- *
- * @param name the name of the variable to set
- * @param value the value the variable should have
- * @return 0 on success, negative number on error
+ * @brief Set the address of the code that should handle a process exiting
+ * 
+ * By default, the address is 0, which means that the system should reboot when the process exits
+ * If any other number is provided, the code at that location will be called as a far call using the
+ * simplecall convention. The first argument will be the return result passed to proc_exit
+ * 
+ * @param address the address of the handler code for proc_exit
  */
-extern SYSTEMCALL short sys_var_set(const char *name, const char *value);
+extern SYSTEMCALL void sys_proc_set_shell(uint32_t address);
 
-/**
- * Get the value of a variable
- *
- * @param name the name of the variable to set
- * @return pointer to the string on success, 0 if not found
+/*
+ * Return the result code of the previously running user process
  */
-extern SYSTEMCALL const char * sys_var_get(const char *name);
+extern SYSTEMCALL int sys_proc_get_result();
 
 //
 // Text screen calls

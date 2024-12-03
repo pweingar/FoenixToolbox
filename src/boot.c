@@ -77,6 +77,8 @@ static enum boot_src_e boot_chain[MAX_BOOT_SRC];
 static bool bootable[MAX_BOOT_SRC];
 static short boot_src_cnt = 0;
 
+extern t_sys_info info;
+
 /**
  * @brief A holder for empty arguments list so we have something to point to when starting a binary file
  * 
@@ -85,6 +87,37 @@ static char * boot_args[] = {
 	0,
 	0
 };
+
+/**
+ * @brief Display the system information
+ * 
+ */
+static void display_sysinfo() {
+	// 8 x 22 region
+	t_rect region;
+	region.size.height = 8;
+	region.size.width = 23;
+	region.origin.x = 80 - region.size.width;
+	region.origin.y = 60 - region.size.height;
+
+	txt_set_region(0, &region);
+	
+	printf("Foenix Retro Systems\n");
+	printf("Model   %s\n", info.model_name);
+	printf("CPU     %s\n", info.cpu_name);
+	printf("Clock   %lu MHz\n", info.cpu_clock_khz / (long)1000);
+	printf("Memory  %d KB\n", (int)(info.system_ram_size / ((long)1024 * (long)1024)));
+	printf("FPGA    %04X %04X.%04X\n", info.fpga_model, info.fpga_version, info.fpga_subver);
+	printf("Toolbox v%d.%02d.%04d\n", info.mcp_version, info.mcp_rev, info.mcp_build);
+
+	region.size.width = 0;
+	region.size.height = 0;
+	region.origin.x = 0;
+	region.origin.y = 0;
+
+	txt_set_region(0, &region);
+	txt_set_xy(0, 0, 0);
+}
 
 /**
  * @brief Check the memory indicated to validate it is a boot record... if so, launch the code indicated
@@ -409,6 +442,17 @@ void boot_screen() {
 	long jiffies_target = 0;
 	char message[80];
 
+	// Locate the tile maps based on the top of ram
+	uint32_t ram_index = mem_get_ramtop();
+	ram_index -= 8 * 272;
+	tile_set_memory_base = ram_index;
+	ram_index -= 2 * 42 * 32;
+	tile_map_memory_base = ram_index;
+
+	// Locate the sprites
+	ram_index -= 5 * (32 * 32);
+	sprite_ram_base = ram_index;
+
 	// Check the DIP switches to see if we should include RAM booting
 	// Choose the correct boot chain accordingly
 
@@ -428,10 +472,9 @@ void boot_screen() {
 	// Make sure that ANSI escape codes will be honored
 	chan_ioctrl(0, CON_IOCTRL_ANSI_ON, 0, 0);
 
-	// TODO: debug this
-	// txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE | VKY_MCR_TILE);
-	*tvky_mstr_ctrl = (uint16_t)(VKY_MCR_TILE | VKY_MCR_SPRITE | VKY_MCR_GRAPHICS | VKY_MCR_TEXT_OVERLAY | VKY_MCR_TEXT);
-
+	txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_SPRITE | TXT_MODE_TILE);
+	txt_set_resolution(0, 640, 480);
+	
 	tvky_bg_color->blue = 0;
 	tvky_bg_color->green = 0;
 	tvky_bg_color->red = 0;
@@ -458,6 +501,9 @@ void boot_screen() {
 	// Make tile map 0 the top layer
 
 	*tvky_layers = 0x0444;
+
+	// Display the system information;
+	display_sysinfo();
 
 	// Set up the text window for the boot messaging
 	t_rect boot_text_window;

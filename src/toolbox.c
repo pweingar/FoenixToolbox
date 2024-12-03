@@ -43,13 +43,14 @@
 #include "syscalls.h"
 #include "timers.h"
 #include "boot.h"
-#include "dev/bitmap.h"
 #include "memory.h"
 #include "dev/block.h"
 #include "dev/channel.h"
 #include "dev/console.h"
 #include "dev/dma.h"
+#if HAS_FLOPPY
 #include "dev/fdc.h"
+#endif
 #include "dev/fsys.h"
 #include "dev/iec.h"
 #include "iecll.h"
@@ -65,7 +66,6 @@
 #include "vicky_general.h"
 #include "fatfs/ff.h"
 #include "rsrc/font/MSX_CP437_8x8.h"
-#include "rsrc/bitmaps/splash_c256_u.h"
 
 const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1" };
 
@@ -90,7 +90,7 @@ void initialize() {
 	sys_get_information(&info);
 
     /* Initialize the memory system */
-    mem_init(0x3d0000);
+    mem_init();
 
     // /* Hide the mouse */
     // mouse_set_visible(0);
@@ -133,9 +133,7 @@ void initialize() {
 
 	INFO("Text system initialized.");
 
-// 	// Initialize the bitmap system
-// 	bm_init();
-// 	INFO("Bitmap system initialized...");
+	INFO1("Top of memory: %lx", mem_get_ramtop());
 
     /* Initialize the indicators */
     ind_init();
@@ -257,219 +255,6 @@ void initialize() {
     }
 }
 
-t_file_info dir;
-uint8_t buffer[512];
-
-void dump(uint8_t * buffer, int count) {
-	char char_buffer[17];
-
-	printf("\n");
-
-	short index = 0;
-	for (int i = 0; i < count; i++) {
-		if ((i > 0) && (i % 16 == 0)) {
-			index = 0;
-			char_buffer[16] = 0;
-			printf(" %s\n", char_buffer);
-		} else if (i > 0) {
-			char c = buffer[i];
-			printf("%02X ", c);
-
-			if (isalpha(c) || isdigit(c)) {
-				char_buffer[index++] = c;
-			} else {
-				char_buffer[index++] = '.';
-			}
-		}
-	}
-
-	printf(" %s\n", char_buffer);
-}
-
-union fatfs_date_u {
-	struct {
-		unsigned int day : 5;
-		unsigned int month : 4;
-		unsigned int year : 7;
-	} s;
-	short date;
-};
-
-union fatfs_time_u {
-	struct {
-		unsigned int second : 5;
-		unsigned int minute : 6;
-		unsigned int hour : 5;
-	} s;
-	short time;
-};
-
-void print_fatfs_datetime(short date, short time) {
-	union fatfs_date_u fat_date;
-	union fatfs_time_u fat_time;
-	
-	fat_date.date = date;
-	fat_time.time = time;
-
-	printf("%04d-%02d-%02d %02d:%02d ", fat_date.s.year + 1980, fat_date.s.month, fat_date.s.day, fat_time.s.hour, fat_time.s.minute);
-}
-
-void print_directory() {
-	printf("\nDirectory for /sd0/\n");
-	short fd = fsys_opendir("/sd0/");
-	if (fd > -1) {
-		INFO("fsys_opendir");
-
-		short result = fsys_readdir(fd, &dir);
-		while ((result == 0) && (dir.name[0] != 0)) {
-			if (dir.name[0] == 0) {
-				break;
-			} else {
-				if ((dir.attributes & FSYS_AM_SYS) == 0) {
-					print_fatfs_datetime(dir.date, dir.time);
-					printf(" %4ld ", dir.size);
-
-					if (dir.attributes & FSYS_AM_DIR) {
-						printf(" %s/\n", dir.name);
-					} else {
-						printf(" %s\n", dir.name);
-					}
-				}
-
-				result = fsys_readdir(fd, &dir);
-			}
-		}
-
-		fsys_closedir(fd);
-		INFO("fsys_closedir");
-	} else {
-		ERROR1("Could not open directory %d", fd);
-	}
-}
-
-void create_sample_file(const char * path) {
-	printf("\nTrying to create: %s\n", path);
-	short fd = fsys_open(path, FSYS_CREATE_ALWAYS | FSYS_WRITE);
-	if (fd > 0) {
-		char message[80];
-		printf("Got channel #%d\n", fd);
-		sprintf(message, "Hello, world!\n");
-		short result = chan_write(fd, (uint8_t *)message, strlen(message));
-		printf("Wrote %d characters.\n", result);
-		fsys_close(fd);
-
-	} else {
-		printf("Could not create file: %d\n", fd);
-	}
-}
-
-void read_sample_file(const char * path) {
-	printf("\nContents of %s:\n", path);
-	short fd = fsys_open(path, FSYS_READ);
-	if (fd >= 0) {
-		short c = 0;
-		short status;
-		do {
-			c = chan_read_b(fd);
-			chan_write_b(0, (uint8_t)c);
-			status = chan_status(fd);
-		} while ((status & CDEV_STAT_EOF) == 0);
-		chan_close(fd);
-
-	} else {
-		printf("Could not open file: %d\n", fd);
-	}
-}
-
-void test_sdc() {
-	print_directory();
-	
-	printf("\nfsys_rename(\"/sd0/hello.txt\", \"/sd0/renamed.txt\")");
-	fsys_rename("/sd0/hello.txt", "/sd0/renamed.txt");
-	print_directory();
-
-	printf("\nfsys_delete(\"/sd0/renamed.txt\")");
-	fsys_delete("/sd0/renamed.txt");
-	print_directory();
-
-	printf("\nCreating /sd0/hello.txt\n");
-	create_sample_file("/sd0/hello.txt");
-	print_directory();
-
-	read_sample_file("/sd0/test.txt");
-	read_sample_file("/sd0/hello.txt");
-}
-
-void test_kbd_sc() {
-	printf("> ");
-	do {
-		unsigned short scancode = kbd_get_scancode();
-		if (scancode != 0) {
-			printf("%04X ", scancode);
-		}
-	} while (!kbd_break());
-	printf("\n\n");
-}
-
-void test_kbd() {
-	printf("Keyboard test... press RUN/STOP or CTRL-C for boot:\n");
-	printf("> ");
-	do {
-		char c = kbd_getc();
-		if (c != 0) {
-			txt_put(0, c);
-		}
-	} while (!kbd_break());
-	printf("\n\n");
-}
-
-void test_psg() {
-	long target_time = rtc_get_jiffies() + (long)(60 * 2);
-
-	psg_tone(3, 0, 262);
-	psg_tone(3, 1, 262 * 2);
-	psg_tone(3, 2, 262 * 4);
-
-	psg_attenuation(3, 0, 0);
-	psg_attenuation(3, 1, 15);
-	psg_attenuation(3, 2, 15);
-
-	while (target_time > rtc_get_jiffies()) {
-		;
-	}
-
-	psg_attenuation(3, 0, 15);
-	psg_attenuation(3, 1, 15);
-	psg_attenuation(3, 2, 15);
-}
-
-void test_sysinfo() {
-	// 8 x 22 region
-	t_rect region;
-	region.size.height = 8;
-	region.size.width = 23;
-	region.origin.x = 80 - region.size.width;
-	region.origin.y = 60 - region.size.height;
-
-	txt_set_region(0, &region);
-	
-	printf("Foenix Retro Systems\n");
-	printf("Model   %s\n", info.model_name);
-	printf("CPU     %s\n", info.cpu_name);
-	printf("Clock   %lu MHz\n", info.cpu_clock_khz / (long)1000);
-	printf("Memory  %d KB\n", (int)(info.system_ram_size / ((long)1024 * (long)1024)));
-	printf("FPGA    %04X %04X.%04X\n", info.fpga_model, info.fpga_version, info.fpga_subver);
-	printf("Toolbox v%d.%02d.%04d\n", info.mcp_version, info.sub_model, info.mcp_build);
-
-	region.size.width = 0;
-	region.size.height = 0;
-	region.origin.x = 0;
-	region.origin.y = 0;
-
-	txt_set_region(0, &region);
-	txt_set_xy(0, 0, 0);
-}
-
 int main(int argc, char * argv[]) {
     short result;
     short i;
@@ -479,8 +264,6 @@ int main(int argc, char * argv[]) {
 
 	kbd_init();
 
-	test_sysinfo();
-	// test_kbd();
 	boot_screen();
 
 #ifdef _CALYPSI_MCP_DEBUGGER

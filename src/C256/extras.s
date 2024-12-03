@@ -1,6 +1,6 @@
 				.public restart_cli
 
-				.extern cli_rerepl
+				.extern proc_shell_address
             	.extern _Vfp
             	.extern _DirectPageStart
 
@@ -14,7 +14,7 @@
 ;
 ; Reset the stack to the initial value.
 ; Reset the direct page and data bank registers
-; Restart the CLI
+; Transfer control to the registered shell address (if present)
 ;
 restart_cli:	
 				rep     #0x38         ; 16-bit registers, no decimal mode
@@ -33,5 +33,5 @@ restart_cli:
 				plb                   ; pop 8 dummy
 				plb                   ; set data bank
 
-				; jsl cli_rerepl
+				jsl proc_shell_address
 				bra restart_cli

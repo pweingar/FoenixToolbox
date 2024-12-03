@@ -15,6 +15,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+extern uint32_t sprite_ram_base;
+
 /**
  * @brief Set the basic information about the sprite
  * 

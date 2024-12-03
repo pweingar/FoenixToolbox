@@ -15,9 +15,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "features.h"
 #include "constants.h"
 #include "dev/channel.h"
+#if HAS_FLOPPY
 #include "dev/fdc.h"
+#endif
 #include "errors.h"
 #include "elf.h"
 #include "fsys.h"
@@ -108,11 +111,13 @@ void fsys_update_stat(const char * path) {
 		}
 	}
 
+#if HAS_FLOPPY
 	if (strncmp(buffer, "/fd", 3) == 0) {
 		// If the drive is the floppy drive, force the drive to spin up and check for a disk change
 		// this will update the fdc_status, which will be seen by FatFS and treated appropriately
 		sys_bdev_ioctrl(BDEV_FDC, FDC_CTRL_CHECK_CHANGE, 0, 0);
 	}
+#endif
 }
 
 /**
@@ -877,9 +882,11 @@ SYSTEMCALL short fsys_set_label(short drive, const char * label) {
 
 	// If the drive being labeled is on the floppy drive, make sure the FDC status
 	// is updated correctly for disk change by spinning up the motor and checking the DIR register
+#if HAS_FLOPPY
 	if (drive == BDEV_FDC) {
 		sys_bdev_ioctrl(BDEV_FDC, FDC_CTRL_CHECK_CHANGE, 0, 0);
 	}
+#endif
 
     sprintf(buffer, "%d:%s", drive, label);
     fres = f_setlabel(buffer);

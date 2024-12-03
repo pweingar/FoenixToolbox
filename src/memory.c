@@ -13,6 +13,7 @@
  */
 
 #include "memory.h"
+#include "sys_general.h"
 
 unsigned long mem_top_of_ram = 0;
 
@@ -21,8 +22,16 @@ unsigned long mem_top_of_ram = 0;
  *
  * @param top_of_ram initial value for the top of system RAM
  */
-void mem_init(unsigned long top_of_ram) {
-    mem_top_of_ram = top_of_ram;
+void mem_init() {
+#if MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K
+    mem_top_of_ram = 0x06ffff;
+#elif MODEL == MODEL_FOENIX_F256K2
+	mem_top_of_ram = 0x0effff;
+#elif MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_FMX
+	mem_top_of_ram = 0x37ffff;
+#else
+	mem_top_of_ram = 0x37ffff;
+#endif
 }
 
 /**
