@@ -1,0 +1,39 @@
+
+; 64tass Turbo Assembler Macro V1.58.2974 listing file
+; 64tass -b --list sample.lst -o sample.pgx sample_pgx.s
+; Thu Dec 12 13:21:11 2024
+
+;Offset	;Hex		;Monitor	;Source
+
+;******  Processing input file: sample_pgx.s
+
+=$f04000				vky_text = $f04000
+=$f01000				vky_mst_ctrl_0 = $f01000
+>2000	50 47 58			header:		.text "PGX"
+>2003	01							.byte $01			; Version 0, CPU 65816
+>2004	00							.byte 0
+>2005	00							.byte `start
+>2006	20							.byte >start
+>2007	08							.byte <start
+.2008	e2 20		sep #$20	start:		sep #$20
+.200a	c2 10		rep #$10				rep #$10
+.200c	a9 01		lda #$01				lda #$01
+.200e	8f 00 10 f0	sta $f01000				sta vky_mst_ctrl_0
+.2012	a9 20		lda #$20				lda #' '
+.2014	a2 00 00	ldx #$0000				ldx #0
+.2017	9f 00 40 f0	sta $f04000,x	clrloop1:	sta @l vky_text,x
+.201b	e8		inx					inx
+.201c	e0 00 20	cpx #$2000				cpx #$2000
+.201f	d0 f6		bne $2017				bne clrloop1
+.2021	a2 00 00	ldx #$0000				ldx #0
+.2024	bf 34 20 00	lda $002034,x	putloop:	lda @l message,x
+.2028	f0 07		beq $2031				beq done
+.202a	9f 00 40 f0	sta $f04000,x				sta @l vky_text,x
+.202e	e8		inx					inx
+.202f	80 f3		bra $2024				bra putloop
+.2031	ea		nop		done:		nop
+.2032	80 fd		bra $2031				bra done
+>2034	48 65 6c 6c 6f 2c 20 77		message:	.null 'Hello, world!'
+>203c	6f 72 6c 64 21 00
+
+;******  End of listing

@@ -210,13 +210,17 @@ void initialize() {
     }
 #endif
 
-//     // At this point, we should be able to call into to console to print to the screens
+    // At this point, we should be able to call into to console to print to the screens
 
-//     if ((res = ps2_init())) {
-//         ERROR1("FAILED: PS/2 keyboard initialization", res);
-//     } else {
-//         log(LOG_INFO, "PS/2 keyboard initialized.");
-//     }
+    // if ((res = ps2_init())) {
+    //     ERROR1("FAILED: PS/2 keyboard initialization", res);
+    // } else {
+    //     log(LOG_INFO, "PS/2 keyboard initialized.");
+    // }
+
+	// Initialize the keyboard
+	kbd_init();
+	INFO("Keyboard initialized");
 
 #if MODEL == MODEL_FOENIX_A2560K
     if ((res = kbdmo_init())) {
@@ -261,8 +265,6 @@ int main(int argc, char * argv[]) {
 	char message[256];
 
     initialize();
-
-	kbd_init();
 
 	boot_screen();
 

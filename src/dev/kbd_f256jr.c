@@ -455,8 +455,8 @@ short kbd_sc_init() {
 	break_pressed = false;
 
 	// Register and enable the PS/2 interrupt handler
-	// int_register(INT_KBD_PS2, kbd_handle_irq);
-	// int_enable(INT_KBD_PS2);
+	int_register(INT_KBD_PS2, (p_int_handler)kbd_handle_irq);
+	int_enable(INT_KBD_PS2);
 
 	return 0;
 }
