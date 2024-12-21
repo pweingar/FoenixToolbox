@@ -10,6 +10,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "log_level.h"
 #define DEFAULT_LOG_LEVEL LOG_ERROR

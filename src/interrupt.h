@@ -71,7 +71,7 @@
 #define MASK_GRP2 			((volatile uint8_t *)0x00014e)
 #define MASK_GRP3 			((volatile uint8_t *)0x00014f)
 
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
 
 #define PENDING_GRP0 		((volatile uint8_t *)0xf01660)
 #define PENDING_GRP1 		((volatile uint8_t *)0xf01661)

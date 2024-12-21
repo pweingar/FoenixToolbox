@@ -33,7 +33,7 @@
 #elif MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_FMX
 #include "dev/txt_c256.h"
 #include "dev/txt_evid.h"
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
 #include "cartridge.h"
 #include "dev/txt_f256.h"
 #include "dev/kbd_f256.h"
@@ -119,7 +119,7 @@ void initialize() {
 		txt_init_screen(TXT_SCREEN_EVID);
 	}
 
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
 	*vky_brdr_col_red = 0x80;
 	*vky_brdr_col_green = 0x00;
 	*vky_brdr_col_blue = 0x80;

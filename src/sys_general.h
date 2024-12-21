@@ -30,7 +30,8 @@
 #define MODEL_FOENIX_F256K2			17
 #define MODEL_FOENIX_F256K			18
 #define MODEL_FOENIX_F256KE			19
-#define MDOEL_FOENIX_F256K2E		20
+#define MODEL_FOENIX_F256K2E		20
+#define MODEL_FOENIX_F256JR2		35
 
 /* IDs for the CPUs supported */
 

@@ -35,7 +35,7 @@ static volatile uint8_t * psg_port(short chip) {
 			port = (uint8_t *)PSG_PORT;
 			break;
 	}
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
 	switch (chip) {
 		case 1:
 			port = PSG_PORT_L;

@@ -14,7 +14,7 @@
 
 #include "sys_general.h"
 
-#if MODEL == MODEL_FOENIX_F256
+#if MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256JR2
 #include "kbd_f256jr.h"
 #elif MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
 #include "kbd_f256k.h"

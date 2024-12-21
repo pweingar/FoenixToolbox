@@ -36,6 +36,16 @@ else ifeq ($(UNIT),F256)
 	else
 		LDFLAGS_FOR_UNIT=C256/ld_lc_f256.scm clib-lc-ld.a --rtattr printf=medium
 	endif
+else ifeq ($(UNIT),F256JR2)
+	CPU=w65816
+	SRCS_FOR_UNIT=toolbox_bdev.c
+	CFLAGS_FOR_UNIT=-DMODEL=35 -DCPU=255 --code-model large --data-model large --target f256
+
+	ifeq ($(MEMORY),ROM)
+		LDFLAGS_FOR_UNIT=C256/flash-f256.scm clib-lc-ld.a --rtattr printf=medium
+	else
+		LDFLAGS_FOR_UNIT=C256/ld_lc_f256.scm clib-lc-ld.a --rtattr printf=medium
+	endif
 else ifeq ($(UNIT),F256K)
 	CPU=w65816
 	SRCS_FOR_UNIT=toolbox_bdev.c

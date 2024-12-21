@@ -15,7 +15,7 @@
 #define UART1_BASE              0x00B028F8  /* Base address for UART 1 (COM1) */
 #define UART2_BASE              0x00B028F9  /* Base address for UART 2 (COM2) */
 
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
 #define UART1_BASE              0x00F01630  /* Base address for UART 1 (COM1) */
 #define UART2_BASE              0x00F01630  /* Base address for UART 2 (COM2) */
 
@@ -95,7 +95,7 @@
 #define UART_57600              21          /* Code for 57600 bps */
 #define UART_115200             10          /* Code for 115200 bps */
 
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
 
 #define UART_300                5244        /* Code for 300 bps */
 #define UART_1200               1311        /* Code for 1200 bps */

@@ -28,6 +28,22 @@ const char * sys_model_name[] = {
 	"F256 K2",
 	"F256 Ke",
 	"F256 K2e"		// 20
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",		// 25
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",		// 30
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"F256JR2"
 };
 
 /*
@@ -158,7 +174,7 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
 			break;
 	}
 
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
 	machine_id = GABE_SYS_STAT->machine_id;
 
 	cpu = CPU_WDC65816;

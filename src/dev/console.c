@@ -22,7 +22,7 @@
 
 #if MODEL == MODEL_FOENIX_A2560K
 #include "dev/kbd_mo.h"
-#elif MODEL == MODEL_FOENIX_F256
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256JR2
 #include "dev/kbd_f256jr.h"
 #elif MODEL == MODEL_FOENIX_F256K
 #include "dev/kbd_f256k.h"

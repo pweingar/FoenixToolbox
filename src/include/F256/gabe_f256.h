@@ -62,7 +62,7 @@
  */
 union gabe_sys_stat_u {
 	struct {
-		uint8_t machine_id:5;
+		uint8_t machine_id:6;
 	};
 	uint8_t reg;
 };
