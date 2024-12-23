@@ -14,6 +14,15 @@
 #define max(x, y)   ((x < y) ? y : x)
 
 /**
+ * Return the ceiling of a/b using only short operations
+ * 
+ * @param a the numerator
+ * @param b the denominator
+ * @return the smallest short c such that c >= a / b
+ */
+extern short ceil_div_short(short a, short b);
+
+/**
  * Re-entrant version of strtok_r, because VBCC does not provide it
  *
  * @param source the string to tokenize
