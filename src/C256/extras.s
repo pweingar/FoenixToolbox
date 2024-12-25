@@ -1,7 +1,10 @@
 				.public restart_cli
+				.public io_copy_down
+				.public io_copy_up
 
 				.extern proc_shell_address
             	.extern _Vfp
+				.extern _Dp
             	.extern _DirectPageStart
 
 #ifndef __CALYPSI_DATA_MODEL_SMALL__
@@ -10,6 +13,42 @@
 
               	.section stack
 				.section farcode
+
+;
+; void io_copy_down(uint16_t count, uint16_t dest, uint16_t src)
+;
+io_copy_down:	pha
+				phx
+				phy
+				phb
+
+				ldy dp:.tiny (_Dp)
+				ldx dp:.tiny (_Dp+4)
+				mvn #0xf0, #0xf0
+
+				plb
+				ply
+				plx
+				pla
+				rtl
+
+;
+; void io_copy_up(uint16_t count, uint16_t dest, uint16_t src)
+;
+io_copy_up:		pha
+				phx
+				phy
+				phb
+
+				ldy dp:.tiny (_Dp)
+				ldx dp:.tiny (_Dp+4)
+				mvp #0xf0, #0xf0
+
+				plb
+				ply
+				plx
+				pla
+				rtl
 
 ;
 ; Reset the stack to the initial value.
