@@ -762,6 +762,8 @@ short con_ioctrl(p_channel chan, short command, uint8_t * buffer, short size) {
             /* Return the result of the BREAK key test */
 #if MODEL == MODEL_FOENIX_A2560K
             return kbdmo_break();
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
+			return kbd_break();
 #else
             /* TODO: flesh this out for the A2560U */
             return 0;
