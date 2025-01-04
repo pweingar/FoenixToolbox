@@ -406,15 +406,60 @@ static short txt_f256_set_color(unsigned char foreground, unsigned char backgrou
     return 0;
 }
 
+extern void io_copy_down(uint16_t count, uint16_t dest, uint16_t src);
+extern void io_copy_up(uint16_t count, uint16_t dest, uint16_t src);
+
+/**
+ * Copy data in the I/O space using the MVN/MVP instructions
+ * 
+ * @param count the number of bytes to copy
+ * @param dest the address within the I/O bank to copy to
+ * @param src the address within the I/O bank to copy from
+ */
+static void io_copy(uint16_t count, uint16_t dest, uint16_t src) {
+	if (dest < src) {
+		io_copy_down(count, dest, src);
+	} else {
+		io_copy_up(count, dest, src);
+	}
+}
+
+
+/**
+ * Scroll the screen for the most common case: full screen scrolls up by one full row.
+ */
+static void txt_f256_scroll_simple() {
+	uint16_t rows = f256_max_size.height;
+	uint16_t columns = f256_max_size.width;
+	uint16_t count = (rows - 1) * columns;
+
+	// Move the rows up
+	uint16_t text_dest = (uint16_t)((uint32_t)tvky_text_matrix & 0xffff);
+	uint16_t text_src = text_dest + columns;
+	io_copy_down(count, text_dest, text_src); 
+
+	uint16_t color_dest = (uint16_t)((uint32_t)tvky_color_matrix & 0xffff);
+	uint16_t color_src = color_dest + columns;
+	io_copy_down(count, color_dest, color_src); 
+
+	// Clear the bottom line
+	for (uint16_t i = count; i < rows * columns; i++) {
+		tvky_text_matrix[i] = ' ';
+		tvky_color_matrix[i] = f256_color;
+	}
+}
+
 /**
  * Scroll the text in the current region
+ * 
+ * Supports the general case
  *
  * @param screen the number of the text device
  * @param horizontal the number of columns to scroll (negative is left, positive is right)
  * @param vertical the number of rows to scroll (negative is down, positive is up)
  */
-static void txt_f256_scroll(short horizontal, short vertical) {
-    short x, x0, x1, x2, x3, dx;
+static void txt_f256_scroll_complex(short horizontal, short vertical) {
+	short x, x0, x1, x2, x3, dx;
     short y, y0, y1, y2, y3, dy;
 
     /*
@@ -468,12 +513,24 @@ static void txt_f256_scroll(short horizontal, short vertical) {
         row_src += delta_y;
         int offset_dst = row_dst + x0 - dx;
         int offset_src = row_src + horizontal + x0 - dx;
-        for (x = x0; x != x2; x += dx) {
-            offset_dst += dx;
-            offset_src += dx;
-            tvky_text_matrix[offset_dst] = tvky_text_matrix[offset_src];
-            tvky_color_matrix[offset_dst] = tvky_color_matrix[offset_src];
-        }
+
+		// Move the rows up
+		uint16_t count = x2 - x0;
+
+		uint16_t text_dest = (uint16_t)((uint32_t)tvky_text_matrix & 0xffff) + offset_dst;
+		uint16_t text_src =  (uint16_t)((uint32_t)tvky_text_matrix & 0xffff) + offset_src;
+		io_copy(count, text_dest, text_src); 
+
+		uint16_t color_dest = (uint16_t)((uint32_t)tvky_color_matrix & 0xffff) + offset_dst;
+		uint16_t color_src = (uint16_t)((uint32_t)tvky_color_matrix & 0xffff) + offset_src;
+		io_copy(count, color_dest, color_src);
+
+        // for (x = x0; x != x2; x += dx) {
+        //     offset_dst += dx;
+        //     offset_src += dx;
+        //     tvky_text_matrix[offset_dst] = tvky_text_matrix[offset_src];
+        //     tvky_color_matrix[offset_dst] = tvky_color_matrix[offset_src];
+        // }
     }
 
     /* Clear the rectangles */
@@ -498,6 +555,22 @@ static void txt_f256_scroll(short horizontal, short vertical) {
             }
         }
     } 
+}
+/**
+ * Scroll the text in the current region
+ *
+ * @param horizontal the number of columns to scroll (negative is left, positive is right)
+ * @param vertical the number of rows to scroll (negative is down, positive is up)
+ */
+static void txt_f256_scroll(short horizontal, short vertical) {
+	// If we're scrolling up one, and the region is the full screen, use a faster scrolling routine
+	if ((horizontal == 0) && (vertical == 1) &&
+		(f256_region.origin.x == 0) && (f256_region.origin.y == 0) &&
+		(f256_region.size.width == f256_max_size.width) && (f256_region.size.height == f256_max_size.height)) {
+		txt_f256_scroll_simple();
+	} else {
+		txt_f256_scroll_complex(horizontal, vertical);
+	}
 }
 
 /**
