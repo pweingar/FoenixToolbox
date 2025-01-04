@@ -3,8 +3,8 @@
  */
 
 #include "log_level.h"
-#define DEFAULT_LOG_LEVEL LOG_INFO
-#define LOG_CHANNEL LOG_CHANNEL_UART0
+#define DEFAULT_LOG_LEVEL LOG_ERROR
+#define LOG_CHANNEL LOG_CHANNEL_CHANNEL_A
 
 #include <ctype.h>
 #include <stdio.h>

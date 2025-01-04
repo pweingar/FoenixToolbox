@@ -7,11 +7,8 @@
  */
 
 #include "log_level.h"
-#ifdef DEFAULT_LOG_LEVEL
-    //#undef DEFAULT_LOG_LEVEL
-#endif
 #ifndef DEFAULT_LOG_LEVEL
-    #define DEFAULT_LOG_LEVEL LOG_TRACE
+    #define DEFAULT_LOG_LEVEL LOG_ERROR
 #endif
 
 #include <string.h>

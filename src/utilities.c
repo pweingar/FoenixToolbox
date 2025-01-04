@@ -7,6 +7,16 @@
 #include <ctype.h>
 #include "utilities.h"
 
+/**
+ * Return the ceiling of a/b using only short operations
+ * 
+ * @param a the numerator
+ * @param b the denominator
+ * @return the smallest short c such that c >= a / b
+ */
+short ceil_div_short(short a, short b) {
+	return (a + (b - 1)) / b; 
+}
 
 /**
  * Re-entrant version of strtok_r, because VBCC does not provide it

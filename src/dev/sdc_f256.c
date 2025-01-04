@@ -23,6 +23,7 @@
 #include "interrupt.h"
 #include "F256/sdc_spi.h"
 #include "sdc_f256.h"
+#include "utilities.h"
 
 /* MMC/SD command (SPI mode) */
 #define CMD0	(0)			/* GO_IDLE_STATE */
@@ -379,7 +380,7 @@ static short sdc_read(p_dev_block dev, long lba, uint8_t * buffer, short size) {
 	p_sd_card_info card = (p_sd_card_info)dev->data;
 	p_sdc_spi sd = card->reg;
 	uint8_t cmd;
-	short count = size % 512 + 1;
+	short count = ceil_div_short(size, 512);
 
 	if (card->status & SDC_STAT_NOINIT) {
     	return ERR_NOT_READY;
@@ -420,7 +421,7 @@ static short sdc_write(p_dev_block dev, long lba, const uint8_t * buffer, short 
 	p_sd_card_info card = (p_sd_card_info)dev->data;
 	p_sdc_spi sd = card->reg;
 	uint8_t cmd;
-	short count = size % 512 + 1;
+	short count = ceil_div_short(size, 512);
 
 	if (card->status & SDC_STAT_NOINIT) {
     	return ERR_NOT_READY;
