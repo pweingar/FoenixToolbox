@@ -492,19 +492,12 @@ SYSTEMCALL void int_clear(unsigned short n) {
 void int_handle_irq() {
 	uint8_t mask_bits = 0;
 
-	// vky_text_matrix[0] += 1;
-
-	// if (*irq_ram_vector != 0) {
-	// 	p_int_handler handler = (p_int_handler)(*irq_ram_vector);
-	// 	handler();
-	// 	return;
-	// }
-
-	// vky_text_matrix[1] += 1;
-
 	// Process any pending interrupts in group 0
 	mask_bits = *PENDING_GRP0;
 	if (mask_bits) {
+		// Clear the pending bits for group 0
+		*PENDING_GRP0 = mask_bits;
+
 		if ((mask_bits & 0x01) && int_handle_00) int_handle_00();	// Start of frame
 		if ((mask_bits & 0x02) && int_handle_01) int_handle_01();	// Start of line
 		if ((mask_bits & 0x04) && int_handle_02) int_handle_02();	// PS/2 Keyboard
@@ -513,42 +506,31 @@ void int_handle_irq() {
 		if ((mask_bits & 0x20) && int_handle_05) int_handle_05();	// Timer 1
 		if ((mask_bits & 0x40) && int_handle_06) int_handle_06();	// Reserved
 		if ((mask_bits & 0x80) && int_handle_07) int_handle_07();	// Cartridge
-
-		// Clear the pending bits for group 0
-		*PENDING_GRP0 = mask_bits;
 	}
 
 	// Process any pending interrupts in group 1
 	mask_bits = *PENDING_GRP1;
 	if (mask_bits) {
-		volatile __attribute__((far)) char * text = (char *)0xafa000;
-		*text = *text + 1;
+		// Clear the pending bits for group 1
+		*PENDING_GRP1 = mask_bits;
 
-		if ((mask_bits & 0x01) && int_handle_10) {
-			volatile __attribute__((far)) char * text = (char *)0xafa001;
-			*text = *text + 1;
-			int_handle_10();	// PS/2 Keyboard
-		}
-		if ((mask_bits & 0x00) && int_handle_10) int_handle_10();	// UART
+		if ((mask_bits & 0x01) && int_handle_10) int_handle_10();	// UART
 		if ((mask_bits & 0x10) && int_handle_14) int_handle_14();	// RTC
 		if ((mask_bits & 0x20) && int_handle_15) int_handle_15();	// VIA
 		if ((mask_bits & 0x40) && int_handle_16) int_handle_16();	// F256K Matrix Keyboard
 		if ((mask_bits & 0x80) && int_handle_17) int_handle_17();	// SD card inserted
-
-		// Clear the pending bits for group 1
-		*PENDING_GRP1 = mask_bits;
 	}
 
 	// Process any pending interrupts in group 2
 	mask_bits = *PENDING_GRP2;
 	if (mask_bits) {
-		if ((mask_bits & 0x01) && int_handle_20) int_handle_20();	// IED Data IN
-		if ((mask_bits & 0x02) && int_handle_21) int_handle_21();	// IED Clock IN
-		if ((mask_bits & 0x02) && int_handle_22) int_handle_22();	// IED ATN IN
-		if ((mask_bits & 0x02) && int_handle_22) int_handle_23();	// IED SREQ IN
-
 		// Clear the pending bits for group 2
 		*PENDING_GRP2 = mask_bits;
+		
+		if ((mask_bits & 0x01) && int_handle_20) int_handle_20();	// IED Data IN
+		if ((mask_bits & 0x02) && int_handle_21) int_handle_21();	// IED Clock IN
+		if ((mask_bits & 0x04) && int_handle_22) int_handle_22();	// IED ATN IN
+		if ((mask_bits & 0x08) && int_handle_22) int_handle_23();	// IED SREQ IN
 	}
 }
 
