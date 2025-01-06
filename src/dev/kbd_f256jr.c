@@ -29,6 +29,9 @@
 // Constants
 //
 
+#define KBD_TIMEOUT			10
+#define KBD_RETRIES			10
+
 /*
  * Modifier bit flags
  */
@@ -406,7 +409,7 @@ static void kbd_process_set2_bytecode(uint8_t byte_code) {
  */
 SYSTEMCALL void kbd_handle_irq() {
 	// Check to see if there is a keyboard bytecode waiting... process it if so
-	if ((*PS2_STAT & PS2_STAT_KBD_EMP) == 0) {
+	while ((*PS2_STAT & PS2_STAT_KBD_EMP) == 0) {
 		kbd_process_set2_bytecode(*PS2_KBD_IN);
 	}
 }
@@ -445,6 +448,9 @@ bool kbd_break() {
  *
  */
 short kbd_sc_init() {
+	// Make sure the keyboard interrupt is disabled
+	int_disable(INT_KBD_PS2);
+
 	// Initialize the keyboard buffers
 	rb_word_init(&scan_code_buffer);
 	rb_word_init(&char_buffer);
@@ -453,6 +459,19 @@ short kbd_sc_init() {
 	kbd_state = kbd_state_default;
 	modifiers = 0;
 	break_pressed = false;
+
+	// Disable scanning
+	kbd_send_cmd(0xf5);
+	INFO("kbd_sc_init: ps/2 scanning disabled");
+
+	// Set scan code set #1
+	kbd_send_cmd(0xf0);
+	kbd_send_cmd(0x02);
+	INFO("kbd_sc_init: ps/2 scan code set #1 selected");
+
+	// Enable scanning
+	kbd_send_cmd(0xf4);
+	INFO("kbd_sc_init: ps/2 scanning enabled");
 
 	// Register and enable the PS/2 interrupt handler
 	int_register(INT_KBD_PS2, (p_int_handler)kbd_handle_irq);
