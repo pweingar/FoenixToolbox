@@ -19,17 +19,19 @@
 
 #include <stdbool.h>
 
+#include "errors.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ps2_reg.h"
 #include "ring_buffer.h"
 #include "sys_macros.h"
+#include "timers.h"
 
 //
 // Constants
 //
 
-#define KBD_TIMEOUT			10
+#define KBD_TIMEOUT			(60 * 5)
 #define KBD_RETRIES			10
 
 /*
@@ -146,17 +148,33 @@ static bool break_pressed = false;
 // Code
 //
 
-static void kbd_send_cmd(uint8_t byte) {
+/**
+ * Clear out the FIFO for the keyboard
+ */
+static void kbd_clear_fifo() {
+	*PS2_CTRL |= PS2_CTRL_KBD_CLR;
+	*PS2_CTRL &= ~PS2_CTRL_KBD_CLR;
+}
+
+static short kbd_send_cmd(uint8_t byte) {
 	uint8_t status = 0;
 
 	*PS2_OUT = byte;
 	*PS2_CTRL |= PS2_CTRL_KBD_WR;
 
+	long timeout = timers_jiffies() + KBD_TIMEOUT;
+
 	do {
+		if (timeout < timers_jiffies()) {
+			*PS2_CTRL &= ~PS2_CTRL_KBD_WR;
+			return DEV_TIMEOUT;
+		}
 		status = *PS2_STAT;
 	} while ((status & (PS2_STAT_KBD_ACK | PS2_STAT_KBD_NAK)) == 0);
 
 	*PS2_CTRL &= ~PS2_CTRL_KBD_WR;
+
+	return 0;
 }
 
 /**
@@ -448,6 +466,8 @@ bool kbd_break() {
  *
  */
 short kbd_sc_init() {
+	short result = 0;
+
 	// Make sure the keyboard interrupt is disabled
 	int_disable(INT_KBD_PS2);
 
@@ -460,24 +480,50 @@ short kbd_sc_init() {
 	modifiers = 0;
 	break_pressed = false;
 
+	// Reset the keyboard
+	result = kbd_send_cmd(0xff);
+	if (result < 0) {
+		INFO1("PS/2: unable to reset the keyboard: %s", err_message(ressult));
+		return result;
+	}
+	INFO("kbd_sc_init: ps/2 keyboard reset");
+
+	kbd_clear_fifo();
+
 	// Disable scanning
-	kbd_send_cmd(0xf5);
+	result = kbd_send_cmd(0xf5);
+	if (result < 0) {
+		INFO1("PS/2: unable to disable keyboard scanning: %s", err_message(ressult));
+		return result;
+	}
 	INFO("kbd_sc_init: ps/2 scanning disabled");
 
-	// Set scan code set #1
-	kbd_send_cmd(0xf0);
-	kbd_send_cmd(0x02);
-	INFO("kbd_sc_init: ps/2 scan code set #1 selected");
+	// Set scan code set #2
+	result = kbd_send_cmd(0xf0);
+	if (result < 0) {
+		INFO1("PS/2: unable to set scan code: %s", err_message(ressult));
+		return result;
+	}
+	result = kbd_send_cmd(0x02);
+	if (result < 0) {
+		INFO1("PS/2: unable to send scan code set: %s", err_message(ressult));
+		return result;
+	}
+	INFO("kbd_sc_init: ps/2 scan code set #2 selected");
 
 	// Enable scanning
-	kbd_send_cmd(0xf4);
+	result = kbd_send_cmd(0xf4);
+	if (result < 0) {
+		INFO1("PS/2: unable to restart keyboard scanning: %s", err_message(ressult));
+		return result;
+	}
 	INFO("kbd_sc_init: ps/2 scanning enabled");
 
 	// Register and enable the PS/2 interrupt handler
 	int_register(INT_KBD_PS2, (p_int_handler)kbd_handle_irq);
 	int_enable(INT_KBD_PS2);
 
-	return 0;
+	return result;
 }
 
 #endif
