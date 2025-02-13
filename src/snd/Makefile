@@ -60,6 +60,13 @@ else ifeq ($(UNIT),F256K2)
 
 	SRCS_FOR_UNIT=psg.c codec_c256.c sid.c
 	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target f256
+else ifeq ($(UNIT),A2560K)
+	CC=cc68k
+	AS=as68k
+	AR=nlib
+
+	SRCS_FOR_UNIT=psg.c codec.c sid.c
+	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large
 endif
 
 INCLUDES=-I.. -I../include

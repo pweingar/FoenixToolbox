@@ -58,5 +58,8 @@ SYSTEMCALL long timers_jiffies() {
 	uint32_t result = (uint32_t)(*TIMER_CHG_L_1) | ((uint32_t)(*TIMER_CHG_M_1) << 8) | ((uint32_t)(*TIMER_CHG_H_1) << 16);
     return result;
 
+#else
+	return 0;
+
 #endif
 }

@@ -66,12 +66,22 @@ else ifeq ($(UNIT),F256K2)
 	else
 		LDFLAGS_FOR_UNIT=C256/ld_lc_f256.scm clib-lc-ld.a --rtattr printf=medium
 	endif
+else ifeq ($(UNIT),A2560K)
+	CPU=m68k
+
+	SRCS_FOR_UNIT=toolbox_bdev.c
+	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large
 endif
 
 ifeq ($(CPU),w65816)
 	CC=cc65816
 	AS=as65816
 	LD=ln65816
+	AR=nlib
+else ifeq ($(CPU),m68k)
+	CC=cc68k
+	AS=as68k
+	LD=ln68k
 	AR=nlib
 endif
 

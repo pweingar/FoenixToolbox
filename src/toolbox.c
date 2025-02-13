@@ -3,8 +3,8 @@
  */
 
 #include "log_level.h"
-#define DEFAULT_LOG_LEVEL LOG_ERROR
-#define LOG_CHANNEL LOG_CHANNEL_CHANNEL_A
+#define DEFAULT_LOG_LEVEL LOG_INFO
+#define LOG_CHANNEL LOG_CHANNEL_UART0 // LOG_CHANNEL_CHANNEL_A
 
 #include <ctype.h>
 #include <stdio.h>
@@ -17,6 +17,7 @@
 #include "indicators.h"
 #include "interrupt.h"
 #include "gabe_reg.h"
+#include "superio.h"
 
 #if HAS_SUPERIO
 #include "superio.h"
@@ -48,9 +49,9 @@
 #include "dev/channel.h"
 #include "dev/console.h"
 #include "dev/dma.h"
-#if HAS_FLOPPY
-#include "dev/fdc.h"
-#endif
+// #if HAS_FLOPPY
+// #include "dev/fdc.h"
+// #endif
 #include "dev/fsys.h"
 #include "dev/iec.h"
 #include "iecll.h"
@@ -67,6 +68,17 @@
 #include "fatfs/ff.h"
 #include "rsrc/font/MSX_CP437_8x8.h"
 
+// TODO: remove these lines
+#define VKY_TXT_CHAR_A	((volatile char *)0xfeca0000)
+#define VKY_TXT_COLOR_A	((volatile uint8_t *)0xfeca8000)
+
+uint16_t vky_txt_pos = 0;
+
+void vky_txt_emit(char c) {
+	VKY_TXT_CHAR_A[vky_txt_pos] = c;
+	VKY_TXT_COLOR_A[vky_txt_pos++] = 0xf0;
+}
+
 const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1" };
 
 extern unsigned long __memory_start;
@@ -80,6 +92,11 @@ void initialize() {
     long target_jiffies;
     int i;
     short res;
+
+#if HAS_SUPERIO
+	// First thing... make sure that the SuperIO is initialized
+	init_superio();
+#endif
 
     /* Setup logging early */
     log_init();
@@ -120,143 +137,139 @@ void initialize() {
 	}
 
 #elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
-	*vky_brdr_col_red = 0x80;
-	*vky_brdr_col_green = 0x00;
-	*vky_brdr_col_blue = 0x80;
-
 	txt_f256_install();
-
 	txt_init_screen(TXT_SCREEN_F256);
 #else
 #error Cannot identify screen setup
 #endif
 
 	INFO("Text system initialized.");
+	vky_txt_emit('A');
 
 	INFO1("Top of memory: %lx", mem_get_ramtop());
 
-    /* Initialize the indicators */
-    ind_init();
-    INFO("Indicators initialized");
+//     /* Initialize the indicators */
+//     ind_init();
+//     INFO("Indicators initialized");
 
-    /* Initialize the interrupt system */
-    int_init();
-	INFO("Interrupts initialized");
+//     /* Initialize the interrupt system */
+//     int_init();
+// 	INFO("Interrupts initialized");
 
-    /* Mute the PSG */
-    psg_mute_all();
-	INFO("PSG Muted.");
+//     /* Mute the PSG */
+//     psg_mute_all();
+// 	INFO("PSG Muted.");
 
-    /* Initialize and mute the SID chips */
-    sid_init_all();
+//     /* Initialize and mute the SID chips */
+//     sid_init_all();
 
-// //     /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
-// //     ym_init();
+// // //     /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
+// // //     ym_init();
 
-    /* Initialize the CODEC */
-    init_codec();
-	INFO("CODEC initialized.");
+//     /* Initialize the CODEC */
+//     init_codec();
+// 	INFO("CODEC initialized.");
 
-    cdev_init_system();   // Initialize the channel device system
-    INFO("Channel device system ready.");
+//     cdev_init_system();   // Initialize the channel device system
+//     INFO("Channel device system ready.");
 
-    bdev_init_system();   // Initialize the channel device system
-    INFO("Block device system ready.");
+//     bdev_init_system();   // Initialize the channel device system
+//     INFO("Block device system ready.");
 
-    if ((res = con_install())) {
-        log_num(LOG_ERROR, "FAILED: Console installation", res);
-    } else {
-        INFO("Console installed.");
-    }
-
-// #if HAS_IDE
-// 	iec_init();
-// #endif
-
-    /* Initialize the timers the MCP uses */
-    timers_init();
-	INFO("Timers initialized");
-
-    /* Initialize the real time clock */
-    // rtc_init();
-	// INFO("Real time clock initialized");
-
-    /* Enable all interrupts */
-    int_enable_all();
-    INFO("Interrupts enabled");
-
-    // /* Play the SID test bong on the Gideon SID implementation */
-    // sid_test_internal();
-
-#if HAS_PATA
-    if ((res = pata_install())) {
-        log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
-    } else {
-        INFO("PATA driver installed.");
-    }
-#endif
-
-    if ((res = sdc_install())) {
-        ERROR1("FAILED: SDC driver installation %d", res);
-    } else {
-        INFO("SDC driver installed.");
-    }
-
-#if HAS_FLOPPY
-    if ((res = fdc_install())) {
-        ERROR1("FAILED: Floppy drive initialization %d", res);
-    } else {
-        INFO("Floppy drive initialized.");
-    }
-#endif
-
-    // At this point, we should be able to call into to console to print to the screens
-
-    // if ((res = ps2_init())) {
-    //     ERROR1("FAILED: PS/2 keyboard initialization", res);
-    // } else {
-    //     log(LOG_INFO, "PS/2 keyboard initialized.");
-    // }
-
-	// Initialize the keyboard
-	kbd_init();
-	INFO("Keyboard initialized");
-
-#if MODEL == MODEL_FOENIX_A2560K
-    if ((res = kbdmo_init())) {
-        log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
-    } else {
-        log(LOG_INFO, "A2560K built-in keyboard initialized.");
-    }
-#endif
-
-#if HAS_PARALLEL_PORT
-    if ((res = lpt_install())) {
-        log_num(LOG_ERROR, "FAILED: LPT installation", res);
-    } else {
-        log(LOG_INFO, "LPT installed.");
-    }
-#endif
-
-#if HAS_MIDI_PORTS
-    if ((res = midi_install())) {
-        log_num(LOG_ERROR, "FAILED: MIDI installation", res);
-    } else {
-        log(LOG_INFO, "MIDI installed.");
-    }
-#endif
-
-//     if (res = uart_install()) {
-//         log_num(LOG_ERROR, "FAILED: serial port initialization", res);
+//     if ((res = con_install())) {
+//         log_num(LOG_ERROR, "FAILED: Console installation", res);
 //     } else {
-//         log(LOG_INFO, "Serial ports initialized.");
+//         INFO("Console installed.");
 //     }
 
-    if ((res = fsys_init())) {
-        log_num(LOG_ERROR, "FAILED: file system initialization", res);
-    } else {
-        INFO("File system initialized.");
-    }
+// // #if HAS_IDE
+// // 	iec_init();
+// // #endif
+
+//     /* Initialize the timers the MCP uses */
+//     timers_init();
+// 	INFO("Timers initialized");
+
+//     /* Initialize the real time clock */
+//     // rtc_init();
+// 	// INFO("Real time clock initialized");
+
+//     /* Enable all interrupts */
+//     int_enable_all();
+//     INFO("Interrupts enabled");
+
+//     // /* Play the SID test bong on the Gideon SID implementation */
+//     // sid_test_internal();
+
+// #if HAS_PATA
+//     if ((res = pata_install())) {
+//         log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
+//     } else {
+//         INFO("PATA driver installed.");
+//     }
+// #endif
+
+//     if ((res = sdc_install())) {
+//         ERROR1("FAILED: SDC driver installation %d", res);
+//     } else {
+//         INFO("SDC driver installed.");
+//     }
+
+// #if HAS_FLOPPY
+//     if ((res = fdc_install())) {
+//         ERROR1("FAILED: Floppy drive initialization %d", res);
+//     } else {
+//         INFO("Floppy drive initialized.");
+//     }
+// #endif
+
+//     // At this point, we should be able to call into to console to print to the screens
+
+//     // if ((res = ps2_init())) {
+//     //     ERROR1("FAILED: PS/2 keyboard initialization", res);
+//     // } else {
+//     //     log(LOG_INFO, "PS/2 keyboard initialized.");
+//     // }
+
+// 	// Initialize the keyboard
+// 	kbd_init();
+// 	INFO("Keyboard initialized");
+
+// #if MODEL == MODEL_FOENIX_A2560K
+//     if ((res = kbdmo_init())) {
+//         log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
+//     } else {
+//         log(LOG_INFO, "A2560K built-in keyboard initialized.");
+//     }
+// #endif
+
+// #if HAS_PARALLEL_PORT
+//     if ((res = lpt_install())) {
+//         log_num(LOG_ERROR, "FAILED: LPT installation", res);
+//     } else {
+//         log(LOG_INFO, "LPT installed.");
+//     }
+// #endif
+
+// #if HAS_MIDI_PORTS
+//     if ((res = midi_install())) {
+//         log_num(LOG_ERROR, "FAILED: MIDI installation", res);
+//     } else {
+//         log(LOG_INFO, "MIDI installed.");
+//     }
+// #endif
+
+// //     if (res = uart_install()) {
+// //         log_num(LOG_ERROR, "FAILED: serial port initialization", res);
+// //     } else {
+// //         log(LOG_INFO, "Serial ports initialized.");
+// //     }
+
+//     if ((res = fsys_init())) {
+//         log_num(LOG_ERROR, "FAILED: file system initialization", res);
+//     } else {
+//         INFO("File system initialized.");
+//     }
 }
 
 int main(int argc, char * argv[]) {
@@ -266,7 +279,7 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
-	boot_screen();
+	// boot_screen();
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);

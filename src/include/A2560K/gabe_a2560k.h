@@ -7,7 +7,9 @@
 #ifndef __GABE_A2560K_H
 #define __GABE_A2560K_H
 
-#define GABE_CTRL_REG		((volatile unsigned int *)0xFEC00000)
+#include <stdint.h>
+
+#define GABE_CTRL_REG		((volatile uint32_t *)0xFEC00000)
 #define POWER_ON_LED		0x00000001
 #define SDCARD_LED			0x00000002
 #define BUZZER_CONTROL		0x00000010
