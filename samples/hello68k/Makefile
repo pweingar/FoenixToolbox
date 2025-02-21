@@ -9,8 +9,8 @@ else
 endif
 
 CPU=m68k
-CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --core 68010 --code-model large --data-model large
-LDFLAGS_FOR_UNIT=a2560-ram.scm clib-68000-lc-ld.a --rtattr printf=medium --rom-code
+CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --core 68000 --code-model large --data-model large
+LDFLAGS_FOR_UNIT=a2560-ram.scm clib-68000-lc-ld.a --rtattr printf=medium --rom-code --cstartup a2560
 
 CC=cc68k
 AS=as68k
@@ -23,7 +23,7 @@ ASFLAGS=$(INCLUDES) --data-model large --code-model large -l
 
 LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file toolbox.map
 
-SRCS = hello.c # a2560-startup.s
+SRCS = hello.c a2560-startup.s
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = 
@@ -35,6 +35,9 @@ hello.s37: $(OBJS) $(LIBS)
 
 hello.pgz: $(OBJS) $(LIBS)
 	$(LD) $(LDFLAGS) --output-format pgz -o $@ $^
+
+hello.hex: $(OBJS) $(LIBS)
+	$(LD) $(LDFLAGS) --output-format intel-hex -o $@ $^
 
 # Build the object files from C
 %.o: %.c

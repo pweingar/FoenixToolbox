@@ -44,14 +44,13 @@ void buzzer_off(void) {
 void log_init(void) {
     log_setlevel(DEFAULT_LOG_LEVEL);
 
-    // if (log_channel == LOG_CHANNEL_UART0) {
+    if (log_channel == LOG_CHANNEL_UART0) {
         uart_init(UART_COM1);
         do_log = log_to_uart;
         log(LOG_INFO,"FOENIX DEBUG OUTPUT------------");
-    // }
-    // else {
-    //     do_log = log_to_screen;
-	// }
+    } else {
+        do_log = log_to_screen;
+	}
 }
 
 unsigned short panic_number;        /* The number of the kernel panic */
@@ -280,8 +279,8 @@ void log(short level, const char * message, ...) {
     va_end(args);
 
     (*do_log)(buf);
-//    txt_print(0, buf);
-//	txt_print(0, "\n");
+	// txt_print(0, buf);
+	// txt_print(0, "\n");
 }
 
 void trace(const char * message, ...) {
