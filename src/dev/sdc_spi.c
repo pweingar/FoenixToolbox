@@ -1,5 +1,5 @@
 /**
- * @file sdc_f256.c
+ * @file sdc_spi.c
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
@@ -13,16 +13,15 @@
 #include <stdio.h>
 
 #include "log_level.h"
-#define DEFAULT_LOG_LEVEL LOG_ERROR
-
+#include "features.h"
 #include "log.h"
 #include "constants.h"
 #include "errors.h"
 #include "dev/block.h"
 #include "indicators.h"
 #include "interrupt.h"
-#include "F256/sdc_spi.h"
-#include "sdc_f256.h"
+#include "sdc_reg.h"
+#include "sdc_spi.h"
 #include "utilities.h"
 
 /* MMC/SD command (SPI mode) */
@@ -559,10 +558,6 @@ short sdc_install() {
 	sd0_card_info.status = 0;
 	sd0_card_info.type = 0;
 
-	sd1_card_info.reg = SD1_REG;
-	sd1_card_info.status = 0;
-	sd1_card_info.type = 0;
-
     dev.number = BDEV_SD0;
     dev.name = "SD0";
 	dev.data = &sd0_card_info;
@@ -574,13 +569,20 @@ short sdc_install() {
     dev.ioctrl = sdc_ioctrl;
 
     short result = bdev_register(&dev);
+
+#if HAS_INTERNAL_SD
 	if (result == 0) {
+		sd1_card_info.reg = SD1_REG;
+		sd1_card_info.status = 0;
+		sd1_card_info.type = 0;
+
 		dev.number = BDEV_SD1;
 		dev.name = "SD1";
 		dev.data = &sd1_card_info;
 		
 		result = bdev_register(&dev);
 	}
+#endif
 
 	return result;
 }

@@ -11,6 +11,12 @@
 
 #include <stdint.h>
 
+
+#define GABE_CTRL_LPC   ((volatile uint32_t *)0xFEC00000)
+
+#define CONFIG_0x2E_REG ((volatile uint8_t *)0xFEC0202E)
+#define CONFIG_0x2F_REG ((volatile uint8_t *)0xFEC0202F)
+
 #define PME_STS_REG 	((volatile uint8_t *)0xFEC02100)
 #define PME_EN_REG 		((volatile uint8_t *)0xFEC02102)
 

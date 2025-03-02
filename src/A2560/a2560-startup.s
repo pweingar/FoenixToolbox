@@ -19,7 +19,7 @@
               .section heap
               .section data_init_table
 
-              .extern main, exit, vky_txt_emit, vky_txt_pos
+              .extern main, exit
 
 #ifdef __CALYPSI_DATA_MODEL_SMALL__
               .extern _NearBaseAddress
@@ -42,7 +42,7 @@
 # define VickyBaseVRAMHigh 0x00800000
 #endif
 
-#include "A2560/macros.h"
+#include "macros.h"
 
 ;;; ***************************************************************************
 ;;;
@@ -72,31 +72,17 @@ __program_root_section:
               .pubweak __program_start
               .align  2
 __program_start:
-              move.l  #0x040000,a0
+              move.l  #.sectionEnd stack + 1,a0
               move.l  a0,usp
-			  move.l  #0x050000,a0
-			  move.l  a0,sp
-
-			  move.w #0,vky_txt_pos
-
-			  move.l #'A',d0
-			  jsr emitter
-
-			  move.l #'B',d0
-			  jsr emitter
-
 #ifdef __CALYPSI_DATA_MODEL_SMALL__
               lea.l   _NearBaseAddress.l,a4
 #endif
-;               call     __low_level_init
-;               tst.l   d0            ; stay in supervisor?
-;               bne.s   10$           ; yes
-;               andi.w  #~0x2700,sr   ; no, drop out of supervisor,
-;                                     ; enable interrupts
-; 10$:
-
-			  move.l #'C',d0
-			  call emitter
+              call     __low_level_init
+              tst.l   d0            ; stay in supervisor?
+              bne.s   10$           ; yes
+              andi.w  #~0x2700,sr   ; no, drop out of supervisor,
+                                    ; enable interrupts
+10$:
 
 ;;; Initialize data sections if needed.
               .section libcode, noroot, noreorder
@@ -106,10 +92,7 @@ __program_start:
 __data_initialization_needed:
               move.l  #(.sectionStart data_init_table),a0
               move.l  #(.sectionEnd data_init_table),a1
-              jsr    __initialize_sections
-
-			  move.l #'D',d0
-			  call emitter
+              call    __initialize_sections
 
 ;;; **** Initialize streams if needed.
               .section libcode, noroot, noreorder
@@ -117,9 +100,6 @@ __data_initialization_needed:
               .extern __initialize_global_streams
 __call_initialize_global_streams:
               call    __initialize_global_streams
-
-			  move.l #'D',d0
-			  call emitter
 
 ;;; **** Initialize heap if needed.
               .section libcode, noroot, noreorder
@@ -130,9 +110,6 @@ __call_heap_initialize:
               move.l  #__default_heap,a0
               move.l  #.sectionStart heap,a1
               call    __heap_initialize
-
-			  move.l #'E',d0
-			  call emitter
 
               .section libcode, noroot, noreorder
 #ifdef __CALYPSI_TARGET_SYSTEM_FOENIX__
@@ -181,22 +158,5 @@ _Gavin_initialize:
               .pubweak __low_level_init
               .align  2
 __low_level_init:
-              moveq.l #0,d0         ; switch to user mode
+              moveq.l #1,d0         ; switch to user mode
               rts
-
-emitter:	  move.w vky_txt_pos,d1
-			  and.l #0x0000ffff,d1
-
-			  move.l #0xfeca0000,a0
-			  adda.l d1,a0
-			  move.l #0xfeca8000,a1
-			  adda.l d1,a1
-
-			  move.b d0,(a0)
-			  move.b #0xf0,(a1)
-
-			  addq.w #1,d1
-			  move.w d1,vky_txt_pos
-
-			  rts
-			  

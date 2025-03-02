@@ -84,8 +84,8 @@ else ifeq ($(UNIT),F256K2)
 else ifeq ($(UNIT),A2560K)
 	CPU=m68k
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=superio.c A2560/a2560-lowlevel.c A2560/a2560-startup.s
-	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --core 68010 --code-model large --data-model large
+	SRCS_FOR_UNIT=superio.c A2560/a2560-lowlevel.c A2560/a2560-startup.s interrupt.c timers.c
+	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large
 
 	ifeq ($(MEMORY),ROM)
 		LDFLAGS_FOR_UNIT=A2560/a2560-flash.scm clib-68000-lc-ld.a --rtattr printf=medium --cstartup=a2560
@@ -116,7 +116,7 @@ else
 	LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file toolbox.map
 endif
 
-SRCS = toolbox.c log.c  memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c $(SRCS_FOR_UNIT) # boot.c(C_SRCS_DEBUGGER)
+SRCS = toolbox.c log.c  memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c tests.c $(SRCS_FOR_UNIT) # boot.c(C_SRCS_DEBUGGER)
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = dev/devices.a snd/sound.a fatfs/fatfs.a
@@ -125,6 +125,10 @@ LIBS = dev/devices.a snd/sound.a fatfs/fatfs.a
 
 toolbox.s37: $(OBJS) $(LIBS)
 	$(LD) $(LDFLAGS) --output-format s37 -o $@ $^
+
+toolbox.hex: $(OBJS) $(LIBS)
+	$(LD) $(LDFLAGS) --output-format intel-hex -o $@ $^
+
 
 toolbox.raw: $(OBJS) $(LIBS)
 	$(LD) $(LDFLAGS) --raw-multiple-memories --output-format raw -o $@ $^

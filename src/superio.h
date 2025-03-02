@@ -16,5 +16,9 @@
  */
 extern void init_superio(void);
 
+extern void unreset_lpc();
+
+extern void configure_zones(); // This Init used to be done by the FPGA.
+
 #endif
 #endif

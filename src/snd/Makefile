@@ -65,7 +65,7 @@ else ifeq ($(UNIT),A2560K)
 	AS=as68k
 	AR=nlib
 
-	SRCS_FOR_UNIT=psg.c codec.c sid.c
+	SRCS_FOR_UNIT=psg.c codec.c sid.c yamaha.c
 	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large
 endif
 

@@ -13,6 +13,8 @@
 #include "dev/rtc.h"
 #include "pata_reg.h"
 
+#include "tests.h"
+
 //
 // Constants
 //
@@ -268,12 +270,16 @@ short pata_read(long lba, unsigned char * buffer, short size) {
     /* Turn on the HDD LED */
     ind_set(IND_HDC, IND_ON);
 
+    vky_txt_emit('0');
+
     if (pata_wait_ready_not_busy()) {
         /* Turn off the HDD LED */
         ind_set(IND_HDC, IND_OFF);
 
         return DEV_TIMEOUT;
     }
+
+    vky_txt_emit('1');
 
     *PATA_HEAD = ((lba >> 24) & 0x07) | 0xe0;       // Upper 3 bits of LBA, Drive 0, LBA mode.
     if (pata_wait_ready_not_busy()) {
@@ -282,6 +288,8 @@ short pata_read(long lba, unsigned char * buffer, short size) {
 
         return DEV_TIMEOUT;
     }
+
+    vky_txt_emit('2');
 
     *PATA_SECT_CNT = 1;                             // Read one sector (make this an option?)
     *PATA_SECT_SRT = lba & 0xff;                    // Set the rest of the LBA
@@ -299,12 +307,16 @@ short pata_read(long lba, unsigned char * buffer, short size) {
         return DEV_TIMEOUT;
     }
 
+    vky_txt_emit('3');
+
     if (pata_wait_data_request()) {
         /* Turn off the HDD LED */
         ind_set(IND_HDC, IND_OFF);
 
         return DEV_TIMEOUT;
     }
+
+    vky_txt_emit('4');
 
     // Copy the data... let the compiler and the FPGA worry about endianess
     for (i = 0, wptr = (unsigned short *)buffer; i < size; i += 2) {
@@ -313,6 +325,8 @@ short pata_read(long lba, unsigned char * buffer, short size) {
 
     /* Turn off the HDD LED */
     ind_set(IND_HDC, IND_OFF);
+
+    vky_txt_emit('5');
 
     return i;
 }
