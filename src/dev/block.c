@@ -102,18 +102,14 @@ SYSTEMCALL short bdev_read(short dev, long lba, unsigned char * buffer, short si
 
     short ret = DEV_ERR_BADDEV;
 
-    vky_txt_emit('A');
-
     if (dev < BDEV_DEVICES_MAX) {
         p_dev_block bdev = &g_block_devs[dev];
         if (bdev->number == dev) {
-            vky_txt_emit('B');
             ret = bdev->read(bdev, lba, buffer, size);
         }
     }
 
     TRACE1("bdev_read returning %d", (int)ret);
-    vky_txt_emit('C');
     return ret;
 }
 

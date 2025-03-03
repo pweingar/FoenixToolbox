@@ -1,5 +1,5 @@
 
-UNIT := F256K2
+UNIT := A2560K
 
 # Define OS-dependent variables
 
@@ -37,28 +37,28 @@ else ifeq ($(UNIT),F256)
 	AS=as65816
 	AR=nlib
 
-	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256jr.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c # timers_c256.c
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256jr.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c
 	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large --target f256
 else ifeq ($(UNIT),F256JR2)
 	CC=cc65816
 	AS=as65816
 	AR=nlib
 
-	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256jr.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c # timers_c256.c
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256jr.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c
 	CFLAGS_FOR_UNIT=-DMODEL=35 -DCPU=255 --code-model large --data-model large --target f256
 else ifeq ($(UNIT),F256K)
 	CC=cc65816
 	AS=as65816
 	AR=nlib
 
-	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c # timers_c256.c 
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c 
 	CFLAGS_FOR_UNIT=-DMODEL=18 -DCPU=255 --code-model large --data-model large --target f256
 else ifeq ($(UNIT),F256K2)
 	CC=cc65816
 	AS=as65816
 	AR=nlib
 
-	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c # timers_c256.c 
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c 
 	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target f256
 else ifeq ($(UNIT),A2560K)
 	CC=cc68k
@@ -66,13 +66,13 @@ else ifeq ($(UNIT),A2560K)
 	AR=nlib
 
 	SRCS_FOR_UNIT=indicators_a2560.c txt_a2560k_a.c txt_a2560k_b.c kbd_mo.c pata.c sdc_spi.c
-	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large
+	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large --target Foenix
 endif
 INCLUDES=-I.. -I../include
 CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) -l
 ASFLAGS=$(INCLUDES) -l
 
-SRCS = block.c channel.c console.c fsys.c sprites.c tiles.c txt_screen.c rtc.c uart.c $(SRCS_FOR_UNIT) # pata.c bitmap.c dma.c ps2.c sdc.c 
+SRCS = block.c channel.c console.c fsys.c txt_screen.c rtc.c uart.c $(SRCS_FOR_UNIT) # pata.c bitmap.c dma.c ps2.c sdc.c 
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 OBJS4RM = $(subst /,\\,$(OBJS))
 

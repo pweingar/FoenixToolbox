@@ -1,5 +1,5 @@
 
-UNIT := F256
+UNIT := A2560K
 
 # Define OS-dependent variables
 
@@ -66,7 +66,7 @@ else ifeq ($(UNIT),A2560K)
 	AR=nlib
 
 	SRCS_FOR_UNIT=psg.c codec.c sid.c yamaha.c
-	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large
+	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large --target Foenix
 endif
 
 INCLUDES=-I.. -I../include

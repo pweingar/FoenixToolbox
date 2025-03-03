@@ -21,7 +21,7 @@
 // System calls on the 65816 pass parameters primarily on stack using the Calypsi
 // simple call convention and save/restore the direct page and data bank registers.
 //
-#define SYSTEMCALL __attribute__((saveds))
+#define SYSTEMCALL 
 
 #else
 #define SYSTEMCALL

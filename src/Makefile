@@ -83,9 +83,9 @@ else ifeq ($(UNIT),F256K2)
 	endif
 else ifeq ($(UNIT),A2560K)
 	CPU=m68k
-	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=superio.c A2560/a2560-lowlevel.c A2560/a2560-startup.s interrupt.c timers.c
-	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large
+	C_SRCS_DEBUGGER=
+	SRCS_FOR_UNIT=superio.c A2560/a2560-lowlevel.c A2560/a2560-startup.s A2560/io_stubs.c interrupt.c timers.c
+	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large --target Foenix
 
 	ifeq ($(MEMORY),ROM)
 		LDFLAGS_FOR_UNIT=A2560/a2560-flash.scm clib-68000-lc-ld.a --rtattr printf=medium --cstartup=a2560
@@ -152,7 +152,7 @@ fatfs/fatfs.a:
 
 # Clean up after a build
 clean:
-	$(RM) $(OBJS4RM) toolbox.s37 *.lst *.map *.raw
+	$(RM) $(OBJS4RM) toolbox.s37 *.lst *.map *.raw *.hex
 	$(MAKE) --directory=dev clean
 	$(MAKE) --directory=snd clean
 	$(MAKE) --directory=fatfs clean

@@ -3,7 +3,7 @@
  */
 
 #include "log_level.h"
-#define DEFAULT_LOG_LEVEL LOG_INFO
+#define DEFAULT_LOG_LEVEL LOG_FATAL
 
 #include <ctype.h>
 #include <stdio.h>
@@ -283,11 +283,11 @@ void initialize() {
         log(LOG_INFO, "Serial ports initialized.");
     }
 
-//     if ((res = fsys_init())) {
-//         log_num(LOG_ERROR, "FAILED: file system initialization", res);
-//     } else {
-//         INFO("File system initialized.");
-//     }
+    // if ((res = fsys_init())) {
+    //     log_num(LOG_ERROR, "FAILED: file system initialization", res);
+    // } else {
+    //     INFO("File system initialized.");
+    // }
 }
 
 int main(int argc, char * argv[]) {
@@ -297,12 +297,16 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
-	printf("Foenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
+	printf("\e[2J\e[HFoenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
 	printf("Model: %s\n", info.model_name);
     int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
 	printf("CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
 
-    test_hd();
+    // test_hd();
+    test_sd0();
+    // test_dir("/sd0");
+
+    printf("\n\nShould display boot screen here.\n");
 
 	// boot_screen();
 
