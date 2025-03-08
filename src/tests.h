@@ -21,6 +21,11 @@ extern void test_sd0();
 extern void test_dir(const char * path);
 
 /**
+ * Test the A2560K built-in keyboard
+ */
+extern void test_kbd_mo();
+
+/**
  * Write a character to the screen directly
  */
 extern void vky_txt_emit(char c);

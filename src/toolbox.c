@@ -83,7 +83,7 @@
 #include "fatfs/ff.h"
 #include "rsrc/font/MSX_CP437_8x8.h"
 
-#include "tests.h"
+// #include "tests.h"
 
 // The list of drives for FATFS
 #if HAS_PATA
@@ -233,49 +233,49 @@ void initialize() {
         INFO("SDC driver installed.");
     }
 
-// #if HAS_FLOPPY
-//     if ((res = fdc_install())) {
-//         ERROR1("FAILED: Floppy drive initialization %d", res);
-//     } else {
-//         INFO("Floppy drive initialized.");
-//     }
-// #endif
+#if HAS_FLOPPY
+    if ((res = fdc_install())) {
+        ERROR1("FAILED: Floppy drive initialization %d", res);
+    } else {
+        INFO("Floppy drive initialized.");
+    }
+#endif
 
-//     // At this point, we should be able to call into to console to print to the screens
+    // At this point, we should be able to call into to console to print to the screens
 
-//     // if ((res = ps2_init())) {
-//     //     ERROR1("FAILED: PS/2 keyboard initialization", res);
-//     // } else {
-//     //     log(LOG_INFO, "PS/2 keyboard initialized.");
-//     // }
+    // if ((res = ps2_init())) {
+    //     ERROR1("FAILED: PS/2 keyboard initialization", res);
+    // } else {
+    //     log(LOG_INFO, "PS/2 keyboard initialized.");
+    // }
 
-// 	// Initialize the keyboard
-// 	kbd_init();
-// 	INFO("Keyboard initialized");
+	// Initialize the keyboard
+	kbd_init();
+	INFO("Keyboard initialized");
 
-// #if MODEL == MODEL_FOENIX_A2560K
-//     if ((res = kbdmo_init())) {
-//         log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
-//     } else {
-//         log(LOG_INFO, "A2560K built-in keyboard initialized.");
-//     }
-// #endif
+#if MODEL == MODEL_FOENIX_A2560K
+    if ((res = kbdmo_init())) {
+        log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
+    } else {
+        log(LOG_INFO, "A2560K built-in keyboard initialized.");
+    }
+#endif
 
-// #if HAS_PARALLEL_PORT
-//     if ((res = lpt_install())) {
-//         log_num(LOG_ERROR, "FAILED: LPT installation", res);
-//     } else {
-//         log(LOG_INFO, "LPT installed.");
-//     }
-// #endif
+#if HAS_PARALLEL_PORT
+    if ((res = lpt_install())) {
+        log_num(LOG_ERROR, "FAILED: LPT installation", res);
+    } else {
+        log(LOG_INFO, "LPT installed.");
+    }
+#endif
 
-// #if HAS_MIDI_PORTS
-//     if ((res = midi_install())) {
-//         log_num(LOG_ERROR, "FAILED: MIDI installation", res);
-//     } else {
-//         log(LOG_INFO, "MIDI installed.");
-//     }
-// #endif
+#if HAS_MIDI_PORTS
+    if ((res = midi_install())) {
+        log_num(LOG_ERROR, "FAILED: MIDI installation", res);
+    } else {
+        log(LOG_INFO, "MIDI installed.");
+    }
+#endif
 
     if ((res = uart_install()) != 0) {
         log_num(LOG_ERROR, "FAILED: serial port initialization", res);
@@ -283,11 +283,11 @@ void initialize() {
         log(LOG_INFO, "Serial ports initialized.");
     }
 
-    // if ((res = fsys_init())) {
-    //     log_num(LOG_ERROR, "FAILED: file system initialization", res);
-    // } else {
-    //     INFO("File system initialized.");
-    // }
+    if ((res = fsys_init())) {
+        log_num(LOG_ERROR, "FAILED: file system initialization", res);
+    } else {
+        INFO("File system initialized.");
+    }
 }
 
 int main(int argc, char * argv[]) {
@@ -297,18 +297,18 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
-	printf("\e[2J\e[HFoenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
-	printf("Model: %s\n", info.model_name);
-    int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
-	printf("CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
+	// printf("\e[2J\e[HFoenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
+	// printf("Model: %s\n", info.model_name);
+    // int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
+	// printf("CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
 
-    // test_hd();
-    test_sd0();
-    // test_dir("/sd0");
+    // // test_hd();
+    // test_sd0();
+    // // test_dir("/sd0");
 
-    printf("\n\nShould display boot screen here.\n");
+    // printf("\n\nShould display boot screen here.\n");
 
-	// boot_screen();
+ 	boot_screen();
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);

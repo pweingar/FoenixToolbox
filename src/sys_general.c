@@ -27,7 +27,7 @@ const char * sys_model_name[] = {
 	"F256 K2c",
 	"F256 K2",
 	"F256 Ke",
-	"F256 K2e"		// 20
+	"F256 K2e",		// 20
 	"Reserved",
 	"Reserved",
 	"Reserved",
@@ -38,7 +38,6 @@ const char * sys_model_name[] = {
 	"Reserved",
 	"Reserved",
 	"Reserved",		// 30
-	"Reserved",
 	"Reserved",
 	"Reserved",
 	"Reserved",

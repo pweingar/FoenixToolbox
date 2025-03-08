@@ -12,6 +12,7 @@
 #include "pata_reg.h"
 #include "dev/block.h"
 #include "dev/fsys.h"
+#include "dev/kbd_mo.h"
 #include "dev/txt_screen.h"
 
 #define VKY_TXT_CHAR_A	((volatile char *)0xfeca0000)
@@ -160,4 +161,16 @@ void test_dir(const char * path) {
 
 		fsys_closedir(dir);
     }
+}
+
+/**
+ * Test the A2560K built-in keyboard
+ */
+void test_kbd_mo() {
+    // do {
+    //     unsigned short scancode = kbdmo_get_scancode();
+    //     if (scancode) {
+    //         printf("%04X ", scancode);
+    //     }
+    // } while(true);
 }

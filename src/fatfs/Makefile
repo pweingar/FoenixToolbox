@@ -1,5 +1,5 @@
 
-UNIT := A2560K
+UNIT := F256K2
 
 # Define OS-dependent variables
 

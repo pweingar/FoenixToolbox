@@ -43,7 +43,8 @@
     #define HAS_EXTERNAL_SIDS 1
     #define HAS_OPL3 1
 	#define HAS_PATA 1
-#elif  MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256KE || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256JR2
+#elif MODEL_FOENIX_F256_GEN
+    // Common elements for all F256s
 	#define HAS_OPL3 1
 	#define HAS_IEC 1
 	#define HAS_INTERNAL_SD 1
