@@ -7,14 +7,7 @@
 
 #include <stdint.h>
 
-/**
- * @brief Structure to manage the SPI driven SDC ports
- * 
- */
-typedef struct s_sdc_spi {
-	uint8_t ctrl;
-	uint8_t data;
-} t_sdc_spi, *p_sdc_spi;
+#include "sdc_reg.h"
 
 #define SDx_CS				0x01		// 1 = Enable 
 #define SDx_SLOW 			0x02		// 1 = Slow 400Khz, 0 = 25Mhz

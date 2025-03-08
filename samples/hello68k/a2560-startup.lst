@@ -1,0 +1,197 @@
+###############################################################################
+#                                                                             #
+# Calypsi assembler for Motorola 68000                          version 5.8.1 #
+#                                                       26/Feb/2025  20:47:56 #
+# Command line: -I. -I./include --data-model large --code-model large -l -o   #
+#               a2560-startup.o a2560-startup.s                               #
+#                                                                             #
+###############################################################################
+
+0001                    /****************************************************************************
+0002                     *
+0003                     * Copyright Håkan Thörngren
+0004                     *
+0005                     * This file is part of the Calypsi C library.
+0006                     * Permission to use with the Calypsi tool chain is hereby granted.
+0007                     *
+0008                     ****************************************************************************/
+0009                    
+0010                    ;;; Startup variant, change attribute value if you make your own
+0011                                  .rtmodel cstartup,"a2560"
+0012                    
+0013                                  .rtmodel version, "1"
+0014                                  .rtmodel core, "*"
+0015                    
+0016                                  ;; External declarations
+0017                                  .section sstack
+0018                                  .section stack
+0019                                  .section heap
+0020                                  .section data_init_table
+0021                    
+0022                                  .extern main, exit
+0023                    
+0024                    #ifdef __CALYPSI_DATA_MODEL_SMALL__
+0025                                  .extern _NearBaseAddress
+0026                    #endif
+0027                    
+0028                    #ifdef __CALYPSI_TARGET_SYSTEM_FOENIX__
+0029                                  .extern _Gavin
+0030                                  .extern _Beatrix
+0031                                  .extern _Vicky
+0032                                  .extern _VickyBaseVRAM
+0033                    
+0034                    # define GavinLow   0x00b00000
+0035                    # define BeatrixLow 0x00b20000
+0036                    # define VickyLow   0x00b40000
+0037                    # define VickyBaseVRAMLow 0x00c00000
+0038                    
+0039                    # define GavinHigh   0xfec00000
+0040                    # define BeatrixHigh 0xfec20000
+0041                    # define VickyHigh   0xfec40000
+0042                    # define VickyBaseVRAMHigh 0x00800000
+0043                    #endif
+0044                    
+0045                    #include "macros.h"
+0046                    
+0047                    ;;; ***************************************************************************
+0048                    ;;;
+0049                    ;;; The reset vector. This uses the entry point label __program_root_section
+0050                    ;;; which by default is what the linker will pull in first.
+0051                    ;;;
+0052                    ;;; ***************************************************************************
+0053                    
+0054                                  .section reset
+0055                                  .pubweak __program_root_section
+0056                    __program_root_section:
+0057  00000000 ........               .long   .sectionEnd sstack + 1
+0058  00000004 ........               .long   __program_start
+0059                    
+0060                    ;;; ***************************************************************************
+0061                    ;;;
+0062                    ;;; __program_start - actual start point of the program
+0063                    ;;;
+0064                    ;;; Initialize sections and call main().
+0065                    ;;; You can override this with your own routine, or tailor it as needed.
+0066                    ;;; The easiest way to make custom initialization is to provide your own
+0067                    ;;; __low_level_init which gets called after stacks have been initialized.
+0068                    ;;;
+0069                    ;;; ***************************************************************************
+0070                    
+0071                                  .section libcode, noreorder
+0072                                  .pubweak __program_start
+0073                                  .align  2
+0074                    __program_start:
+0075  00000000 207c....               move.l  #.sectionEnd stack + 1,a0
+0075  00000004 ....
+0076  00000006 4e60                   move.l  a0,usp
+0077                    #ifdef __CALYPSI_DATA_MODEL_SMALL__
+0078                                  lea.l   _NearBaseAddress.l,a4
+0079                    #endif
+0080                                  call     __low_level_init
+    \ 00000008 4eb9....             jsr     __low_level_init.l
+    \ 0000000c ....
+0081  0000000e 4a80                   tst.l   d0            ; stay in supervisor?
+0082  00000010 6604                   bne.s   10$           ; yes
+0083  00000012 027cd8ff               andi.w  #~0x2700,sr   ; no, drop out of supervisor,
+0084                                                        ; enable interrupts
+0085                    10$:
+0086                    
+0087                    ;;; Initialize data sections if needed.
+0088                                  .section libcode, noroot, noreorder
+0089                                  .pubweak __data_initialization_needed
+0090                                  .extern __initialize_sections
+0091                                  .align  2
+0092                    __data_initialization_needed:
+0093  00000000 207c....               move.l  #(.sectionStart data_init_table),a0
+0093  00000004 ....
+0094  00000006 227c....               move.l  #(.sectionEnd data_init_table),a1
+0094  0000000a ....
+0095                                  call    __initialize_sections
+    \ 0000000c 4eb9....             jsr     __initialize_sections.l
+    \ 00000010 ....
+0096                    
+0097                    ;;; **** Initialize streams if needed.
+0098                                  .section libcode, noroot, noreorder
+0099                                  .pubweak __call_initialize_global_streams
+0100                                  .extern __initialize_global_streams
+0101                    __call_initialize_global_streams:
+0102                                  call    __initialize_global_streams
+    \ 00000000 4eb9....             jsr     __initialize_global_streams.l
+    \ 00000004 ....
+0103                    
+0104                    ;;; **** Initialize heap if needed.
+0105                                  .section libcode, noroot, noreorder
+0106                                  .pubweak __call_heap_initialize
+0107                                  .extern __heap_initialize, __default_heap
+0108                    __call_heap_initialize:
+0109  00000000 203c....               move.l  #.sectionSize heap,d0
+0109  00000004 ....
+0110  00000006 207c....               move.l  #__default_heap,a0
+0110  0000000a ....
+0111  0000000c 227c....               move.l  #.sectionStart heap,a1
+0111  00000010 ....
+0112                                  call    __heap_initialize
+    \ 00000012 4eb9....             jsr     __heap_initialize.l
+    \ 00000016 ....
+0113                    
+0114                                  .section libcode, noroot, noreorder
+0115                    #ifdef __CALYPSI_TARGET_SYSTEM_FOENIX__
+0116                                  .pubweak _Gavin_initialize
+0117                    _Gavin_initialize:
+0118                                  move.l  #GavinLow,a0  ; assume A2560U system
+0119                                  move.l  #BeatrixLow,a2
+0120                                  move.l  #VickyLow,a1
+0121                                  move.l  #VickyBaseVRAMLow,d0
+0122                                  cmp.w   #0x4567,0x0010(a0) ; check byte order
+0123                                  beq.s   20$
+0124                                  move.l  #GavinHigh,a0 ; no, assume A2560K 32-bit
+0125                                  move.l  #BeatrixHigh,a2
+0126                                  move.l  #VickyHigh,a1
+0127                                  move.l  #VickyBaseVRAMHigh,d0
+0128                    20$:
+0129                                  ;; keep base pointer to Gavin
+0130                    #ifdef __CALYPSI_DATA_MODEL_SMALL__
+0131                                  move.l  a0,(.near _Gavin,A4)
+0132                                  move.l  a2,(.near _Beatrix,A4)
+0133                                  move.l  a1,(.near _Vicky,A4)
+0134                                  move.l  d0,(.near _VickyBaseVRAM,A4)
+0135                    #else
+0136                                  move.l  a0,_Gavin
+0137                                  move.l  a2,_Beatrix
+0138                                  move.l  a1,_Vicky
+0139                                  move.l  d0,_VickyBaseVRAM
+0140                    #endif // __CALYPSI_DATA_MODEL_SMALL__
+0141                    #endif // __CALYPSI_TARGET_SYSTEM_FOENIX__
+0142                    
+0143                                  .section libcode, root, noreorder
+0144  00000000 7000                   moveq.l #0,d0         ; argc = 0
+0145                                  call    main
+    \ 00000002 4eb9....             jsr     main.l
+    \ 00000006 ....
+0146                                  jump    exit
+    \ 00000008 4ef9....             jmp     exit.l
+    \ 0000000c ....
+0147                    
+0148                    ;;; ***************************************************************************
+0149                    ;;;
+0150                    ;;; __low_level_init - custom low level initialization
+0151                    ;;;
+0152                    ;;; This default routine just returns doing nothing. You can provide your own
+0153                    ;;; routine, either in C or assembly for doing custom low leve initialization.
+0154                    ;;;
+0155                    ;;; ***************************************************************************
+0156                    
+0157                                  .section libcode
+0158                                  .pubweak __low_level_init
+0159                                  .align  2
+0160                    __low_level_init:
+0161  00000000 7001                   moveq.l #1,d0         ; switch to user mode
+0162  00000002 4e75                   rts
+
+##########################
+#                        #
+# Memory sizes (decimal) #
+#                        #
+##########################
+
+Executable  (Text): 96 bytes

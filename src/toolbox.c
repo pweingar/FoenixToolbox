@@ -3,8 +3,7 @@
  */
 
 #include "log_level.h"
-#define DEFAULT_LOG_LEVEL LOG_ERROR
-#define LOG_CHANNEL LOG_CHANNEL_CHANNEL_A
+#define DEFAULT_LOG_LEVEL LOG_FATAL
 
 #include <ctype.h>
 #include <stdio.h>
@@ -14,9 +13,10 @@
 #include "sys_general.h"
 #include "simpleio.h"
 #include "log.h"
-#include "indicators.h"
+#include "dev/indicators.h"
 #include "interrupt.h"
 #include "gabe_reg.h"
+#include "superio.h"
 
 #if HAS_SUPERIO
 #include "superio.h"
@@ -37,7 +37,6 @@
 #include "cartridge.h"
 #include "dev/txt_f256.h"
 #include "dev/kbd_f256.h"
-#include "dev/sdc_f256.h"
 #endif
 
 #include "syscalls.h"
@@ -48,26 +47,52 @@
 #include "dev/channel.h"
 #include "dev/console.h"
 #include "dev/dma.h"
-#if HAS_FLOPPY
-#include "dev/fdc.h"
+
+// Reference the PATA/IDE driver, if needed
+#if HAS_PATA
+#include "dev/pata.h"
 #endif
+
+// // Reference the floppy drive driver, if needed
+// #if HAS_FLOPPY
+// #include "dev/fdc.h"
+// #endif
+
+// Reference the correct SDC driver
+#if HAS_SDC_SPI
+#include "dev/sdc_spi.h"
+#else
+#include "dev/sdc.h"
+#endif
+
 #include "dev/fsys.h"
 #include "dev/iec.h"
 #include "iecll.h"
 #include "dev/ps2.h"
 #include "dev/rtc.h"
-#include "dev/sdc.h"
 #include "dev/txt_screen.h"
 #include "dev/uart.h"
 #include "snd/codec.h"
 #include "snd/psg.h"
 #include "snd/sid.h"
+#if HAS_OPN || HAS_OPM || HAS_OPL3
 #include "snd/yamaha.h"
+#endif
+
 #include "vicky_general.h"
 #include "fatfs/ff.h"
 #include "rsrc/font/MSX_CP437_8x8.h"
 
+// #include "tests.h"
+
+// The list of drives for FATFS
+#if HAS_PATA
+// Machines with an IDE/PATA interface have an internal hard drive
+const char* VolumeStr[FF_VOLUMES] = { "sd0", "hd0" };
+#else
+// Otherwise, machines have an internal SD card
 const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1" };
+#endif
 
 extern unsigned long __memory_start;
 
@@ -81,9 +106,17 @@ void initialize() {
     int i;
     short res;
 
+#if HAS_SUPERIO
+	// First thing... make sure that the SuperIO is initialized
+    unreset_lpc();
+    configure_zones(); // This Init used to be done by the FPGA.
+	init_superio();
+#endif
+
     /* Setup logging early */
     log_init();
-	log_setlevel(DEFAULT_LOG_LEVEL);
+    log_setlevel(DEFAULT_LOG_LEVEL);
+
 	INFO3("\n\rFoenix Toolbox v%d.%02d.%04d starting up...", VER_MAJOR, VER_MINOR, VER_BUILD);
 
 	/* Fill out the system information */
@@ -96,7 +129,6 @@ void initialize() {
     // mouse_set_visible(0);
 
     /* Initialize the text channels */
-	INFO("Initializing the text system...");
     txt_init();
 #if HAS_DUAL_SCREEN
     txt_a2560k_a_install();
@@ -120,19 +152,13 @@ void initialize() {
 	}
 
 #elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
-	*vky_brdr_col_red = 0x80;
-	*vky_brdr_col_green = 0x00;
-	*vky_brdr_col_blue = 0x80;
-
 	txt_f256_install();
-
 	txt_init_screen(TXT_SCREEN_F256);
 #else
 #error Cannot identify screen setup
 #endif
 
 	INFO("Text system initialized.");
-
 	INFO1("Top of memory: %lx", mem_get_ramtop());
 
     /* Initialize the indicators */
@@ -145,13 +171,17 @@ void initialize() {
 
     /* Mute the PSG */
     psg_mute_all();
-	INFO("PSG Muted.");
+	INFO("PSG initialized.");
 
     /* Initialize and mute the SID chips */
     sid_init_all();
+	INFO("SID chips initialized.");
 
-// //     /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
-// //     ym_init();
+#if HAS_OPN || HAS_OPM || HAS_OPL3
+    /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
+    ym_init();
+	INFO("Yamaha initialized.");
+#endif
 
     /* Initialize the CODEC */
     init_codec();
@@ -164,29 +194,30 @@ void initialize() {
     INFO("Block device system ready.");
 
     if ((res = con_install())) {
-        log_num(LOG_ERROR, "FAILED: Console installation", res);
+		ERROR1("FAILED: Console installation", res);
     } else {
         INFO("Console installed.");
     }
 
-// #if HAS_IDE
-// 	iec_init();
-// #endif
+#if HAS_IEC
+	iec_init();
+#endif
 
     /* Initialize the timers the MCP uses */
     timers_init();
 	INFO("Timers initialized");
 
     /* Initialize the real time clock */
-    // rtc_init();
-	// INFO("Real time clock initialized");
+    rtc_init();
+	INFO("Real time clock initialized");
 
     /* Enable all interrupts */
     int_enable_all();
     INFO("Interrupts enabled");
 
-    // /* Play the SID test bong on the Gideon SID implementation */
-    // sid_test_internal();
+    /* Play the SID test bong on the Gideon SID implementation */
+    sid_test_internal();
+	INFO("SID boot bong played.");
 
 #if HAS_PATA
     if ((res = pata_install())) {
@@ -246,11 +277,11 @@ void initialize() {
     }
 #endif
 
-//     if (res = uart_install()) {
-//         log_num(LOG_ERROR, "FAILED: serial port initialization", res);
-//     } else {
-//         log(LOG_INFO, "Serial ports initialized.");
-//     }
+    if ((res = uart_install()) != 0) {
+        log_num(LOG_ERROR, "FAILED: serial port initialization", res);
+    } else {
+        log(LOG_INFO, "Serial ports initialized.");
+    }
 
     if ((res = fsys_init())) {
         log_num(LOG_ERROR, "FAILED: file system initialization", res);
@@ -266,7 +297,18 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
-	boot_screen();
+	// printf("\e[2J\e[HFoenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
+	// printf("Model: %s\n", info.model_name);
+    // int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
+	// printf("CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
+
+    // // test_hd();
+    // test_sd0();
+    // // test_dir("/sd0");
+
+    // printf("\n\nShould display boot screen here.\n");
+
+ 	boot_screen();
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);

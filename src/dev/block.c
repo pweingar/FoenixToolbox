@@ -12,6 +12,8 @@
 #include "uart.h"
 #include <stdio.h>
 
+#include "tests.h"
+
 t_dev_block g_block_devs[BDEV_DEVICES_MAX];
 
 //
@@ -102,8 +104,9 @@ SYSTEMCALL short bdev_read(short dev, long lba, unsigned char * buffer, short si
 
     if (dev < BDEV_DEVICES_MAX) {
         p_dev_block bdev = &g_block_devs[dev];
-        if (bdev->number == dev)
+        if (bdev->number == dev) {
             ret = bdev->read(bdev, lba, buffer, size);
+        }
     }
 
     TRACE1("bdev_read returning %d", (int)ret);

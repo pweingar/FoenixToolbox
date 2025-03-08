@@ -2,10 +2,10 @@
  * Definitions support low level SDC device driver for the F256
  */
 
-#ifndef __SDC_F256_H
-#define __SDC_F256_H
+#ifndef __sdc_spi_H
+#define __sdc_spi_H
 
-#include "F256/sdc_spi.h"
+#include "sdc_reg.h"
 #include "sys_types.h"
 
 //

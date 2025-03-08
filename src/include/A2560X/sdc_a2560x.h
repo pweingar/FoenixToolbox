@@ -5,6 +5,27 @@
 #ifndef __SDC_A2560X_H
 #define __SDC_A2560X_H
 
+#include <stdint.h>
+
+#include "sdc_reg.h"
+
+#define SD0_REG					((volatile p_sdc_spi)0xfec00300)
+
+#define SD0_STAT				((volatile uint16_t *)0xFEC0051A)
+#define SD0_STAT_CD				0x0100      						// Is an SD card present? --- 0:Yes, 1:No
+#define SD0_STAT_WP     		0x0200      						// Is the SD card write protected? --- 0:Yes, 1:No
+
+// SPI Controler 0 Registers - External Access (Front of Unit)
+#define SD0_CTRL				((volatile uint8_t *)0xFEC00300)
+#define SD0_DATA				((volatile uint8_t *)0xFEC00301)
+
+// Flags
+#define SDx_CS					0x01								// 1 = Enable 
+#define SDx_SLOW				0x02								// 1 = Slow 400Khz, 0 = 25Mhz
+#define SDx_BUSY				0x80								// 1 = Busy
+
+// NOTE: the following definitions can be removed (mostly)
+
 #define GABE_SDC_REG            ((volatile unsigned short *)0xFEC0051A)
 #define GABE_SDC_PRESENT        0x0100      /* Is an SD card present? --- 0:Yes, 1:No */
 #define GABE_SDC_WPROT          0x0200      /* Is the SD card write protected? --- 0:Yes, 1:No */

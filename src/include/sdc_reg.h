@@ -5,8 +5,19 @@
 #ifndef __SDC_REG_H
 #define __SDC_REG_H
 
+#include <stdint.h>
+
 #include "sys_types.h"
 #include "sys_general.h"
+
+/**
+ * @brief Structure to manage the SPI driven SDC ports
+ * 
+ */
+typedef struct s_sdc_spi {
+	uint8_t ctrl;
+	uint8_t data;
+} t_sdc_spi, *p_sdc_spi;
 
 #if MODEL == MODEL_FOENIX_A2560K 
 #include "A2560K/sdc_a2560k.h"
@@ -19,6 +30,10 @@
 
 #elif MODEL == MODEL_FOENIX_FMX || MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS
 #include "C256/sdc_c256.h"
+
+#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
+#include "F256/sdc_spi.h"
+
 #endif
 
 /*

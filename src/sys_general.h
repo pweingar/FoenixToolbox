@@ -33,6 +33,8 @@
 #define MODEL_FOENIX_F256K2E		20
 #define MODEL_FOENIX_F256JR2		35
 
+#define MODEL_FOENIX_F256_GEN       (MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256JRE || ((MODEL >= MODEL_FOENIX_F256K2) && (MODEL <= MODEL_FOENIX_F256K2E)) || MODEL == MODEL_FOENIX_F256JR2)
+
 /* IDs for the CPUs supported */
 
 #define CPU_WDC65816                0xFF  /* CPU code for the Western Design Center 65816 */

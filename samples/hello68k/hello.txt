@@ -1,0 +1,121 @@
+00000000	0003108A 00010000
+00000010	0001010C
+00010000	207C 00040000			move.l  #0x040000,a0
+        	4E60					move.l  a0,usp
+			207C 00050000			move.l  #0x050000,a0
+			2E48					move.l  a0,sp
+			33FC 0000 00030088		move.w 	#0,vky_txt_pos
+			7041					moveq.l #'A',d0
+			4EB9 0001014C			jsr     emitter.l
+
+00010020	207C 000101D6			move.l  #(.sectionStart data_init_table),a0
+			227C 000101E1			move.l  #(.sectionEnd data_init_table),a1
+			4EB9 00010090			jsr     __initialize_sections.l
+			7042					moveq.l #'B',d0
+			4EB9 0001014C			jsr     emitter.l
+
+0001003A	7044					moveq.l #'D',d0
+			4EB9 0001014C			jsr     emitter.l
+			7000					moveq.l #0,d0         ; argc = 0
+			4EB9 00010178			jsr     main.l
+			4EF9 00010050			jmp     exit.l
+
+exit:
+00010050	48E73000				movem.l d2-d3,-(sp)
+			2400					move.l
+			4AB9 00030084
+			67082079000300844E9026390003000053836A0E
+00010070	2002
+			4EB9 000101E			jsr $000101e
+			24CDF000C4E75207C000300042003E588227008004E9160DC
+
+__initialize_sections.l:
+00010090	48E70006
+			2C48					move.l a0,a6
+			2A49 					move.l a1,a5
+			BBCE 					cmp.l a6,a5
+			632C					bls +44
+			4AAE 00046712 226E 0004 2056 202E 0008
+			4EB9 000101C0			jsr $000101c0
+			600E 2056 222E 0008 7000
+			4EB9 000101A8 			jsr $000101a8
+			4DEE 000C 60D0 4CDF 6000 4E75
+
+vky_txt_emit:
+000100CE	48E73000				movem.l d2-d3,-(sp)
+			223C FECA0000			move.l  #0xfeca0000,d1
+			7400					moveq.l #0,d2
+			3439 00030088			move.w  vky_txt_pos.l,d2
+			2042					move.l  d2,a0
+			11801800				move.b  d0,(0,a0,d1.l)
+			303900030088			move.w  vky_txt_pos.l,d0
+			7201					moveq.l #1,d1
+000100EE	D379 00030088			add.w   d1,vky_txt_pos.l
+			72F0					moveq.l #-16,d1
+			243C FECA8000			move.l  #0xfeca8000,d2
+			7600					moveq.l #0,d3
+			3600					move.w  d0,d3
+			2043					move.l  d3,a0
+			11812800				move.b  d1,(0,a0,d2.l)
+			4CDF000C				movem.l (sp)+,d2-d3
+			4E75					rts
+
+illegal:    
+0001010C	48E7F080				movem.l d0-d3/a0,-(sp)
+			7021					moveq.l #33,d0
+			223C FECA0000			move.l  #0xfeca0000,d1
+			7400					moveq.l #0,d2
+			3439 00030088			move.w  vky_txt_pos.l,d2
+			2042					move.l  d2,a0
+			1180 1800				move.b  d0,(0,a0,d1.l)
+			3039 00030088			move.w  vky_txt_pos.l,d0
+0001012C	7201					moveq.l #1,d1
+			D379 00030088			add.w   d1,vky_txt_pos.l
+			72F0					moveq.l #-16,d1
+			243C FECA8000			move.l  #0xfeca8000,d2
+			7600					moveq.l #0,d3
+			3600					move.w  d0,d3
+			2043					move.l  d3,a0
+			11812800				move.b  d1,(0,a0,d2.l)
+			60FE					bra.s   `?L7`
+
+__low_level_init:
+00010148	7001					moveq.l #1,d0         ; switch to user mode
+			4E75					rts
+
+emitter:
+			3239 00030088			move.w vky_txt_pos,d1
+			0281 0000FFFF			and.l #0x0000ffff,d1
+			207C FECA0000			move.l #0xfeca0000,a0
+			D1C1					adda.l d1,a0
+			227C FECA8000			move.l #0xfeca8000,a1
+			D3C1					adda.l d1,a1
+00010168	1080					move.b d0,(a0)
+			12BC 00F0				move.b #0xf0,(a1)
+			5241					addq.w #1,d1
+			33C1 00030088			move.w d1,vky_txt_pos
+			4E75					rts
+
+main:
+00010178	4279 00030088			clr.w   vky_txt_pos.l
+			7048					moveq.l #72,d0
+			4EB9 000100CE			jsr     vky_txt_emit.l
+			7065					moveq.l #101,d0
+			4EB9 000100CE			jsr     vky_txt_emit.l
+			706C					moveq.l #108,d0
+			4EB9 000100CE			jsr     vky_txt_emit.l
+			706C					moveq.l #108,d0
+00010198	4EB9 000100CE			jsr     vky_txt_emit.l
+			706F 					moveq.l #111,d0
+			4EB9 000100CE			jsr     vky_txt_emit.l
+			60FE					bra.s   `?L13`
+
+000101A8	2F022248240153814A826706340012C260F22008241F4E75
+000101C0	2F0E2C48220053804A8167041CD960F420082C5F4E75
+
+data_init_table:
+000101D6	00030000000000000000008A
+000101E2	4EB9000101EA4E75
+000101EA	60FE
+0016
+00010000

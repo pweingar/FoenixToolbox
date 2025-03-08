@@ -13,6 +13,8 @@
 #include "dev/rtc.h"
 #include "pata_reg.h"
 
+#include "tests.h"
+
 //
 // Constants
 //
@@ -572,8 +574,8 @@ short pata_install() {
 
     // Check if drive is installed
     // if ((*DIP_BOOTMODE & HD_INSTALLED) == 0) {
-        bdev.number = BDEV_HDC;
-        bdev.name = "HDD";
+        bdev.number = BDEV_HD0;
+        bdev.name = "HD0";
         bdev.init = pata_init;
         bdev.read = pata_read;
         bdev.write = pata_write;

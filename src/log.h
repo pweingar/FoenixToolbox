@@ -20,7 +20,7 @@
 #endif
 
 #ifndef LOG_CHANNEL
-#define LOG_CHANNEL LOG_CHANNEL_UART0
+#define LOG_CHANNEL LOG_CHANNEL_CHANNEL_A
 #endif
 
 /*

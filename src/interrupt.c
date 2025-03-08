@@ -6,10 +6,40 @@
 
 #include "features.h"
 #include "interrupt.h"
+#include "calypsi/intrinsics68000.h"
 
 #define MAX_HANDLERS 48
 
 p_int_handler g_int_handler[MAX_HANDLERS];
+
+/*
+ * Enable all interrupts
+ *
+ * NOTE: this is actually provided in the low level assembly
+ *
+ * Returns:
+ * a machine dependent representation of the interrupt masking prior to enabling
+ */
+SYSTEMCALL short int_enable_all() {
+	__interrupt_state_t state = __get_interrupt_state();
+	__enable_interrupts();
+	return (short)state;
+}
+
+/*
+ * Disable all interrupts
+ *
+ * NOTE: this is actually provided in the low level assembly
+ *
+ * Returns:
+ * a machine dependent representation of the interrupt masking prior to disabling
+ */
+SYSTEMCALL short int_disable_all() {
+	__interrupt_state_t state = (short)__get_interrupt_state();
+	__disable_interrupts();
+	return (short)state;
+}
+
 
 /*
  * Return the group number for the interrupt number

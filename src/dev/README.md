@@ -13,7 +13,7 @@ This folder contains the machine-specific device driver code for the various I/O
 * kbd_f256jr.c -- Device specific code for the F256jr PS/2 keyboard
 * ps2.c -- Low-level support for the PS/2 interface
 * rtc.c -- Access to the realtime clock
-* sdc_f256.c -- Device driver code for the F256's SD card via the SPI interface. This provides a block device driver that is used by FatFS.
+* sdc_spi.c -- Device driver code for the F256's SD card via the SPI interface. This provides a block device driver that is used by FatFS.
 * sprites.c -- Code to allow the boot screen to use sprites
 * tiles.c -- Code to allow the boot screen to use tiles
 * timers_c256.c -- Low-level code to set up the timers used by the C256 code

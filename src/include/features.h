@@ -15,6 +15,8 @@
 	// Does the model have a PATA / IDE interface
 	#define HAS_PATA 1
 
+	#define HAS_SDC_SPI 1
+
     // Actually, for the X this depends on the submodel. E.g. Pizza Box doesn't have floppy.
     #define HAS_PARALLEL_PORT 1
 
@@ -41,9 +43,12 @@
     #define HAS_EXTERNAL_SIDS 1
     #define HAS_OPL3 1
 	#define HAS_PATA 1
-#elif  MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256KE || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256JR2
+#elif MODEL_FOENIX_F256_GEN
+    // Common elements for all F256s
 	#define HAS_OPL3 1
 	#define HAS_IEC 1
+	#define HAS_INTERNAL_SD 1
+	#define HAS_SDC_SPI 1
 #endif
 
 
@@ -91,6 +96,14 @@
 
 #ifndef HAS_IEC
 	#define HAS_IEC 0
+#endif
+
+#ifndef HAS_INTERNAL_SD
+	#define HAS_INTERNAL_SD 0
+#endif
+
+#ifndef HAS_SDC_SPI
+	#define HAS_SDC_SPI 0
 #endif
 
 #endif

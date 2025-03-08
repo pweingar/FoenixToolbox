@@ -1,0 +1,178 @@
+###############################################################################
+#                                                                             #
+# Calypsi ISO C compiler for Motorola 68000                     version 5.8.1 #
+#                                                       26/Feb/2025  20:47:56 #
+# Command line: -I. -I./include -DMODEL=11 -DCPU=5 --core 68000               #
+#               --code-model large --data-model large -l -o hello.o hello.c   #
+#                                                                             #
+###############################################################################
+
+    \ 00000000                      .rtmodel version,"1"
+    \ 00000000                      .rtmodel nearDataBase,"A4"
+    \ 00000000                      .rtmodel core,"68000"
+    \ 00000000                      .rtmodel codeModel,"large"
+0001                    
+0002                    #include <stddef.h>
+0003                    #include <stdint.h>
+0004                    
+0005                    #define VKY_TXT_CHAR_A	((volatile char *)0xfeca0000)
+0006                    #define VKY_TXT_COLOR_A	((volatile uint8_t *)0xfeca8000)
+0007                    
+0008                    uint16_t vky_txt_pos = 0;
+    \ 00000000                      .section zfar,bss
+    \ 00000000                      .public vky_txt_pos
+    \ 00000000                      .align  2
+    \ 00000000          vky_txt_pos:
+    \ 00000000                      .space  2
+0009                    
+0010                    void vky_txt_emit(char c) {
+    \ 00000000                      .section code,text
+    \ 00000000                      .public vky_txt_emit
+    \ 00000000                      .align  2
+    \ 00000000          vky_txt_emit:
+    \ 00000000 48e73000             movem.l d2-d3,-(sp)
+0011                    	VKY_TXT_CHAR_A[vky_txt_pos] = c;
+    \ 00000004 223cfeca             move.l  #0xfeca0000,d1
+    \ 00000008 0000
+    \ 0000000a 7400                 moveq.l #0,d2
+    \ 0000000c 3439....             move.w  vky_txt_pos.l,d2
+    \ 00000010 ....
+    \ 00000012 2042                 move.l  d2,a0
+    \ 00000014 11801800             move.b  d0,(0,a0,d1.l)
+0012                    	VKY_TXT_COLOR_A[vky_txt_pos++] = 0xf0;
+    \ 00000018 3039....             move.w  vky_txt_pos.l,d0
+    \ 0000001c ....
+    \ 0000001e 7201                 moveq.l #1,d1
+    \ 00000020 d379....             add.w   d1,vky_txt_pos.l
+    \ 00000024 ....
+    \ 00000026 72f0                 moveq.l #-16,d1
+    \ 00000028 243cfeca             move.l  #0xfeca8000,d2
+    \ 0000002c 8000
+    \ 0000002e 7600                 moveq.l #0,d3
+    \ 00000030 3600                 move.w  d0,d3
+    \ 00000032 2043                 move.l  d3,a0
+    \ 00000034 11812800             move.b  d1,(0,a0,d2.l)
+0013                    }
+    \ 00000038 4cdf000c             movem.l (sp)+,d2-d3
+    \ 0000003c 4e75                 rts
+0014                    
+0015                    /**
+0016                     * Handler for the illegal instruction exception
+0017                     */
+0018                    __attribute__((interrupt(0x0010))) void illegal() {
+    \ 00000000                      .section `$$interruptVector_0x00000010`,text,root
+    \ 00000000                      .public illegal
+    \ 00000000 ........             .long   illegal
+    \ 00000000                      .section code,text
+    \ 00000000                      .align  2
+    \ 00000000 48e7f080 illegal:    movem.l d0-d3/a0,-(sp)
+0019                    	VKY_TXT_CHAR_A[vky_txt_pos] = '!';
+    \ 00000004 7021                 moveq.l #33,d0
+    \ 00000006 223cfeca             move.l  #0xfeca0000,d1
+    \ 0000000a 0000
+    \ 0000000c 7400                 moveq.l #0,d2
+    \ 0000000e 3439....             move.w  vky_txt_pos.l,d2
+    \ 00000012 ....
+    \ 00000014 2042                 move.l  d2,a0
+    \ 00000016 11801800             move.b  d0,(0,a0,d1.l)
+0020                    	VKY_TXT_COLOR_A[vky_txt_pos++] = 0xf0;
+    \ 0000001a 3039....             move.w  vky_txt_pos.l,d0
+    \ 0000001e ....
+    \ 00000020 7201                 moveq.l #1,d1
+    \ 00000022 d379....             add.w   d1,vky_txt_pos.l
+    \ 00000026 ....
+    \ 00000028 72f0                 moveq.l #-16,d1
+    \ 0000002a 243cfeca             move.l  #0xfeca8000,d2
+    \ 0000002e 8000
+    \ 00000030 7600                 moveq.l #0,d3
+    \ 00000032 3600                 move.w  d0,d3
+    \ 00000034 2043                 move.l  d3,a0
+    \ 00000036 11812800             move.b  d1,(0,a0,d2.l)
+    \ 0000003a          `?L7`:
+0021                    
+0022                    	while(1) ;
+    \ 0000003a 60fe                 bra.s   `?L7`
+0023                    }
+0024                    
+0025                    /**
+0026                     * Handler for the address exception
+0027                     */
+0028                    __attribute__((interrupt(0x000c))) void address_error() {
+    \ 00000000                      .section `$$interruptVector_0x0000000c`,text,root
+    \ 00000000                      .public address_error
+    \ 00000000 ........             .long   address_error
+    \ 00000000                      .section code,text
+    \ 00000000                      .align  2
+    \ 00000000          address_error:
+    \ 00000000 48e7f080             movem.l d0-d3/a0,-(sp)
+0029                    	VKY_TXT_CHAR_A[vky_txt_pos] = '@';
+    \ 00000004 7040                 moveq.l #64,d0
+    \ 00000006 223cfeca             move.l  #0xfeca0000,d1
+    \ 0000000a 0000
+    \ 0000000c 7400                 moveq.l #0,d2
+    \ 0000000e 3439....             move.w  vky_txt_pos.l,d2
+    \ 00000012 ....
+    \ 00000014 2042                 move.l  d2,a0
+    \ 00000016 11801800             move.b  d0,(0,a0,d1.l)
+0030                    	VKY_TXT_COLOR_A[vky_txt_pos++] = 0xf0;
+    \ 0000001a 3039....             move.w  vky_txt_pos.l,d0
+    \ 0000001e ....
+    \ 00000020 7201                 moveq.l #1,d1
+    \ 00000022 d379....             add.w   d1,vky_txt_pos.l
+    \ 00000026 ....
+    \ 00000028 72f0                 moveq.l #-16,d1
+    \ 0000002a 243cfeca             move.l  #0xfeca8000,d2
+    \ 0000002e 8000
+    \ 00000030 7600                 moveq.l #0,d3
+    \ 00000032 3600                 move.w  d0,d3
+    \ 00000034 2043                 move.l  d3,a0
+    \ 00000036 11812800             move.b  d1,(0,a0,d2.l)
+    \ 0000003a          `?L13`:
+0031                    
+0032                    	while(1) ;
+    \ 0000003a 60fe                 bra.s   `?L13`
+0033                    }
+0034                    
+0035                    int main(int argc, char * argv[]) {
+    \ 00000000                      .section code,text
+    \ 00000000                      .public main
+    \ 00000000                      .align  2
+    \ 00000000          main:
+0036                    	vky_txt_pos = 0;
+    \ 00000000 4279....             clr.w   vky_txt_pos.l
+    \ 00000004 ....
+0037                    
+0038                    	vky_txt_emit('H');
+    \ 00000006 7048                 moveq.l #72,d0
+    \ 00000008 4eb9....             jsr     vky_txt_emit.l
+    \ 0000000c ....
+0039                    	vky_txt_emit('e');
+    \ 0000000e 7065                 moveq.l #101,d0
+    \ 00000010 4eb9....             jsr     vky_txt_emit.l
+    \ 00000014 ....
+0040                    	vky_txt_emit('l');
+    \ 00000016 706c                 moveq.l #108,d0
+    \ 00000018 4eb9....             jsr     vky_txt_emit.l
+    \ 0000001c ....
+0041                    	vky_txt_emit('l');
+    \ 0000001e 706c                 moveq.l #108,d0
+    \ 00000020 4eb9....             jsr     vky_txt_emit.l
+    \ 00000024 ....
+0042                    	vky_txt_emit('o');
+    \ 00000026 706f                 moveq.l #111,d0
+    \ 00000028 4eb9....             jsr     vky_txt_emit.l
+    \ 0000002c ....
+    \ 0000002e          `?L19`:
+0043                    
+0044                    	while(1) ;
+    \ 0000002e 60fe                 bra.s   `?L19`
+0045                    }
+
+##########################
+#                        #
+# Memory sizes (decimal) #
+#                        #
+##########################
+
+Executable              (Text): 238 bytes
+Zero initialized __far   (BSS):   2 bytes

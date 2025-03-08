@@ -27,7 +27,7 @@ const char * sys_model_name[] = {
 	"F256 K2c",
 	"F256 K2",
 	"F256 Ke",
-	"F256 K2e"		// 20
+	"F256 K2e",		// 20
 	"Reserved",
 	"Reserved",
 	"Reserved",
@@ -38,7 +38,6 @@ const char * sys_model_name[] = {
 	"Reserved",
 	"Reserved",
 	"Reserved",		// 30
-	"Reserved",
 	"Reserved",
 	"Reserved",
 	"Reserved",
@@ -347,11 +346,16 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
  * 
  */
 SYSTEMCALL void reboot() {
+#if MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
 	// Authorize GABE to force a CPU reboot and trigger the reboot
 	uint8_t * reboot_auth = (uint8_t *)GABE_RST_AUTH;
 	reboot_auth[0] = 0xde;
 	reboot_auth[1] = 0xad;
 	*GABE_MSTR_CTRL |= GABE_CTRL_WRM_RST;
+#elif MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_A2560X
+	*GABE_CTRL_REG |= 0xdead0000;
+	*GABE_CTRL_REG |= MANUAL_RESET;
+#endif
 }
 
 #if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X
