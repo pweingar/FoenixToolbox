@@ -531,21 +531,19 @@ void boot_screen() {
 			}
 
 			// If there is a boot icon specified in the boot record, change to that icon
-			if (boot_record[position] != 0) {
-				// TODO: fix cartridge icon issue
-				
-				// if (boot_record[position]->icon_address != 0) {
-				// 	sprite_assign(position, (uint8_t *)(boot_record[position]->icon_address), 0, 0);
+			if (boot_record[position] != 0) {			
+				if (boot_record[position]->icon_address != 0) {
+					sprite_assign(position, (uint8_t *)(boot_record[position]->icon_address), 0, 0);
 
-				// 	// If there is a CLUT defined for the boot record, switch to use that clut
-				// 	if (boot_record[position]->clut_address != 0) {
-				// 		for (i = 0; i < 4 * 256; i++) {
-				// 			uint8_t * source_clut = (uint8_t *)boot_record[position]->clut_address;
-				// 			VKY_GR_CLUT_2[i] = source_clut[i];
-				// 		}
-				// 		sprite_clut(position, 2);
-				// 	}
-				// }
+					// If there is a CLUT defined for the boot record, switch to use that clut
+					if (boot_record[position]->clut_address != 0) {
+						for (i = 0; i < 4 * 256; i++) {
+							uint8_t * source_clut = (uint8_t *)boot_record[position]->clut_address;
+							VKY_GR_CLUT_2[i] = source_clut[i];
+						}
+						sprite_clut(position, 2);
+					}
+				}
 			}
 		}
 	}

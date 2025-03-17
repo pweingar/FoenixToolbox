@@ -85,3 +85,5 @@
 "sys_iecll_listen_sa","FFE150"
 "sys_iecll_unlisten","FFE154"
 "sys_iecll_reset","FFE158"
+"sys_fsys_set_cwd","FFE15C"
+"sys_fsys_get_cwd","FFE160"

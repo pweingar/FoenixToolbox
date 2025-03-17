@@ -85,6 +85,8 @@
 	.public sys_iecll_listen_sa
 	.public sys_iecll_unlisten
 	.public sys_iecll_reset
+	.public sys_fsys_set_cwd
+	.public sys_fsys_get_cwd
 
 	.extern proc_exit
 	.extern int_enable_all
@@ -173,6 +175,8 @@
 	.extern iecll_listen_sa
 	.extern iecll_unlisten
 	.extern iecll_reset
+	.extern fsys_set_cwd
+	.extern fsys_get_cwd
 
 	.section jumptable
 
@@ -263,3 +267,5 @@ sys_iecll_listen:             	jmp long:iecll_listen
 sys_iecll_listen_sa:          	jmp long:iecll_listen_sa
 sys_iecll_unlisten:           	jmp long:iecll_unlisten
 sys_iecll_reset:              	jmp long:iecll_reset
+sys_fsys_set_cwd:             	jmp long:fsys_set_cwd
+sys_fsys_get_cwd:             	jmp long:fsys_get_cwd

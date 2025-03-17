@@ -94,3 +94,6 @@ iecll_listen
 iecll_listen_sa
 iecll_unlisten
 iecll_reset
+
+fsys_set_cwd
+fsys_get_cwd
