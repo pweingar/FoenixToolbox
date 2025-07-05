@@ -60,6 +60,13 @@ else ifeq ($(UNIT),F256K2)
 
 	SRCS_FOR_UNIT=psg.c codec_c256.c sid.c yamaha.c
 	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target f256
+else ifeq ($(UNIT),F256K2)
+	CC=cc65816
+	AS=as65816
+	AR=nlib
+
+	SRCS_FOR_UNIT=psg.c codec_c256.c sid.c yamaha.c
+	CFLAGS_FOR_UNIT=-DMODEL=145 -DCPU=255 --code-model large --data-model large --target f256
 else ifeq ($(UNIT),A2560K)
 	CC=cc68k
 	AS=as68k

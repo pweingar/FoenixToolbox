@@ -60,6 +60,13 @@ else ifeq ($(UNIT),F256K2)
 
 	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c 
 	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target f256
+else ifeq ($(UNIT),F256K2)
+	CC=cc65816
+	AS=as65816
+	AR=nlib
+
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c 
+	CFLAGS_FOR_UNIT=-DMODEL=145 -DCPU=255 --code-model large --data-model large --target f256
 else ifeq ($(UNIT),A2560K)
 	CC=cc68k
 	AS=as68k
