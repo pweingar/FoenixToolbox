@@ -67,7 +67,7 @@
 #define RTC_CTRL        ((volatile unsigned char *)0xaf080e)
 #define RTC_CENTURY     ((volatile unsigned char *)0xaf080f)
 
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
+#elif MODEL_FOENIX_F256_GEN
 
 #define RTC_BASE        ((volatile unsigned char *)0xf01690)
 #define RTC_SEC         ((volatile unsigned char *)0xf01690)

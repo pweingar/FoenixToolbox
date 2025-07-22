@@ -52,6 +52,10 @@ __program_start:
               clc
               xce                   ; native 16-bit mode
 
+;;
+;; Code to support the X series of F256 FPGA loads with combined MMU and 24-bit access
+;;
+
               sep     #0x30         ; 8-bit registers
 
               lda     long:0        ; Move SRAM to 24-bit access

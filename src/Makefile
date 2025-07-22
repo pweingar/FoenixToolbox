@@ -73,7 +73,7 @@ else ifeq ($(UNIT),F256K)
 else ifeq ($(UNIT),F256K2)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s 
+	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s  C256/dma.s
 	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target f256
 
 	ifeq ($(MEMORY),ROM)
@@ -84,7 +84,7 @@ else ifeq ($(UNIT),F256K2)
 else ifeq ($(UNIT),F256K2X)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s 
+	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s
 	CFLAGS_FOR_UNIT=-DMODEL=145 -DCPU=255 --code-model large --data-model large --target f256
 
 	ifeq ($(MEMORY),ROM)
