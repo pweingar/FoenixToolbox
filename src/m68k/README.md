@@ -1,6 +1,6 @@
 # m68k
 
-This folder contains the various source files needed to compile Foenix/MCP
+This folder contains the various source files needed to compile Toolbox
 for the Motorola 68000 series processors.
 
 ## System Call Convention

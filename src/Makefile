@@ -1,8 +1,8 @@
 # VPATH=.:../../module/Calypsi-remote-debug/src
 DEBUGGER=../module/Calypsi-remote-debug/src
 
-UNIT := F256K2
-MEMORY := ROM
+UNIT := FA2560K2
+MEMORY := RAM
 
 # Define OS-dependent variables
 
@@ -36,11 +36,11 @@ else ifeq ($(UNIT),C256_FMX)
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
 	SRCS_FOR_UNIT=
 	CFLAGS_FOR_UNIT=-DMODEL=0 -DCPU=255 --code-model large --data-model large
-	LDFLAGS_FOR_UNIT=C256/ld_lc_c256_fmx.scm clib-lc-ld.a 
+	LDFLAGS_FOR_UNIT=C256/ld_lc_c256_fmx.scm clib-lc-ld.a
 else ifeq ($(UNIT),F256)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s 
+	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s
 	CFLAGS_FOR_UNIT=-DMODEL=2 -DCPU=255 --code-model large --data-model large --target f256
 
 	ifeq ($(MEMORY),ROM)
@@ -51,7 +51,7 @@ else ifeq ($(UNIT),F256)
 else ifeq ($(UNIT),F256JR2)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s 
+	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s
 	CFLAGS_FOR_UNIT=-DMODEL=35 -DCPU=255 --code-model large --data-model large --target f256
 
 	ifeq ($(MEMORY),ROM)
@@ -62,7 +62,7 @@ else ifeq ($(UNIT),F256JR2)
 else ifeq ($(UNIT),F256K)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s 
+	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s
 	CFLAGS_FOR_UNIT=-DMODEL=18 -DCPU=255 --code-model large --data-model large --target f256
 
 	ifeq ($(MEMORY),ROM)
@@ -73,7 +73,7 @@ else ifeq ($(UNIT),F256K)
 else ifeq ($(UNIT),F256K2)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s 
+	SRCS_FOR_UNIT=cartridge.c C256/jumptable.s C256/io_stubs.c C256/extras.s C256/iecll.s C256/interrupts.s C256/f256-cstartup.s
 	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target f256
 
 	ifeq ($(MEMORY),ROM)
@@ -92,7 +92,20 @@ else ifeq ($(UNIT),A2560K)
 	else
 		LDFLAGS_FOR_UNIT=A2560/a2560-ram.scm clib-68000-lc-ld.a --rtattr printf=medium --cstartup=a2560
 	endif
+else ifeq ($(UNIT),FA2560K2)
+	CPU=m68k
+	C_SRCS_DEBUGGER=
+	SRCS_FOR_UNIT=FA2560K2/a2560-lowlevel.c FA2560K2/a2560-startup.s FA2560K2/io_stubs.c interrupt.c timers.c
+	CFLAGS_FOR_UNIT=-DMODEL=24 -DCPU=5 --core 68000 --code-model large --data-model large # --target Foenix
+
+	ifeq ($(MEMORY),ROM)
+		LDFLAGS_FOR_UNIT=FA2560K2/a2560-flash.scm clib-68000-lc-ld.a --rtattr printf=medium --cstartup=a2560
+	else
+		LDFLAGS_FOR_UNIT=FA2560K2/a2560-ram.scm clib-68000-lc-ld.a --rtattr printf=medium --cstartup=a2560
+	endif
 endif
+
+
 
 ifeq ($(CPU),w65816)
 	CC=cc65816
@@ -116,7 +129,7 @@ else
 	LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file toolbox.map
 endif
 
-SRCS = toolbox.c log.c  memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c boot.c $(SRCS_FOR_UNIT) # tests.c(C_SRCS_DEBUGGER)
+SRCS = toolbox.c log.c memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c  $(SRCS_FOR_UNIT) # boot.c tests.c(C_SRCS_DEBUGGER)
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = dev/devices.a snd/sound.a fatfs/fatfs.a

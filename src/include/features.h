@@ -49,6 +49,12 @@
 	#define HAS_IEC 1
 	#define HAS_INTERNAL_SD 1
 	#define HAS_SDC_SPI 1
+#elif MODEL == MODEL_FOENIX_A2560K2
+    // Common elements for all F256s
+	#define HAS_OPL3 1
+	#define HAS_IEC 1
+	#define HAS_INTERNAL_SD 1
+	#define HAS_SDC_SPI 1
 #endif
 
 

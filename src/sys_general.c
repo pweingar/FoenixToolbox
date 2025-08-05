@@ -31,7 +31,7 @@ const char * sys_model_name[] = {
 	"Reserved",
 	"Reserved",
 	"Reserved",
-	"Reserved",
+	"FA2560K2",
 	"Reserved",		// 25
 	"Reserved",
 	"Reserved",
@@ -195,6 +195,12 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
 	info->system_ram_size = (uint32_t)1024 * (uint32_t)1024 * (uint32_t)1024;
 #endif
 
+#elif MODEL == MODEL_FOENIX_FA2560K2
+	cpu = CPU_M68000;
+	clock_speed = SYSCLK_50MHZ;
+    
+    info->system_ram_size = 2 * (uint32_t)1024 * (uint32_t)1024 * (uint32_t)1024;
+
 #else
     machine_id = 0xFF;
     cpu = CPU_M68000;
@@ -211,7 +217,11 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
     info->fpga_subver = 0;
 #endif
 
+#if MODEL == MODEL_FOENIX_FA2560K2
+    info->model = MODEL_FOENIX_FA2560K2;
+#else
     info->model = machine_id;
+#endif
     info->cpu = cpu;
 
     switch (clock_speed) {

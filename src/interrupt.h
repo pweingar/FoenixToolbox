@@ -89,6 +89,25 @@
 #define MASK_GRP1 			((volatile uint8_t *)0xf0166d)
 #define MASK_GRP2 			((volatile uint8_t *)0xf0166e)
 
+#elif MODEL == MODEL_FOENIX_FA2560K2
+
+#define PENDING_GRP0 		((volatile unsigned short *)0xFFB02000)
+#define PENDING_GRP1 		((volatile unsigned short *)0xFFB02002)
+#define PENDING_GRP2 		((volatile unsigned short *)0xFFB02004)
+
+#define POL_GRP0 			((volatile unsigned short *)0xFFB02008)
+#define POL_GRP1 			((volatile unsigned short *)0xFFB0200A)
+#define POL_GRP2 			((volatile unsigned short *)0xFFB0200C)
+
+#define EDGE_GRP0 			((volatile unsigned short *)0xFFB02010)
+#define EDGE_GRP1 			((volatile unsigned short *)0xFFB02012)
+#define EDGE_GRP2 			((volatile unsigned short *)0xFFB02014)
+
+#define MASK_GRP0 			((volatile unsigned short *)0xFFB02018)
+#define MASK_GRP1 			((volatile unsigned short *)0xFFB0201A)
+#define MASK_GRP2 			((volatile unsigned short *)0xFFB0201C)
+
+
 #endif
 
 

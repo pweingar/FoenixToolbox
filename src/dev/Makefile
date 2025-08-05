@@ -51,14 +51,14 @@ else ifeq ($(UNIT),F256K)
 	AS=as65816
 	AR=nlib
 
-	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c 
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c
 	CFLAGS_FOR_UNIT=-DMODEL=18 -DCPU=255 --code-model large --data-model large --target f256
 else ifeq ($(UNIT),F256K2)
 	CC=cc65816
 	AS=as65816
 	AR=nlib
 
-	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c 
+	SRCS_FOR_UNIT=txt_f256.c kbd_f256.c kbd_f256k.c indicators_c256.c interrupts_f256.c sdc_spi.c iec.c sprites.c tiles.c # timers_c256.c
 	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target f256
 else ifeq ($(UNIT),A2560K)
 	CC=cc68k
@@ -67,12 +67,19 @@ else ifeq ($(UNIT),A2560K)
 
 	SRCS_FOR_UNIT=indicators_a2560.c txt_a2560k_a.c txt_a2560k_b.c kbd_mo.c pata.c sdc_spi.c
 	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large --target Foenix
+else ifeq ($(UNIT),FA2560K2)
+	CC=cc68k
+	AS=as68k
+	AR=nlib
+
+	SRCS_FOR_UNIT=indicators_a2560.c txt_fa2560k2.c sdc_spi.c kbd_f256.c kbd_f256k.c
+	CFLAGS_FOR_UNIT=-DMODEL=24 -DCPU=5 --code-model large --data-model large # --target Foenix
 endif
 INCLUDES=-I.. -I../include
 CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) -l
 ASFLAGS=$(INCLUDES) -l
 
-SRCS = block.c channel.c console.c fsys.c txt_screen.c rtc.c uart.c $(SRCS_FOR_UNIT) # pata.c bitmap.c dma.c ps2.c sdc.c 
+SRCS = block.c channel.c console.c fsys.c txt_screen.c rtc.c uart.c $(SRCS_FOR_UNIT) # pata.c bitmap.c dma.c ps2.c sdc.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 OBJS4RM = $(subst /,\\,$(OBJS))
 

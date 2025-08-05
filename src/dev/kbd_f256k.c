@@ -1,12 +1,12 @@
 /**
  * @file kbd_f256k.c
  * @author your name (you@domain.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-06-17
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 
 #include <ctype.h>
@@ -17,8 +17,8 @@
 #include "interrupt.h"
 #include "log.h"
 #include "ring_buffer.h"
+#include "via_reg.h"
 #include "dev/kbd_f256k.h"
-#include "F256/via_f256.h"
 #include "F256/kbd_opt_f256.h"
 #include "gabe_reg.h"
 #include "simpleio.h"
@@ -58,11 +58,11 @@
 
 // 		PB0		PB1		PB2		PB3		PB4 	PB5		PB6	PB7			PB8
 // PA0	DELETE	RETURN	LEFT	F7		F1		F3		F5	UP			DOWN
-// PA1	3		W		A		4		Z		S		E	L-SHIFT	
-// PA2	5		R		D		6		C		F		T	X	
-// PA3	7		Y		G		8		B		H		U	V	
-// PA4	9		I		J		0		M		K		O	N	
-// PA5	-		P		L		CAPS	.		:		[	,	
+// PA1	3		W		A		4		Z		S		E	L-SHIFT
+// PA2	5		R		D		6		C		F		T	X
+// PA3	7		Y		G		8		B		H		U	V
+// PA4	9		I		J		0		M		K		O	N
+// PA5	-		P		L		CAPS	.		:		[	,
 // PA6	=		]		'		HOME	R-SHIFT	ALT		TAB	/			RIGHT
 // PA7	1		BKSP	CTRL	2		SPACE	Foenix	Q	RUN/STOP
 
@@ -92,7 +92,7 @@ static bool break_pressed = 0;
 
 /**
  * @brief Get the keys selected in a given row
- * 
+ *
  * @param row the number of the row to turn on (0 - 7)
  * @return uint8_t a bitfield representing the keys in that row (0 = released, 1 = pressed)
  */
@@ -101,15 +101,15 @@ static uint16_t kbd_get_columns(uint8_t row) {
 
 	via1->pa = ~(0x01 << row);
 	result = ((uint16_t)via1->pb | (((uint16_t)(via0->pb) & 0x0080) << 1)) ^ 0x1ff;
-	
+
 	return result;
 }
 
 /**
  * @brief Set or reset the modifier_flag in the modifiers variable, depending on if the key is pressed or not
- * 
+ *
  * @param modifier_flag the bit to change
- * @param is_pressed if true, key is pressed, if 0 key is released 
+ * @param is_pressed if true, key is pressed, if 0 key is released
  */
 static void kbd_process_modifier(uint8_t modifier_flag, bool is_pressed) {
 	if (is_pressed) {
@@ -121,20 +121,22 @@ static void kbd_process_modifier(uint8_t modifier_flag, bool is_pressed) {
 
 /**
  * @brief Turn the caps lock LED on or off
- * 
+ *
  * @param cap_en true for on, false for off
  */
 static void kbd_set_caps_led(bool cap_en) {
+#if MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2
 	if (cap_en) {
 		*GABE_MSTR_CTRL |= GABE_CAP_EN;
 	} else {
 		*GABE_MSTR_CTRL &= (~GABE_CAP_EN);
 	}
+#endif
 }
 
 /**
  * @brief Handle a key MAKE or BREAK event... set up for auto repeat and queue the MAKE/BREAK scan code
- * 
+ *
  * @param column the number of the column (0 - 8)
  * @param row the number of the row (0 - 7)
  * @param is_pressed TRUE, the key is down... FALSE, the key is up
@@ -148,7 +150,7 @@ static void kbd_process_key(short column, short row, bool is_pressed) {
 			// Left or right SHIFT
 			kbd_process_modifier(KBD_MOD_SHIFT, is_pressed);
 			break;
-		
+
 		case 0x3a:
 			// CAPS... flip KBD_LOCK_CAPS bit on MAKE, ignore BREAK
 			if (is_pressed) {
@@ -219,7 +221,7 @@ SYSTEMCALL unsigned short kbd_get_scancode() {
 
 /**
  * @brief Scan the state of the keys on the mechanical keyboard
- * 
+ *
  */
 void kbd_scan_mechanical() {
 	uint8_t ifr = via0->ifr;
@@ -249,7 +251,7 @@ void kbd_scan_mechanical() {
 
 /**
  * @brief Query the optical keyboard to get the scanned keyboard matrix (if it has any pending data)
- * 
+ *
  */
 void kbd_scan_optical() {
 	if ((KBD_OPTICAL->status & KBD_OPT_STAT_EMPTY) == 0) {
@@ -291,7 +293,7 @@ void kbd_scan_optical() {
 
 /**
  * @brief Handle an IRQ to query the keyboard
- * 
+ *
  */
 SYSTEMCALL void kbd_handle_irq() {
 	// The scanning process is different depending on the keyboard type:
