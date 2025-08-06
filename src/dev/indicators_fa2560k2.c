@@ -39,7 +39,7 @@ uint32_t ind_state_color(short state) {
 
 void ind_set_on_off(uint32_t bit, short state) {
     if (state == IND_OFF) {
-        *GABE_CTRL_REG = *GABE_CTRL_REG & ~(bit | SDCARD_CTRL | NETWORK_CTRL);
+        *GABE_CTRL_REG = *GABE_CTRL_REG & ~bit;
     } else {
         *GABE_CTRL_REG = *GABE_CTRL_REG | bit;
     }
@@ -63,17 +63,21 @@ void ind_set(short ind_number, short state) {
             break;
 
         case IND_SDC:
+            *GABE_CTRL_REG = *GABE_CTRL_REG & ~SDCARD_CTRL;
             *GABE_FA2560K2_RGB1 = ind_state_color(state);
             ind_set_on_off(SDCARD_LED, state);
             break;
 
         case IND_HDC:
+            *GABE_CTRL_REG = *GABE_CTRL_REG | SDCARD_CTRL;
             *GABE_FA2560K2_RGB2 = ind_state_color(state);
-            ind_set_on_off(SDCARD_LED | SDCARD_CTRL, state);
+            ind_set_on_off(SDCARD_LED, state);
             break;
 
         case IND_NET:
+            *GABE_CTRL_REG = *GABE_CTRL_REG & ~NETWORK_CTRL;
             *GABE_FA2560K2_RGB3 = ind_state_color(state);
+            *GABE_FA2560K2_RGB4 = ind_state_color(state);
             ind_set_on_off(NETWORK_LED, state);
             break;
 
