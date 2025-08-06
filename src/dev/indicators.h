@@ -13,11 +13,14 @@
 #define IND_OFF             0x00        /* The LED should be off */
 #define IND_ON              0x01        /* The LED should be on for a normal condition */
 #define IND_ERROR           0x02        /* The LED should be on for an error condition (if possible) */
+#define IND_FOENIX          0x03        /* Special Foenix color (purple) */
 
 #define IND_POWER           0x00        /* Number for the power LED */
 #define IND_SDC             0x01        /* Number for the SD Card's LED */
 #define IND_HDC             0x02        /* Number for the hard drive (IDE) LED */
 #define IND_FDC             0x03        /* Number for the flopy drive LED */
+#define IND_NET             0x04        /* Network activity indicator for machines that have it */
+#define IND_CAPS            0x05        /* Caps lock for machines with the caps lock built-in */
 
 /*
  * Initialize the indicators

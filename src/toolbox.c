@@ -169,9 +169,9 @@ void initialize() {
 	INFO("Text system initialized.");
 	INFO1("Top of memory: %lx", mem_get_ramtop());
 
-//     /* Initialize the indicators */
-//     ind_init();
-//     INFO("Indicators initialized");
+    /* Initialize the indicators */
+    ind_init();
+    INFO("Indicators initialized");
 
 //     /* Initialize the interrupt system */
 //     int_init();
