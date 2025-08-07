@@ -211,9 +211,9 @@ void initialize() {
 	iec_init();
 #endif
 
-    // /* Initialize the timers the MCP uses */
-    // timers_init();
-	// INFO("Timers initialized");
+    /* Initialize the timers the MCP uses */
+    timers_init();
+	INFO("Timers initialized");
 
     // /* Initialize the real time clock */
     // rtc_init();
@@ -316,6 +316,15 @@ int main(int argc, char * argv[]) {
 
     int_register(INT_SOF_A, int_sof_test);
     int_enable(INT_SOF_A);
+
+    long jiffies = timers_jiffies();
+    do {
+        long current = timers_jiffies();
+        if (current >= jiffies + 60) {
+            printf("Tick!\n");
+            jiffies = current;
+        }
+    } while (1);
 
     // // test_hd();
     // test_sd0();
