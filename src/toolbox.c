@@ -215,9 +215,9 @@ void initialize() {
     timers_init();
 	INFO("Timers initialized");
 
-    // /* Initialize the real time clock */
-    // rtc_init();
-	// INFO("Real time clock initialized");
+    /* Initialize the real time clock */
+    rtc_init();
+	INFO("Real time clock initialized");
 
     /* Enable all interrupts */
     int_enable_all();
@@ -321,7 +321,9 @@ int main(int argc, char * argv[]) {
     do {
         long current = timers_jiffies();
         if (current >= jiffies + 60) {
-            printf("Tick!\n");
+            t_time time;
+            rtc_get_time(&time);
+            printf("\e[40;1H%02d:%02d:%02d", time.hour, time.minute, time.second);
             jiffies = current;
         }
     } while (1);
