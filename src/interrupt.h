@@ -201,7 +201,7 @@
 #define INT_VICKY_A_2       0x03
 #define INT_VICKY_A_3       0x04
 #define INT_VICKY_A_4       0x05
-#define INT_RESERVED_1      0x06
+#define INT_EXPANSION       0x06
 #define INT_VICKY_A_DAC     0x07
 #define INT_SOF_B           0x08    /* Vicky Channel B Start of Frame */
 #define INT_SOL_B           0x09    /* Vicky Channel B Start of Line */
