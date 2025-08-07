@@ -173,9 +173,9 @@ void initialize() {
     ind_init();
     INFO("Indicators initialized");
 
-//     /* Initialize the interrupt system */
-//     int_init();
-// 	INFO("Interrupts initialized");
+    /* Initialize the interrupt system */
+    int_init();
+	INFO("Interrupts initialized");
 
 //     /* Mute the PSG */
 //     psg_mute_all();
@@ -219,9 +219,9 @@ void initialize() {
 //     rtc_init();
 // 	INFO("Real time clock initialized");
 
-//     /* Enable all interrupts */
-//     int_enable_all();
-//     INFO("Interrupts enabled");
+    /* Enable all interrupts */
+    int_enable_all();
+    INFO("Interrupts enabled");
 
 //     /* Play the SID test bong on the Gideon SID implementation */
 //     sid_test_internal();
@@ -298,6 +298,10 @@ void initialize() {
 //     }
 }
 
+void int_sof_test() {
+    VKY3_B_TEXT_MATRIX[0]++;
+}
+
 int main(int argc, char * argv[]) {
     short result;
     short i;
@@ -309,6 +313,9 @@ int main(int argc, char * argv[]) {
     printf("Model: %s\n", info.model_name);
     int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
 	printf("CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
+
+    int_register(INT_SOF_A, int_sof_test);
+    int_enable(INT_SOF_A);
 
     // // test_hd();
     // test_sd0();

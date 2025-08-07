@@ -95,7 +95,7 @@ else ifeq ($(UNIT),A2560K)
 else ifeq ($(UNIT),FA2560K2)
 	CPU=m68k
 	C_SRCS_DEBUGGER=
-	SRCS_FOR_UNIT=FA2560K2/a2560-lowlevel.c FA2560K2/a2560-startup.s FA2560K2/io_stubs.c interrupt.c timers.c
+	SRCS_FOR_UNIT=FA2560K2/a2560-lowlevel.c FA2560K2/a2560-startup.s FA2560K2/io_stubs.c timers.c
 	CFLAGS_FOR_UNIT=-DMODEL=24 -DCPU=5 --core 68000 --code-model large --data-model large # --target Foenix
 
 	ifeq ($(MEMORY),ROM)
