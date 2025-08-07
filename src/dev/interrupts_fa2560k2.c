@@ -209,6 +209,17 @@ void int_process(short int_number) {
 //
 // Interrupt bindings
 //
+// This section declares all the low-level interrupt bindings that are associated with
+// the interrupt exception vectors using the Calypsi "interrupt" attribute. While a user
+// program may replace one of these interrupt bindings, if desired, it will either need
+// to manually restore it or reset the entire system when done. It will also need to manage 
+// clearing the pending flag itself.
+//
+// Note that these declared interrupt binding routines are different from the p_int_handler
+// used by int_register(). Those interrupt handlers are regular user level procedures that
+// these low-level bindings will call using the simple calling convention after they have
+// cleared the pending flag.
+//
 
 GEN_HANDLER(int_0x00, 0x0100, INT_SOF_A)		// Interrupt 0x00: Vicky SOF
 GEN_HANDLER(int_0x01, 0x0104, INT_SOL_A)		// Interrupt 0x01: Vicky SOL

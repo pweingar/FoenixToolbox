@@ -177,29 +177,29 @@ void initialize() {
     int_init();
 	INFO("Interrupts initialized");
 
-//     /* Mute the PSG */
-//     psg_mute_all();
-// 	INFO("PSG initialized.");
+    /* Mute the PSG */
+    psg_mute_all();
+	INFO("PSG initialized.");
 
-//     /* Initialize and mute the SID chips */
-//     sid_init_all();
-// 	INFO("SID chips initialized.");
+    /* Initialize and mute the SID chips */
+    sid_init_all();
+	INFO("SID chips initialized.");
 
-// #if HAS_OPN || HAS_OPM || HAS_OPL3
-//     /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
-//     ym_init();
-// 	INFO("Yamaha initialized.");
-// #endif
+#if HAS_OPN || HAS_OPM || HAS_OPL3
+    /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
+    ym_init();
+	INFO("Yamaha initialized.");
+#endif
 
-//     /* Initialize the CODEC */
-//     init_codec();
-// 	INFO("CODEC initialized.");
+    /* Initialize the CODEC */
+    init_codec();
+	INFO("CODEC initialized.");
 
     cdev_init_system();   // Initialize the channel device system
     INFO("Channel device system ready.");
 
-//     bdev_init_system();   // Initialize the channel device system
-//     INFO("Block device system ready.");
+    bdev_init_system();   // Initialize the channel device system
+    INFO("Block device system ready.");
 
     if ((res = con_install())) {
 		ERROR1("FAILED: Console installation", res);
@@ -207,25 +207,25 @@ void initialize() {
         INFO("Console installed.");
     }
 
-// #if HAS_IEC
-// 	iec_init();
-// #endif
+#if HAS_IEC
+	iec_init();
+#endif
 
-//     /* Initialize the timers the MCP uses */
-//     timers_init();
-// 	INFO("Timers initialized");
+    // /* Initialize the timers the MCP uses */
+    // timers_init();
+	// INFO("Timers initialized");
 
-//     /* Initialize the real time clock */
-//     rtc_init();
-// 	INFO("Real time clock initialized");
+    // /* Initialize the real time clock */
+    // rtc_init();
+	// INFO("Real time clock initialized");
 
     /* Enable all interrupts */
     int_enable_all();
     INFO("Interrupts enabled");
 
-//     /* Play the SID test bong on the Gideon SID implementation */
-//     sid_test_internal();
-// 	INFO("SID boot bong played.");
+    // /* Play the SID test bong on the Gideon SID implementation */
+    // sid_test_internal();
+	// INFO("SID boot bong played.");
 
 // #if HAS_PATA
 //     if ((res = pata_install())) {
