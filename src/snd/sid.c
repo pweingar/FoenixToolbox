@@ -11,7 +11,7 @@
 #include "sys_general.h"
 #include "snd/sid.h"
 #include "sound_reg.h"
-#include "dev/rtc.h"
+#include "timers.h"
 
 /*
  * Return the base address of the given SID chip
@@ -73,7 +73,7 @@ void sid_init_all() {
 
 }
 
-#if MODEL == MODEL_FOENIX_FA2560K2 || MODEL == MODEL_FOENIX_FMX || MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
+#if MODEL == MODEL_FOENIX_FMX || MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
 /*
  * Test the internal SID implementation
  */
@@ -97,28 +97,28 @@ void sid_test_internal() {
 		sid->v1.frequency = 0x1660;
 		sid->v1.control = 0x11;
 
-		jiffies = rtc_get_jiffies() + 3;
-    	while (jiffies > rtc_get_jiffies());
+		jiffies = timers_jiffies() + 3;
+    	while (jiffies > timers_jiffies());
 
 		sid->v2.frequency = 0x0831;
 		sid->v2.control = 0x11;
 
-		jiffies = rtc_get_jiffies() + 3;
-    	while (jiffies > rtc_get_jiffies());
+		jiffies = timers_jiffies() + 3;
+    	while (jiffies > timers_jiffies());
 
 		sid->v3.frequency = 0x2187;
 		sid->v3.control = 0x11;
 
-		jiffies = rtc_get_jiffies() + 25;
-		while (jiffies > rtc_get_jiffies());
+		jiffies = timers_jiffies() + 25;
+		while (jiffies > timers_jiffies());
 
 		sid->v1.control = 0x10;
-    	jiffies = rtc_get_jiffies() + 3;
-    	while (jiffies > rtc_get_jiffies());
+    	jiffies = timers_jiffies() + 3;
+    	while (jiffies > timers_jiffies());
 
 		sid->v2.control = 0x10;
-    	jiffies = rtc_get_jiffies() + 3;
-    	while (jiffies > rtc_get_jiffies());
+    	jiffies = timers_jiffies() + 3;
+    	while (jiffies > timers_jiffies());
 
 		sid->v3.control = 0x10;
 
@@ -164,8 +164,8 @@ void sid_test_internal() {
 	*SID_INT_L_V1_CTRL = 0x11;
 	*SID_INT_R_V1_CTRL = 0x11;
 
-	jiffies = rtc_get_jiffies() + 3;
-    while (jiffies > rtc_get_jiffies());
+	jiffies = timers_jiffies() + 3;
+    while (jiffies > timers_jiffies());
 
 	*SID_INT_L_V2_FREQ_LO = 49;
 	*SID_INT_L_V2_FREQ_HI = 8;
@@ -175,8 +175,8 @@ void sid_test_internal() {
 	*SID_INT_L_V2_CTRL = 0x11;
 	*SID_INT_R_V2_CTRL = 0x11;
 
-    jiffies = rtc_get_jiffies() + 3;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 3;
+    while (jiffies > timers_jiffies());
 
 	*SID_INT_L_V3_FREQ_LO = 135;
 	*SID_INT_L_V3_FREQ_HI = 33;
@@ -186,26 +186,26 @@ void sid_test_internal() {
 	*SID_INT_L_V3_CTRL = 0x11;
 	*SID_INT_R_V3_CTRL = 0x11;
 
-    jiffies = rtc_get_jiffies() + 25;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 25;
+    while (jiffies > timers_jiffies());
 
 	*SID_INT_L_V1_CTRL = 0x10;
 	*SID_INT_R_V1_CTRL = 0x10;
 
-    jiffies = rtc_get_jiffies() + 3;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 3;
+    while (jiffies > timers_jiffies());
 
 	*SID_INT_L_V2_CTRL = 0x10;
 	*SID_INT_R_V2_CTRL = 0x10;
 
-    jiffies = rtc_get_jiffies() + 3;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 3;
+    while (jiffies > timers_jiffies());
 
 	*SID_INT_L_V2_CTRL = 0x10;
 	*SID_INT_R_V2_CTRL = 0x10;
 
-    jiffies = rtc_get_jiffies() + 10;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 10;
+    while (jiffies > timers_jiffies());
 
 	for (i = 0; i < 16; i++) {
 		*SID_INT_L_MODE_VOL = 15 - i;
@@ -252,8 +252,8 @@ void sid_test_external() {
 	*SID_EXT_L_V1_CTRL = 0x11;
 	*SID_EXT_R_V1_CTRL = 0x11;
 
-	jiffies = rtc_get_jiffies() + 3;
-    while (jiffies > rtc_get_jiffies());
+	jiffies = timers_jiffies() + 3;
+    while (jiffies > timers_jiffies());
 
 	*SID_EXT_L_V2_FREQ_LO = 49;
 	*SID_EXT_L_V2_FREQ_HI = 8;
@@ -263,8 +263,8 @@ void sid_test_external() {
 	*SID_EXT_L_V2_CTRL = 0x11;
 	*SID_EXT_R_V2_CTRL = 0x11;
 
-    jiffies = rtc_get_jiffies() + 3;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 3;
+    while (jiffies > timers_jiffies());
 
 	*SID_EXT_L_V3_FREQ_LO = 135;
 	*SID_EXT_L_V3_FREQ_HI = 33;
@@ -274,26 +274,26 @@ void sid_test_external() {
 	*SID_EXT_L_V3_CTRL = 0x11;
 	*SID_EXT_R_V3_CTRL = 0x11;
 
-    jiffies = rtc_get_jiffies() + 25;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 25;
+    while (jiffies > timers_jiffies());
 
 	*SID_EXT_L_V1_CTRL = 0x10;
 	*SID_EXT_R_V1_CTRL = 0x10;
 
-    jiffies = rtc_get_jiffies() + 3;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 3;
+    while (jiffies > timers_jiffies());
 
 	*SID_EXT_L_V2_CTRL = 0x10;
 	*SID_EXT_R_V2_CTRL = 0x10;
 
-    jiffies = rtc_get_jiffies() + 3;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 3;
+    while (jiffies > timers_jiffies());
 
 	*SID_EXT_L_V2_CTRL = 0x10;
 	*SID_EXT_R_V2_CTRL = 0x10;
 
-    jiffies = rtc_get_jiffies() + 10;
-    while (jiffies > rtc_get_jiffies());
+    jiffies = timers_jiffies() + 10;
+    while (jiffies > timers_jiffies());
 
 	for (i = 0; i < 16; i++) {
 		*SID_EXT_L_MODE_VOL = 15 - i;

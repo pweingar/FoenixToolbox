@@ -86,7 +86,7 @@
 #include "fatfs/ff.h"
 #include "rsrc/font/MSX_CP437_8x8.h"
 
-// #include "tests.h"
+#include "tests.h"
 
 // The list of drives for FATFS
 #if HAS_PATA
@@ -223,31 +223,33 @@ void initialize() {
     int_enable_all();
     INFO("Interrupts enabled");
 
-    // /* Play the SID test bong on the Gideon SID implementation */
-    // sid_test_internal();
-	// INFO("SID boot bong played.");
+    /* Play the SID test bong on the Gideon SID implementation */
+    printf("\e[1;3HTesting SID...\n");
+    sid_test_internal();
+	INFO("SID boot bong played.");
+    printf("SID boot bong played.\n");
 
-// #if HAS_PATA
-//     if ((res = pata_install())) {
-//         log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
-//     } else {
-//         INFO("PATA driver installed.");
-//     }
-// #endif
+#if HAS_PATA
+    if ((res = pata_install())) {
+        log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
+    } else {
+        INFO("PATA driver installed.");
+    }
+#endif
 
-//     if ((res = sdc_install())) {
-//         ERROR1("FAILED: SDC driver installation %d", res);
-//     } else {
-//         INFO("SDC driver installed.");
-//     }
+    if ((res = sdc_install())) {
+        ERROR1("FAILED: SDC driver installation %d", res);
+    } else {
+        INFO("SDC driver installed.");
+    }
 
-// #if HAS_FLOPPY
-//     if ((res = fdc_install())) {
-//         ERROR1("FAILED: Floppy drive initialization %d", res);
-//     } else {
-//         INFO("Floppy drive initialized.");
-//     }
-// #endif
+#if HAS_FLOPPY
+    if ((res = fdc_install())) {
+        ERROR1("FAILED: Floppy drive initialization %d", res);
+    } else {
+        INFO("Floppy drive initialized.");
+    }
+#endif
 
 //     // At this point, we should be able to call into to console to print to the screens
 
@@ -269,13 +271,13 @@ void initialize() {
 //     }
 // #endif
 
-// #if HAS_PARALLEL_PORT
-//     if ((res = lpt_install())) {
-//         log_num(LOG_ERROR, "FAILED: LPT installation", res);
-//     } else {
-//         log(LOG_INFO, "LPT installed.");
-//     }
-// #endif
+#if HAS_PARALLEL_PORT
+    if ((res = lpt_install())) {
+        log_num(LOG_ERROR, "FAILED: LPT installation", res);
+    } else {
+        log(LOG_INFO, "LPT installed.");
+    }
+#endif
 
 // #if HAS_MIDI_PORTS
 //     if ((res = midi_install())) {
@@ -291,11 +293,11 @@ void initialize() {
 //         log(LOG_INFO, "Serial ports initialized.");
 //     }
 
-//     if ((res = fsys_init())) {
-//         log_num(LOG_ERROR, "FAILED: file system initialization", res);
-//     } else {
-//         INFO("File system initialized.");
-//     }
+    if ((res = fsys_init())) {
+        log_num(LOG_ERROR, "FAILED: file system initialization", res);
+    } else {
+        INFO("File system initialized.");
+    }
 }
 
 void int_sof_test() {
@@ -317,6 +319,15 @@ int main(int argc, char * argv[]) {
     int_register(INT_SOF_A, int_sof_test);
     int_enable(INT_SOF_A);
 
+    // // test_hd();
+    // test_sd0();
+    // test_sd1();
+
+    printf("\nTesting FATFS:\n");
+    test_dir("/sd0");
+    printf("\n");
+    test_dir("/sd1");
+
     long jiffies = timers_jiffies();
     do {
         long current = timers_jiffies();
@@ -327,10 +338,6 @@ int main(int argc, char * argv[]) {
             jiffies = current;
         }
     } while (1);
-
-    // // test_hd();
-    // test_sd0();
-    // // test_dir("/sd0");
 
     // printf("\n\nShould display boot screen here.\n");
 

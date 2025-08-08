@@ -11,6 +11,11 @@
 extern void test_hd();
 
 /**
+ * Make sure we can read from the internal SD card
+ */
+extern void test_sd1();
+
+/**
  * Make sure we can read from the external SD card
  */
 extern void test_sd0();

@@ -1548,7 +1548,7 @@ short fsys_init() {
     /* Mount all logical drives that are present */
 
     for (i = 0; i < MAX_DRIVES; i++) {
-        short res = sys_bdev_status((short)i);
+        short res = bdev_status((short)i);
         if (res >= 0) {
 			INFO1("Mounting drive #%d", i);
             short result = fsys_mount(i);
@@ -1558,6 +1558,7 @@ short fsys_init() {
         }
     }
 
+    printf("Install loaders...\n");
     for (i = 0; i < MAX_LOADERS; i++) {
         g_file_loader[i].status = 0;
         g_file_loader[i].loader = 0;

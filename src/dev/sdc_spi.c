@@ -23,6 +23,8 @@
 #include "sdc_reg.h"
 #include "sdc_spi.h"
 #include "utilities.h"
+#include "sys_general.h"
+#include "features.h"
 
 /* MMC/SD command (SPI mode) */
 #define CMD0	(0)			/* GO_IDLE_STATE */
@@ -571,6 +573,7 @@ short sdc_install() {
     short result = bdev_register(&dev);
 
 #if HAS_INTERNAL_SD
+	#pragma message("Including SD1")
 	if (result == 0) {
 		sd1_card_info.reg = SD1_REG;
 		sd1_card_info.status = 0;
