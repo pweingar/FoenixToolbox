@@ -72,7 +72,7 @@ else ifeq ($(UNIT),FA2560K2)
 	AS=as68k
 	AR=nlib
 
-	SRCS_FOR_UNIT=indicators_fa2560k2.c interrupts_fa2560k2.c txt_fa2560k2.c sdc_spi.c kbd_f256.c kbd_f256k.c
+	SRCS_FOR_UNIT=indicators_fa2560k2.c interrupts_fa2560k2.c txt_fa2560k2.c sdc_spi.c kbd_f256.c kbd_f256k.c serial_common.c
 	CFLAGS_FOR_UNIT=-DMODEL=24 -DCPU=5 --core 68000 --code-model large --data-model large # --target Foenix
 endif
 INCLUDES=-I.. -I../include

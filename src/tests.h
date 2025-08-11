@@ -35,4 +35,9 @@ extern void test_kbd_mo();
  */
 extern void vky_txt_emit(char c);
 
+/**
+ * Test the COM1 serial port
+ */
+extern void test_serial();
+
 #endif

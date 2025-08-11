@@ -75,6 +75,7 @@
 #include "dev/rtc.h"
 #include "dev/txt_screen.h"
 #include "dev/uart.h"
+#include "dev/serial_common.h"
 #include "snd/codec.h"
 #include "snd/psg.h"
 #include "snd/sid.h"
@@ -298,6 +299,15 @@ void initialize() {
     } else {
         INFO("File system initialized.");
     }
+
+#if HAS_COMMON_SERIAL
+    ser_init();
+    if ((res = ser_install_all())) {
+        log_num(LOG_ERROR, "FAILED: installation of common serial devices", res);
+    } else {
+        INFO("Common serial devices initialized.");
+    }
+#endif
 }
 
 void int_sof_test() {
@@ -328,16 +338,18 @@ int main(int argc, char * argv[]) {
     printf("\n");
     test_dir("/sd1");
 
-    long jiffies = timers_jiffies();
-    do {
-        long current = timers_jiffies();
-        if (current >= jiffies + 60) {
-            t_time time;
-            rtc_get_time(&time);
-            printf("\e[40;1H%02d:%02d:%02d", time.hour, time.minute, time.second);
-            jiffies = current;
-        }
-    } while (1);
+    test_serial();
+    
+    // long jiffies = timers_jiffies();
+    // do {
+    //     long current = timers_jiffies();
+    //     if (current >= jiffies + 60) {
+    //         t_time time;
+    //         rtc_get_time(&time);
+    //         printf("\e[40;1H%02d:%02d:%02d", time.hour, time.minute, time.second);
+    //         jiffies = current;
+    //     }
+    // } while (1);
 
     // printf("\n\nShould display boot screen here.\n");
 

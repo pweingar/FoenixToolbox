@@ -11,9 +11,11 @@
 #include "tests.h"
 #include "pata_reg.h"
 #include "dev/block.h"
+#include "dev/channel.h"
 #include "dev/fsys.h"
 #include "dev/kbd_mo.h"
 #include "dev/txt_screen.h"
+#include "serial_reg.h"
 
 #define VKY_TXT_CHAR_A	((volatile char *)0xfeca0000)
 #define VKY_TXT_COLOR_A	((volatile uint8_t *)0xfeca8000)
@@ -197,4 +199,16 @@ void test_kbd_mo() {
     //         printf("%04X ", scancode);
     //     }
     // } while(true);
+}
+
+/**
+ * Test the COM1 serial port
+ */
+void test_serial() {
+    short com1 = chan_open(CDEV_COM1, 0, 0);
+    do {
+        for (uint8_t c = 0x20; c < 0x7f; c++) {
+            chan_write_b(com1, c);
+        }
+    } while (1);
 }
