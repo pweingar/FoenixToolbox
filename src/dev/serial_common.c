@@ -28,7 +28,8 @@ uint8_t * ser_device[CDEV_DEVICES_MAX];
  * @return true if the transmit buffer is not full, false if it is
  */
 static bool ser_can_txd(uint8_t * dev) {
-    if (dev[SER_CONTROL] & SER_TXD_FIFO_EMPTY) {
+    com_ser_dev_p uart = (com_ser_dev_p)dev;
+    if (uart->txd_fifo_count < 2000) { // dev[SER_CONTROL] & SER_TXD_FIFO_EMPTY
         return true;
     } else {
         return false;
@@ -58,7 +59,6 @@ static bool ser_can_rxd(uint8_t * dev) {
  */
 static void ser_put(uint8_t * dev, uint8_t data) {
     if (ser_can_txd(dev)) {
-        printf("%c", (char)data);
         dev[SER_DATA] = data;
     }
 }

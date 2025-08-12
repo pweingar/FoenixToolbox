@@ -16,6 +16,7 @@
 #include "dev/kbd_mo.h"
 #include "dev/txt_screen.h"
 #include "serial_reg.h"
+#include "serial_reg.h"
 
 #define VKY_TXT_CHAR_A	((volatile char *)0xfeca0000)
 #define VKY_TXT_COLOR_A	((volatile uint8_t *)0xfeca8000)
