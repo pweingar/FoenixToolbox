@@ -19,7 +19,7 @@
 
 static t_sprite sprite_shadow[SPRITE_MAX];
 
-uint32_t sprite_ram_base = 0x000000;
+uint32_t sprite_ram_base = 0x004000;
 
 /**
  * @brief Update a sprite's hardware registers from the shadow registers

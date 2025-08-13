@@ -33,9 +33,10 @@
 #elif MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_FMX
 #include "dev/txt_c256.h"
 #include "dev/txt_evid.h"
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
+#elif MODEL_FOENIX_F256_GEN
 #include "cartridge.h"
 #include "dev/txt_f256.h"
+#include "dev/txt_mem.h"
 #include "dev/kbd_f256.h"
 #elif MODEL == MODEL_FOENIX_FA2560K2
 #include "FA2560K2/vkyii_legacy_Channelb.h"
@@ -135,6 +136,7 @@ void initialize() {
 
     /* Initialize the text channels */
     txt_init();
+
 #if HAS_DUAL_SCREEN
     txt_a2560k_a_install();
     txt_a2560k_b_install();
@@ -156,15 +158,18 @@ void initialize() {
 		txt_init_screen(TXT_SCREEN_EVID);
 	}
 
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
+#elif MODEL_FOENIX_F256_GEN
 	txt_f256_install();
 	txt_init_screen(TXT_SCREEN_F256);
+  
+  txt_mem_install();
+  txt_init_screen(TXT_SCREEN_MEM_F256);
 
 #elif MODEL == MODEL_FOENIX_FA2560K2
     txt_fa2560k2_install();
     txt_init_screen(TXT_SCREEN_FA2560K2);
 
-#else
+  #else
 #error Cannot identify screen setup
 #endif
 

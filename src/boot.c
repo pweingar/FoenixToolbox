@@ -442,15 +442,27 @@ void boot_screen() {
 	long jiffies_target = 0;
 	char message[80];
 
+    // TODO: fix this code to align all graphics assets to even boundaries
+
 	// Locate the tile maps based on the top of ram
 	uint32_t ram_index = mem_get_ramtop();
 	ram_index -= 8 * 272;
+    if (ram_index & 1) {
+        ram_index--;
+    }
 	tile_set_memory_base = ram_index;
+
 	ram_index -= 2 * 42 * 32;
+    if (ram_index & 1) {
+        ram_index--;
+    }
 	tile_map_memory_base = ram_index;
 
 	// Locate the sprites
 	ram_index -= 5 * (32 * 32);
+    if (ram_index & 1) {
+        ram_index--;
+    }
 	sprite_ram_base = ram_index;
 
 	// Check the DIP switches to see if we should include RAM booting
