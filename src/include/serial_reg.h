@@ -36,6 +36,11 @@ typedef struct com_ser_dev_s {
  */
 #define SER_COM1            ((uint8_t *)0xffb18000)
 
+/**
+ * WIZFI wireless adapter -- This will be mapped to COM2
+ */
+#define SER_WIZFI           ((uint8_t *)0xffb16000)
+
 // #endif
 
 #endif

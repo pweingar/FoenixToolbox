@@ -48,6 +48,27 @@ static char input_line[LINE_LEN];
 // Code
 //
 
+/**
+ * Test code to talk directly to the wizfi
+ */
+short test_cli_wizfi(short chan) {
+    short wizfi = chan_open(CDEV_COM2, 0, 0);
+    if (wizfi >= 0) {
+        do {
+            if (chan_status(wizfi) & CDEV_STAT_READABLE) {
+                uint8_t b = chan_read_b(wizfi);
+                chan_write_b(chan, b);
+                
+            } else if (chan_status(chan) & CDEV_STAT_READABLE) {
+                uint8_t b = chan_read_b(chan);
+                chan_write_b(wizfi, b); 
+            }
+        } while (1);
+    } else {
+        return wizfi;
+    }
+}
+
 short test_cli_type(short chan, char * path) {
     short n = 0;
     short fd = 0;
@@ -174,6 +195,9 @@ short test_cli_execute(short chan, char * line) {
         } else if (strcmp(token, "type") == 0) {
             next = test_cli_find_word(line, next, token, LINE_LEN);
             return test_cli_type(chan, token);
+
+        } else if (strcmp(token, "wizfi") == 0) {
+            return test_cli_wizfi(chan);
 
         }
     } else {

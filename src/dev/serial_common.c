@@ -280,6 +280,14 @@ short ser_install_all() {
     }
 #endif
 
+#ifdef SER_WIZFI
+    // Install the first USB Serial COM port
+    result = ser_install(SER_WIZFI, CDEV_COM2, "WIZFI");
+    if (result) {
+        return result;
+    }
+#endif
+
     return result;
 }
 
