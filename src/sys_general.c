@@ -173,7 +173,7 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
 			break;
 	}
 
-#elif MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
+#elif MODEL_FOENIX_F256_GEN
 	machine_id = GABE_SYS_STAT->machine_id;
 
 	cpu = CPU_WDC65816;
@@ -346,7 +346,7 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
  * 
  */
 SYSTEMCALL void reboot() {
-#if MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256JR2
+#if MODEL_FOENIX_F256_GEN
 	// Authorize GABE to force a CPU reboot and trigger the reboot
 	uint8_t * reboot_auth = (uint8_t *)GABE_RST_AUTH;
 	reboot_auth[0] = 0xde;

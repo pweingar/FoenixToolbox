@@ -61,10 +61,7 @@
  * 
  */
 union gabe_sys_stat_u {
-	struct {
-		uint8_t machine_id:6;
-	};
-	uint8_t reg;
+    uint8_t machine_id:8;
 };
 
 #define GABE_SYS_STAT			((volatile __attribute__((far)) union gabe_sys_stat_u *)0xf016a7)

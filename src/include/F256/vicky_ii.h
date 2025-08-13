@@ -86,6 +86,9 @@ typedef struct tvky_crsr_ctrl_s {
 #define tvky_bg_color ((volatile __attribute__((far)) t_color3 *)0xf0100d)
 #define tvky_crsr_ctrl ((volatile __attribute__((far)) tvky_crsr_ctrl_p)0xf01010)
 
+#define tvky_rast_col ((volatile __attribute__((far)) uint16_t *)0xf01018)
+#define tvky_rast_row ((volatile __attribute__((far)) uint16_t *)0xf0101a)
+
 //
 // Text Color Lookup Tables
 //
