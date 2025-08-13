@@ -7,8 +7,8 @@
 #ifndef __TXT_SCREEN_H
 #define __TXT_SCREEN_H
 
-#include "sys_macros.h"
-#include "sys_types.h"
+#include "../include/sys_macros.h"
+#include "../include/sys_types.h"
 
 #define TXT_CNT_SCREENS 5       /**< The maximum number of screens supported */
 

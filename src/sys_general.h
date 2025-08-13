@@ -31,6 +31,7 @@
 #define MODEL_FOENIX_F256K			18
 #define MODEL_FOENIX_F256KE			19
 #define MODEL_FOENIX_F256K2E		20
+#define MODEL_FOENIX_FA2560K2       24
 #define MODEL_FOENIX_F256JR2		35
 #define MODEL_FOENIX_F256K2X        145
 
@@ -74,7 +75,7 @@ extern SYSTEMCALL void sys_get_information(p_sys_info info);
 
 /**
  * @brief Force the system to reboot
- * 
+ *
  */
 extern SYSTEMCALL void reboot();
 

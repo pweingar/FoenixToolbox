@@ -74,6 +74,13 @@ else ifeq ($(UNIT),A2560K)
 
 	SRCS_FOR_UNIT=psg.c codec.c sid.c yamaha.c
 	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large --target Foenix
+else ifeq ($(UNIT),FA2560K2)
+	CC=cc68k
+	AS=as68k
+	AR=nlib
+
+	SRCS_FOR_UNIT=psg.c codec.c sid.c yamaha.c
+	CFLAGS_FOR_UNIT=-DMODEL=24 -DCPU=5 --core 68000 --code-model large --data-model large # --target Foenix
 endif
 
 INCLUDES=-I.. -I../include

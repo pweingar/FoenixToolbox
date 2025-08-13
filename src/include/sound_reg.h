@@ -18,6 +18,10 @@
 
 #elif MODEL_FOENIX_F256_GEN
 #include "F256/sound_f256.h"
+
+#elif MODEL == MODEL_FOENIX_FA2560K2
+#include "FA2560K2/sound_fa2560k2.h"
+
 #endif
 
 #endif

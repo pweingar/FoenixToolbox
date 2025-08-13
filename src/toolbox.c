@@ -38,6 +38,9 @@
 #include "dev/txt_f256.h"
 #include "dev/txt_mem.h"
 #include "dev/kbd_f256.h"
+#elif MODEL == MODEL_FOENIX_FA2560K2
+#include "FA2560K2/vkyii_legacy_Channelb.h"
+#include "dev/txt_fa2560k2.h"
 #endif
 
 #include "syscalls.h"
@@ -73,6 +76,7 @@
 #include "dev/rtc.h"
 #include "dev/txt_screen.h"
 #include "dev/uart.h"
+#include "dev/serial_common.h"
 #include "snd/codec.h"
 #include "snd/psg.h"
 #include "snd/sid.h"
@@ -84,7 +88,8 @@
 #include "fatfs/ff.h"
 #include "rsrc/font/MSX_CP437_8x8.h"
 
-// #include "tests.h"
+#include "tests.h"
+#include "test_cli.h"
 
 // The list of drives for FATFS
 #if HAS_PATA
@@ -156,9 +161,15 @@ void initialize() {
 #elif MODEL_FOENIX_F256_GEN
 	txt_f256_install();
 	txt_init_screen(TXT_SCREEN_F256);
-    txt_mem_install();
-    txt_init_screen(TXT_SCREEN_MEM_F256);
-#else
+  
+  txt_mem_install();
+  txt_init_screen(TXT_SCREEN_MEM_F256);
+
+#elif MODEL == MODEL_FOENIX_FA2560K2
+    txt_fa2560k2_install();
+    txt_init_screen(TXT_SCREEN_FA2560K2);
+
+  #else
 #error Cannot identify screen setup
 #endif
 
@@ -220,8 +231,10 @@ void initialize() {
     INFO("Interrupts enabled");
 
     /* Play the SID test bong on the Gideon SID implementation */
+    printf("\e[1;3HTesting SID...\n");
     sid_test_internal();
 	INFO("SID boot bong played.");
+    printf("SID boot bong played.\n");
 
 #if HAS_PATA
     if ((res = pata_install())) {
@@ -245,25 +258,25 @@ void initialize() {
     }
 #endif
 
-    // At this point, we should be able to call into to console to print to the screens
+//     // At this point, we should be able to call into to console to print to the screens
 
-    // if ((res = ps2_init())) {
-    //     ERROR1("FAILED: PS/2 keyboard initialization", res);
-    // } else {
-    //     log(LOG_INFO, "PS/2 keyboard initialized.");
-    // }
+//     // if ((res = ps2_init())) {
+//     //     ERROR1("FAILED: PS/2 keyboard initialization", res);
+//     // } else {
+//     //     log(LOG_INFO, "PS/2 keyboard initialized.");
+//     // }
 
-	// Initialize the keyboard
-	kbd_init();
-	INFO("Keyboard initialized");
+// 	// Initialize the keyboard
+// 	kbd_init();
+// 	INFO("Keyboard initialized");
 
-#if MODEL == MODEL_FOENIX_A2560K
-    if ((res = kbdmo_init())) {
-        log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
-    } else {
-        log(LOG_INFO, "A2560K built-in keyboard initialized.");
-    }
-#endif
+// #if MODEL == MODEL_FOENIX_A2560K
+//     if ((res = kbdmo_init())) {
+//         log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
+//     } else {
+//         log(LOG_INFO, "A2560K built-in keyboard initialized.");
+//     }
+// #endif
 
 #if HAS_PARALLEL_PORT
     if ((res = lpt_install())) {
@@ -273,46 +286,70 @@ void initialize() {
     }
 #endif
 
-#if HAS_MIDI_PORTS
-    if ((res = midi_install())) {
-        log_num(LOG_ERROR, "FAILED: MIDI installation", res);
-    } else {
-        log(LOG_INFO, "MIDI installed.");
-    }
-#endif
+// #if HAS_MIDI_PORTS
+//     if ((res = midi_install())) {
+//         log_num(LOG_ERROR, "FAILED: MIDI installation", res);
+//     } else {
+//         log(LOG_INFO, "MIDI installed.");
+//     }
+// #endif
 
-    if ((res = uart_install()) != 0) {
-        log_num(LOG_ERROR, "FAILED: serial port initialization", res);
-    } else {
-        log(LOG_INFO, "Serial ports initialized.");
-    }
+//     if ((res = uart_install()) != 0) {
+//         log_num(LOG_ERROR, "FAILED: serial port initialization", res);
+//     } else {
+//         log(LOG_INFO, "Serial ports initialized.");
+//     }
 
     if ((res = fsys_init())) {
         log_num(LOG_ERROR, "FAILED: file system initialization", res);
     } else {
         INFO("File system initialized.");
     }
+
+#if HAS_COMMON_SERIAL
+    ser_init();
+    if ((res = ser_install_all())) {
+        log_num(LOG_ERROR, "FAILED: installation of common serial devices", res);
+    } else {
+        INFO("Common serial devices initialized.");
+    }
+#endif
+}
+
+void int_sof_test() {
+    VKY3_B_TEXT_MATRIX[0]++;
 }
 
 int main(int argc, char * argv[]) {
     short result;
     short i;
-	char message[256];
+    char message[256];
 
     initialize();
 
-	// printf("\e[2J\e[HFoenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
-	// printf("Model: %s\n", info.model_name);
-    // int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
-	// printf("CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
+	printf("Foenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
+    printf("Model: %s\n", info.model_name);
+    int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
+	printf("CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
+
+    int_register(INT_SOF_A, int_sof_test);
+    int_enable(INT_SOF_A);
 
     // // test_hd();
     // test_sd0();
-    // // test_dir("/sd0");
+    // test_sd1();
+
+    // printf("\nTesting FATFS:\n");
+    // test_dir("/sd0");
+    // printf("\n");
+    // test_dir("/sd1");
+    // test_serial();
+    
+    test_cli_repl();
 
     // printf("\n\nShould display boot screen here.\n");
 
- 	boot_screen();
+ 	// boot_screen();
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);

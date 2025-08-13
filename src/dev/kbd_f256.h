@@ -4,9 +4,9 @@
  * @brief Common code for F256 keyboards to convert scancodes to characters
  * @version 0.1
  * @date 2024-07-12
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 
 #ifndef __kbd_f256_h__
@@ -16,7 +16,7 @@
 
 #if MODEL == MODEL_FOENIX_F256 || MODEL == MODEL_FOENIX_F256JR2
 #include "kbd_f256jr.h"
-#elif MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256K2X
+#elif MODEL == MODEL_FOENIX_F256K || MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256K2X || MODEL == MODEL_FOENIX_FA2560K2
 #include "kbd_f256k.h"
 #endif
 
@@ -55,7 +55,7 @@ extern SYSTEMCALL short kbd_layout(const char * tables);
 
 /**
  * @brief Initialize the keyboard scancode to character converter.
- * 
+ *
  */
 extern void kbd_init();
 

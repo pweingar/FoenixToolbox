@@ -12,14 +12,16 @@
 
 /**
  * @brief Structure to manage the SPI driven SDC ports
- * 
+ *
  */
+#if MODEL != MODEL_FOENIX_FA2560K2
 typedef struct s_sdc_spi {
 	uint8_t ctrl;
 	uint8_t data;
 } t_sdc_spi, *p_sdc_spi;
+#endif
 
-#if MODEL == MODEL_FOENIX_A2560K 
+#if MODEL == MODEL_FOENIX_A2560K
 #include "A2560K/sdc_a2560k.h"
 
 #elif MODEL == MODEL_FOENIX_A2560X || MODEL == MODEL_FOENIX_GENX
@@ -33,6 +35,9 @@ typedef struct s_sdc_spi {
 
 #elif MODEL_FOENIX_F256_GEN
 #include "F256/sdc_spi.h"
+
+#elif MODEL == MODEL_FOENIX_FA2560K2
+#include "FA2560K2/sdc_fa2560k.h"
 
 #endif
 

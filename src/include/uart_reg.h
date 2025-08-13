@@ -19,6 +19,16 @@
 #define UART1_BASE              0x00F01630  /* Base address for UART 1 (COM1) */
 #define UART2_BASE              0x00F01630  /* Base address for UART 2 (COM2) */
 
+// Only 1 Serial Port in the FA2560K2 through the USB
+#elif MODEL == MODEL_FOENIX_FA2560K2 /* FFB18000 */
+#define UART1_BASE              0xFFB18000  /* Base address for UART 1 (COM1) $FFB1_8000 */
+#define USBC_CTRL_REG           0x00    // 16bits
+#define USBC_DATA_REG           0x02    // 16bits
+#define USBC_RxD_FIFO_CNT       0x04
+#define USBC_TxD_FIFO_CNT       0x06
+#define UART2_BASE              0xFFB18000  /* Base address for UART 2 (COM2) */
+
+
 #endif
 
 /*

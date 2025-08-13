@@ -89,6 +89,25 @@
 #define MASK_GRP1 			((volatile uint8_t *)0xf0166d)
 #define MASK_GRP2 			((volatile uint8_t *)0xf0166e)
 
+#elif MODEL == MODEL_FOENIX_FA2560K2
+
+#define PENDING_GRP0 		((volatile uint16_t *)0xFFB02000)
+#define PENDING_GRP1 		((volatile uint16_t *)0xFFB02002)
+#define PENDING_GRP2 		((volatile uint16_t *)0xFFB02004)
+
+#define POL_GRP0 			((volatile uint16_t *)0xFFB02008)
+#define POL_GRP1 			((volatile uint16_t *)0xFFB0200A)
+#define POL_GRP2 			((volatile uint16_t *)0xFFB0200C)
+
+#define EDGE_GRP0 			((volatile uint16_t *)0xFFB02010)
+#define EDGE_GRP1 			((volatile uint16_t *)0xFFB02012)
+#define EDGE_GRP2 			((volatile uint16_t *)0xFFB02014)
+
+#define MASK_GRP0 			((volatile uint16_t *)0xFFB02018)
+#define MASK_GRP1 			((volatile uint16_t *)0xFFB0201A)
+#define MASK_GRP2 			((volatile uint16_t *)0xFFB0201C)
+
+
 #endif
 
 
@@ -182,7 +201,7 @@
 #define INT_VICKY_A_2       0x03
 #define INT_VICKY_A_3       0x04
 #define INT_VICKY_A_4       0x05
-#define INT_RESERVED_1      0x06
+#define INT_EXPANSION       0x06
 #define INT_VICKY_A_DAC     0x07
 #define INT_SOF_B           0x08    /* Vicky Channel B Start of Frame */
 #define INT_SOL_B           0x09    /* Vicky Channel B Start of Line */

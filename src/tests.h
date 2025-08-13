@@ -11,6 +11,11 @@
 extern void test_hd();
 
 /**
+ * Make sure we can read from the internal SD card
+ */
+extern void test_sd1();
+
+/**
  * Make sure we can read from the external SD card
  */
 extern void test_sd0();
@@ -29,5 +34,10 @@ extern void test_kbd_mo();
  * Write a character to the screen directly
  */
 extern void vky_txt_emit(char c);
+
+/**
+ * Test the COM1 serial port
+ */
+extern void test_serial();
 
 #endif

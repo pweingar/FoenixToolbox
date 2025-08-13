@@ -52,3 +52,5 @@ Mkfile.old
 dkms.conf
 .vscode/settings.json
 /misc/F256xE_Kernal_Code
+src/.DS_Store
+.DS_Store

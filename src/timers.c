@@ -8,7 +8,7 @@
  * Initialize the timers and their interrupts
  */
 void timers_init() {
-#if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS || MODEL == MODEL_FOENIX_A2560K
+#if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_FA2560K2
 
     *TIMER_TCR0 = 0;    // Reset timers 0, 1, and 2
     *TIMER_TCR1 = 0;    // Reset timers 3, and 4 (if 4 is available)
@@ -51,7 +51,7 @@ void timers_init() {
  * Return the number of jiffies (1/60 of a second) since last reset time
  */
 SYSTEMCALL long timers_jiffies() {
-#if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS || MODEL == MODEL_FOENIX_A2560K
+#if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_FA2560K2
     return *TIMER_VALUE_3;
 
 #elif MODEL_FOENIX_F256_GEN

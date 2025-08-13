@@ -21,4 +21,7 @@
 #elif MODEL_FOENIX_F256_GEN
 #include "F256/gabe_f256.h"
 
+#elif MODEL == MODEL_FOENIX_FA2560K2
+#include "FA2560K2/gabe_fa2560k.h"
+
 #endif

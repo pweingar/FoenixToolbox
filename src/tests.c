@@ -11,9 +11,12 @@
 #include "tests.h"
 #include "pata_reg.h"
 #include "dev/block.h"
+#include "dev/channel.h"
 #include "dev/fsys.h"
 #include "dev/kbd_mo.h"
 #include "dev/txt_screen.h"
+#include "serial_reg.h"
+#include "serial_reg.h"
 
 #define VKY_TXT_CHAR_A	((volatile char *)0xfeca0000)
 #define VKY_TXT_COLOR_A	((volatile uint8_t *)0xfeca8000)
@@ -104,16 +107,40 @@ void test_hd() {
 }
 
 /**
+ * Make sure we can read from the internal SD card
+ */
+void test_sd1() {
+    char line[80];
+    uint8_t my_buf[512];
+
+    printf("\nReading SD1's boot sector\n\n");
+    short result = bdev_init(BDEV_SD1);
+    if (result < 0) {
+        sprintf(line, "Unable to initialize SD1: %s [%d]\n", err_message(result), result);
+        txt_print(0, line);
+    } else {
+        short n = bdev_read(BDEV_SD1, 0L, my_buf, 512);
+        if (n >= 0) {
+            // printf("Read %d bytes:\n", n);
+            dump_buffer(my_buf, 512, 1);
+        } else {
+            sprintf(line, "Unable to read the boot sector: %s [%d]\n", err_message(n), n);
+            txt_print(0, line);
+        }
+    }
+}
+
+/**
  * Make sure we can read from the external SD card
  */
 void test_sd0() {
     char line[80];
     uint8_t my_buf[512];
 
-    printf("\nReading the SD card's boot sector\n\n");
+    printf("\nReading SD0's boot sector\n\n");
     short result = bdev_init(BDEV_SD0);
     if (result < 0) {
-        sprintf(line, "Unable to initialize the SD card: %d\n", result);
+        sprintf(line, "Unable to initialize SD0: %d\n", result);
         txt_print(0, line);
     } else {
         short n = bdev_read(BDEV_SD0, 0L, my_buf, 512);
@@ -173,4 +200,16 @@ void test_kbd_mo() {
     //         printf("%04X ", scancode);
     //     }
     // } while(true);
+}
+
+/**
+ * Test the COM1 serial port
+ */
+void test_serial() {
+    short com1 = chan_open(CDEV_COM1, 0, 0);
+    do {
+        for (uint8_t c = 0x20; c < 0x7f; c++) {
+            chan_write_b(com1, c);
+        }
+    } while (1);
 }

@@ -81,6 +81,11 @@ else ifeq ($(UNIT),A2560K)
 
 	SRCS_FOR_UNIT=toolbox_bdev.c
 	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large --target Foenix
+else ifeq ($(UNIT),FA2560K2)
+	CPU=m68k
+
+	SRCS_FOR_UNIT=toolbox_bdev.c
+	CFLAGS_FOR_UNIT=-DMODEL=24 -DCPU=5 --core 68000 --code-model large --data-model large # --target Foenix
 endif
 
 ifeq ($(CPU),w65816)
