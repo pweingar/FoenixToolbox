@@ -88,6 +88,7 @@
 #include "rsrc/font/MSX_CP437_8x8.h"
 
 #include "tests.h"
+#include "test_cli.h"
 
 // The list of drives for FATFS
 #if HAS_PATA
@@ -333,23 +334,13 @@ int main(int argc, char * argv[]) {
     // test_sd0();
     // test_sd1();
 
-    printf("\nTesting FATFS:\n");
-    test_dir("/sd0");
-    printf("\n");
-    test_dir("/sd1");
-
-    test_serial();
+    // printf("\nTesting FATFS:\n");
+    // test_dir("/sd0");
+    // printf("\n");
+    // test_dir("/sd1");
+    // test_serial();
     
-    // long jiffies = timers_jiffies();
-    // do {
-    //     long current = timers_jiffies();
-    //     if (current >= jiffies + 60) {
-    //         t_time time;
-    //         rtc_get_time(&time);
-    //         printf("\e[40;1H%02d:%02d:%02d", time.hour, time.minute, time.second);
-    //         jiffies = current;
-    //     }
-    // } while (1);
+    test_cli_repl();
 
     // printf("\n\nShould display boot screen here.\n");
 

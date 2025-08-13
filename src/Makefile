@@ -95,7 +95,7 @@ else ifeq ($(UNIT),A2560K)
 else ifeq ($(UNIT),FA2560K2)
 	CPU=m68k
 	C_SRCS_DEBUGGER=
-	SRCS_FOR_UNIT=FA2560K2/a2560-lowlevel.c FA2560K2/a2560-startup.s FA2560K2/io_stubs.c timers.c tests.c 
+	SRCS_FOR_UNIT=FA2560K2/a2560-lowlevel.c FA2560K2/a2560-startup.s FA2560K2/io_stubs.c timers.c tests.c test_cli.c
 	CFLAGS_FOR_UNIT=-DMODEL=24 -DCPU=5 --core 68000 --code-model large --data-model large # --target Foenix
 
 	ifeq ($(MEMORY),ROM)
@@ -136,12 +136,11 @@ LIBS = dev/devices.a snd/sound.a fatfs/fatfs.a
 
 .PHONY: clean
 
-toolbox.s37: $(OBJS) $(LIBS)
-	$(LD) $(LDFLAGS) --output-format s37 -o $@ $^
-
 toolbox.hex: $(OBJS) $(LIBS)
 	$(LD) $(LDFLAGS) --output-format intel-hex -o $@ $^
-
+	
+toolbox.s37: $(OBJS) $(LIBS)
+	$(LD) $(LDFLAGS) --output-format s37 -o $@ $^
 
 toolbox.raw: $(OBJS) $(LIBS)
 	$(LD) $(LDFLAGS) --raw-multiple-memories --output-format raw -o $@ $^

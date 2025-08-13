@@ -43,7 +43,8 @@ static bool ser_can_txd(uint8_t * dev) {
  * @return true if the receive buffer is not empty, false if it is
  */
 static bool ser_can_rxd(uint8_t * dev) {
-    if (dev[SER_CONTROL] & SER_RXD_FIFO_EMPTY) {
+    com_ser_dev_p uart = (com_ser_dev_p)dev;
+    if (uart->rxd_fifo_count == 0) { // dev[SER_CONTROL] & SER_RXD_FIFO_EMPTY
         return false;
     } else {
         return true;
