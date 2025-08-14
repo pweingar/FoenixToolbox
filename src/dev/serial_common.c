@@ -19,7 +19,7 @@
 /**
  * Table mapping channel device number to serial device port
  */
-uint8_t * ser_device[CDEV_DEVICES_MAX];
+static uint8_t * ser_device[CDEV_DEVICES_MAX];
 
 /**
  * Check to see if there is room in the transmit FIFO
@@ -95,6 +95,8 @@ static short ser_open(t_channel * chan, const uint8_t * path, short mode) {
     uint8_t * dev = cdev_to_ser(chan);
     if (dev) {
         dev[SER_CONTROL] &= ~SER_RXD_SPEED;
+
+        chan->data[0] = 0;      // Turn off CR -> CRLF translation
         return 0;
     } else {
         return DEV_ERR_BADDEV;
@@ -181,6 +183,10 @@ static short ser_write_b(p_channel chan, uint8_t data) {
     if (dev) {
         while (!ser_can_txd(dev)) ;
         ser_put(dev, data);
+        if ((data == '\r') && chan->data[0]) {
+            // If we should translate CR to CRLF, and we have a CR... send a LF
+            ser_put(dev, '\n');
+        }
         return 0;
 
     } else {
@@ -203,6 +209,10 @@ static short ser_write(p_channel chan, const uint8_t * data, short count) {
         for (i = 0; i < count; i++) {
             while (!ser_can_txd(dev)) ;
             ser_put(dev, data[i]);
+            if ((data == '\r') && chan->data[0]) {
+                // If we should translate CR to CRLF, and we have a CR... send a LF
+                ser_put(dev, '\n');
+            }
         }
 
         return i;
@@ -227,6 +237,23 @@ static short ser_status(p_channel chan) {
     } else {
         return DEV_ERR_BADDEV;
     }
+}
+
+short ser_ioctrl(p_channel chan, short command, uint8_t * buffer, short size) {
+    switch(command) {
+        case IOCTRL_CRLF_XLATE_ON:
+            chan->data[0] = 1;
+            break;
+
+        case IOCTRL_CRLF_XLATE_OFF:
+            chan->data[0] = 0;
+            break;
+
+        default:
+            break;
+    }
+
+    return 0;
 }
 
 /**
@@ -258,7 +285,7 @@ short ser_install(uint8_t * port, short cdev_number, char * name) {
 
     device.status = ser_status;
     device.flush = 0;
-    device.ioctrl = 0;
+    device.ioctrl = ser_ioctrl;
 
     return cdev_register(&device);
 }

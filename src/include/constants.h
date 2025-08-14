@@ -64,6 +64,13 @@
 #define CDEV_MIDI 5
 #define CDEV_FILE 6
 
+/**
+ * Channel Device IOCTRL commands
+ */
+
+#define IOCTRL_CRLF_XLATE_ON        6       // Translation of \r to \r\n should happen
+#define IOCTRL_CRLF_XLATE_OFF       7       // Translation of \r to \r\n should not happen
+
 /*
  * Block Device IOCRTRL commands
  */

@@ -53,6 +53,8 @@ static char input_line[LINE_LEN];
  */
 short test_cli_wizfi(short chan) {
     short wizfi = chan_open(CDEV_COM2, 0, 0);
+    chan_ioctrl(wizfi, IOCTRL_CRLF_XLATE_ON, 0, 0);     // Turn on CR -> CRLF translation
+
     if (wizfi >= 0) {
         do {
             if (chan_status(wizfi) & CDEV_STAT_READABLE) {
