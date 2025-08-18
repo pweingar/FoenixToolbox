@@ -5,6 +5,8 @@
 #ifndef __via__
 #define __via__
 
+#include "sys_general.h"
+
 #if MODEL == MODEL_FOENIX_F256_GEN
 #include "F256/via_f256.h"
 

@@ -23,12 +23,9 @@
  *
  */
 typedef struct s_kbd_optical {
-	uint8_t data;					// Data bytes to read from the keyboard
-	uint8_t rsrv_1;                 // Gap to account for the word alignment of registers
-	uint8_t status;					// Indicate keyboard type and if the buffer is empty
-	uint8_t rsrv_2;                 // Gap to account for the word alignment of registers
+	uint16_t data;					// Data bytes to read from the keyboard
+	uint16_t status;				// Indicate keyboard type and if the buffer is empty
 	uint16_t count;					// Number of bytes in the keyboard buffer
-	uint8_t rsrv_3;                 // Gap to account for the word alignment of registers
 } t_kbd_optical, *p_kbd_optical;
 
 /*

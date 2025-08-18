@@ -10,9 +10,10 @@
 #include "log_level.h"
 #include "txt_mem.h"
 #include "txt_screen.h"
-#include "F256/vicky_ii.h"
-#include "F256/memtext_f256.h"
-#include "F256/dma_f256.h"
+#include "vicky_general.h"
+#include "memtext_reg.h"
+
+// #include "F256/dma_f256.h"
 
 //
 // Types
@@ -65,11 +66,16 @@ const t_color4 mem_clut[] = {
 };
 
 const t_extent mem_resolutions[] = {   		/* The list of display resolutions */
-	{ 640, 480 },
+#if MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256K2X
+    { 640, 480 },
 	{ 640, 400 },
     { 320, 240 },
 	{ 320, 200 }
+#elif MODEL == MODEL_FOENIX_FA2560K2
+    { 1024, 768 }
+#endif
 };
+
 
 const t_extent mem_fonts[] = {         		/* The list of supported font resolutions */
     { 8, 8 },
@@ -96,8 +102,13 @@ static uint16_t mem_color = 0;          /* The current color */
 static uint8_t mem_attribute = 0;       /* The default attribute for a character */
 static uint16_t mem_mcr_shadow = 0;         /* A shadow register for the Master Control Register */
 
+#if MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256K2X
 static __attribute__((aligned(16))) uint16_t mem_text_matrix[80*60];
 static __attribute__((aligned(16))) uint16_t mem_color_matrix[80*60];
+#elif MODEL == MODEL_FOENIX_FA2560K2
+static __attribute__((aligned(16))) uint16_t mem_text_matrix[128*96];
+static __attribute__((aligned(16))) uint16_t mem_color_matrix[128*96];
+#endif
 
 //
 // Code for the driver
@@ -185,7 +196,7 @@ static short txt_mem_set_mode(short mode) {
     mem_mcr_shadow &= ~(VKY_MCR_SLEEP | VKY_MCR_TEXT | VKY_MCR_TEXT_OVERLAY | VKY_MCR_GRAPHICS
 		| VKY_MCR_BITMAP | VKY_MCR_TILE | VKY_MCR_SPRITE | VKY_MCR_MEMTEXT);
 
-    *MEMTEXT_MAIN_CTRL = 0;
+    MEMTEXT->control = 0;
 
     if (mode & TXT_MODE_SLEEP) {
         /* Put the monitor to sleep: overrides all other option bits */
@@ -203,9 +214,10 @@ static short txt_mem_set_mode(short mode) {
                 mem_mcr_shadow |= VKY_MCR_MEMTEXT | VKY_MCR_TEXT;
 
                 if (mem_font_size.height == 16) {
-                    *MEMTEXT_MAIN_CTRL = MEMTEXT_MAIN_EN | MEMTEXT_MAIN_8x16;
+                    MEMTEXT->enable = 1;
+                    MEMTEXT->size8x16 = 1;
                 } else {
-                    *MEMTEXT_MAIN_CTRL = MEMTEXT_MAIN_EN;
+                    MEMTEXT->enable = 1;
                 }
             }
 
@@ -761,7 +773,12 @@ static void txt_mem_init() {
     txt_mem_set_mode(TXT_MODE_TEXT);
 
     /* Set the resolution */
-    txt_mem_set_resolution(640, 480);      
+#if MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256K2X
+    txt_mem_set_resolution(640, 480);
+#elif MODEL == MODEL_FOENIX_FA256K2
+    txt_mem_set_resolution(1024, 768);
+#endif
+
 
     /* Set the default color: light grey on blue */
     txt_mem_set_color(0x07, 0x04);

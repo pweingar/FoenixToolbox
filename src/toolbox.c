@@ -72,6 +72,7 @@
 #include "dev/fsys.h"
 #include "dev/iec.h"
 #include "iecll.h"
+#include "dev/bitmap.h"
 #include "dev/ps2.h"
 #include "dev/rtc.h"
 #include "dev/txt_screen.h"
@@ -266,9 +267,9 @@ void initialize() {
 //     //     log(LOG_INFO, "PS/2 keyboard initialized.");
 //     // }
 
-// 	// Initialize the keyboard
-// 	kbd_init();
-// 	INFO("Keyboard initialized");
+	// Initialize the keyboard
+	kbd_init();
+	INFO("Keyboard initialized");
 
 // #if MODEL == MODEL_FOENIX_A2560K
 //     if ((res = kbdmo_init())) {
@@ -316,10 +317,6 @@ void initialize() {
 #endif
 }
 
-void int_sof_test() {
-    VKY3_B_TEXT_MATRIX[0]++;
-}
-
 int main(int argc, char * argv[]) {
     short result;
     short i;
@@ -332,9 +329,6 @@ int main(int argc, char * argv[]) {
     int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
 	printf("CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
 
-    int_register(INT_SOF_A, int_sof_test);
-    int_enable(INT_SOF_A);
-
     // // test_hd();
     // test_sd0();
     // test_sd1();
@@ -344,8 +338,7 @@ int main(int argc, char * argv[]) {
     // printf("\n");
     // test_dir("/sd1");
     // test_serial();
-    
-    test_cli_repl();
+    test_kbd();
 
     // printf("\n\nShould display boot screen here.\n");
 

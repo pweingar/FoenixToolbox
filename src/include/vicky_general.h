@@ -20,6 +20,10 @@
 #elif MODEL_FOENIX_F256_GEN
 #include "F256/vicky_ii.h"
 
+#elif MODEL == MODEL_FOENIX_A2560K2
+#include "FA2560K2/vkyii_legacy_Channelb.h"
+#include "FA2560K2/VICKYIII_fa2560k2.h"
+
 #endif
 
 

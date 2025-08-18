@@ -5,6 +5,33 @@
 #ifndef __VICKYIII_FA2560K2_General_H
 #define __VICKYIII_FA2560K2_General_H
 
+#include <stdint.h>
+
+#include "sys_types.h"
+
+#define VKY3_COLOR_1BPP     0
+#define VKY3_COLOR_8BPP     1
+#define VKY3_COLOR_16BPP    2
+#define VKY3_COLOR_32BPP    3
+
+typedef struct vky3_reg_s {
+    union {
+        uint32_t control;
+        struct {
+            uint32_t bitmap : 1;
+            uint32_t depth : 2;
+            uint32_t pixel_dbl : 1;
+            uint32_t reserved : 12;
+        };
+    };
+
+    uint8_t * bitmap_addr;
+
+    t_color4 mono_color;
+
+} vky3_reg_t, *vky3_reg_p;
+
+#define VICKY3                      ((volatile vky3_reg_p)0xffe00000)
 
 // NEW FA2560K2 - Graphic Engine
 // 16bits Access

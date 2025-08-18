@@ -31,6 +31,11 @@ extern void test_dir(const char * path);
 extern void test_kbd_mo();
 
 /**
+ * Test the keyboard by echoing scancodes
+ */
+extern void test_kbd();
+
+/**
  * Write a character to the screen directly
  */
 extern void vky_txt_emit(char c);

@@ -19,7 +19,11 @@
 #include "ring_buffer.h"
 #include "via_reg.h"
 #include "dev/kbd_f256k.h"
+#if MODEL_FOENIX_F256_GEN
 #include "F256/kbd_opt_f256.h"
+#elif MODEL == MODEL_FOENIX_FA2560K2
+#include "FA2560K2/kbd_opt_fa2560k2.h"
+#endif
 #include "gabe_reg.h"
 #include "simpleio.h"
 #include "vicky_general.h"
@@ -219,6 +223,12 @@ SYSTEMCALL unsigned short kbd_get_scancode() {
 	}
 }
 
+#define TEXT_BLOCK	((volatile uint8_t *)0xFFD20000)
+
+static void txt_spin(short position) {
+	TEXT_BLOCK[position]++;
+}
+
 /**
  * @brief Scan the state of the keys on the mechanical keyboard
  *
@@ -259,6 +269,7 @@ void kbd_scan_optical() {
 
 		// Read in all the bytes available and fill out the column matrix
 		uint16_t count = KBD_OPTICAL->count;
+#if MODEL_FOENIX_F256_GEN
 		for (int x = 0; x < count; x += 2) {
 			// Get two data bytes
 			uint8_t byte_hi = KBD_OPTICAL->data;
@@ -267,6 +278,12 @@ void kbd_scan_optical() {
 			// Separate out the row number and the column status bits
 			uint8_t row = (byte_hi >> 4) & 0x07;
 			uint16_t columns_stat = ((uint16_t)byte_hi << 8 | (uint16_t)byte_low) & 0x01ff;
+#elif MODEL == MODEL_FOENIX_FA2560K2
+		for (int x = 0; x < count; x++) {
+			uint16_t optical_data = KBD_OPTICAL->data;
+			uint8_t row = (uint8_t)((optical_data & 0x7000) >> 12);
+			uint16_t columns_stat =  optical_data & 0x01ff;
+#endif
 
 			// Determine which columns have changed on this row
 			uint16_t columns_eor = kbd_stat[row] ^ columns_stat;
@@ -369,15 +386,7 @@ short kbd_sc_init() {
 	// Set up and clear out the buffer for the scan codes
 	rb_word_init(&scan_code_buffer);
 
-	// int_register(INT_VIA0, kbd_handle_irq);
 	int_register(INT_SOF_A, kbd_handle_irq);
-
-	// via0->acr = 0x40;								// Timer #0 in free running mode
-	// via0->ier = VIA_INT_TIMER1 | VIA_INT_IRQ;		// Allow timer #0 interrupts
-	// via0->t1c_l = 0xff;								// Set timer count
-	// via0->t1c_h = 0xff;
-
-	// int_enable(INT_VIA0);
 	int_enable(INT_SOF_A);
 
 	return 1;

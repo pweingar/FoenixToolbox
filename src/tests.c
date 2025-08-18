@@ -203,6 +203,19 @@ void test_kbd_mo() {
 }
 
 /**
+ * Test the keyboard by echoing scancodes
+ */
+void test_kbd() {
+    printf("Type something:\n");
+    do {
+        unsigned short scancode = kbd_get_scancode();
+        if (scancode) {
+            printf("%04X ", scancode);
+        }
+    } while(true);
+}
+
+/**
  * Test the COM1 serial port
  */
 void test_serial() {

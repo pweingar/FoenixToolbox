@@ -67,7 +67,7 @@ typedef struct via_s {
 #define VIA_INT_TIMER1 0x40
 #define VIA_INT_IRQ 0x80
 
-#define via0 ((volatile __attribute__((far)) via_p)0xffb0c000)
-#define via1 ((volatile __attribute__((far)) via_p)0xffb0e000)
+#define via0 ((volatile via_t *)0xffb0c000)
+#define via1 ((volatile via_t *)0xffb0e000)
 
 #endif
