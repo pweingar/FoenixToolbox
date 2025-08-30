@@ -25,7 +25,7 @@ typedef struct vky3_reg_s {
         };
     };
 
-    uint8_t * bitmap_addr;
+    uint32_t bitmap_addr;
 
     t_color4 mono_color;
 

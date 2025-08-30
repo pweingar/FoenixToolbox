@@ -19,11 +19,7 @@
 #include "ring_buffer.h"
 #include "via_reg.h"
 #include "dev/kbd_f256k.h"
-#if MODEL_FOENIX_F256_GEN
-#include "F256/kbd_opt_f256.h"
-#elif MODEL == MODEL_FOENIX_FA2560K2
-#include "FA2560K2/kbd_opt_fa2560k2.h"
-#endif
+#include "kbd_optical.h"
 #include "gabe_reg.h"
 #include "simpleio.h"
 #include "vicky_general.h"

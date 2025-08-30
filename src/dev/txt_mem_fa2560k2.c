@@ -11,9 +11,9 @@
 #include "txt_mem.h"
 #include "txt_screen.h"
 #include "vicky_general.h"
-#include "memtext_reg.h"
-
-// #include "F256/dma_f256.h"
+// #include "memtext_reg.h"
+#include "FA2560K2/memtext_fa2560k2.h"
+#include "FA2560K2/vicky_ii_fa2560k2.h"
 
 //
 // Types
@@ -34,13 +34,6 @@ typedef struct dma_2d_cmd_s {
 //
 // Constants
 //
-
-/**
- * Pointers to our actual memory locations..
- * TODO: handle these more automatically
- */
-#define text_matrix     ((uint16_t *)0x100000)
-#define color_matrix    ((uint16_t *)0x108000)
 
 #define VKY_MCR_MEMTEXT 0x4000
 
@@ -66,14 +59,7 @@ const t_color4 mem_clut[] = {
 };
 
 const t_extent mem_resolutions[] = {   		/* The list of display resolutions */
-#if MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256K2X
-    { 640, 480 },
-	{ 640, 400 },
-    { 320, 240 },
-	{ 320, 200 }
-#elif MODEL == MODEL_FOENIX_FA2560K2
     { 1024, 768 }
-#endif
 };
 
 
@@ -102,25 +88,12 @@ static uint16_t mem_color = 0;          /* The current color */
 static uint8_t mem_attribute = 0;       /* The default attribute for a character */
 static uint16_t mem_mcr_shadow = 0;         /* A shadow register for the Master Control Register */
 
-#if MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256K2X
-static __attribute__((aligned(16))) uint16_t mem_text_matrix[80*60];
-static __attribute__((aligned(16))) uint16_t mem_color_matrix[80*60];
-#elif MODEL == MODEL_FOENIX_FA2560K2
 static __attribute__((aligned(16))) uint16_t mem_text_matrix[128*96];
 static __attribute__((aligned(16))) uint16_t mem_color_matrix[128*96];
-#endif
 
 //
 // Code for the driver
 //
-
-/**
- * Use DMA to copy a rectangular block of memory from one location to another
- * 
- * @param dma_cmd pointer to a description of the block transfer to perform
- * @return 0 on success, any other number is an error
- */
-extern short dma_copyw_2d(dma_2d_cmd_p dma_cmd);
 
 /**
  * Gets the description of a screen's capabilities
@@ -193,8 +166,7 @@ static void txt_mem_get_sizes(p_extent text_size, p_extent pixel_size) {
  */
 static short txt_mem_set_mode(short mode) {
     /* Turn off anything not set */
-    mem_mcr_shadow &= ~(VKY_MCR_SLEEP | VKY_MCR_TEXT | VKY_MCR_TEXT_OVERLAY | VKY_MCR_GRAPHICS
-		| VKY_MCR_BITMAP | VKY_MCR_TILE | VKY_MCR_SPRITE | VKY_MCR_MEMTEXT);
+    mem_mcr_shadow &= ~(VKY_MCR_SLEEP | VKY_MCR_TEXT | VKY_MCR_TEXT_OVERLAY | VKY_MCR_GRAPHICS | VKY_MCR_MEMTEXT);
 
     MEMTEXT->control = 0;
 
@@ -205,32 +177,23 @@ static short txt_mem_set_mode(short mode) {
         return 0;
 
     } else {
-        if (mode & ~(TXT_MODE_TEXT | TXT_MODE_BITMAP | TXT_MODE_SPRITE | TXT_MODE_TILE)) {
+        if (mode & ~(TXT_MODE_TEXT | TXT_MODE_BITMAP | TXT_MODE_SLEEP)) {
             /* A mode bit was set beside one of the supported ones... */
             return -1;
 
         } else {
             if (mode & TXT_MODE_TEXT) {
-                mem_mcr_shadow |= VKY_MCR_MEMTEXT | VKY_MCR_TEXT;
+                mem_mcr_shadow |= VKY_MCR_TEXT | VKY_MCR_MEMTEXT | VKY_MCR_FONT_OVERLAY;
 
                 if (mem_font_size.height == 16) {
-                    MEMTEXT->enable = 1;
-                    MEMTEXT->size8x16 = 1;
+                    MEMTEXT->control = MEMTEXT_MAIN_EN | MEMTEXT_MAIN_8x16 | MEMTEXT_TEXT_SIZE;
                 } else {
-                    MEMTEXT->enable = 1;
+                    MEMTEXT->control = MEMTEXT_MAIN_EN;
                 }
             }
 
             if (mode & TXT_MODE_BITMAP) {
-                mem_mcr_shadow |= VKY_MCR_GRAPHICS | VKY_MCR_BITMAP;
-            }
-
-            if (mode & TXT_MODE_SPRITE) {
-                mem_mcr_shadow |= VKY_MCR_GRAPHICS | VKY_MCR_SPRITE;
-            }
-
-            if (mode & TXT_MODE_TILE) {
-                mem_mcr_shadow |= VKY_MCR_GRAPHICS | VKY_MCR_TILE;
+                mem_mcr_shadow |= VKY_MCR_GRAPHICS;
             }
 
             if ((mem_mcr_shadow & (VKY_MCR_GRAPHICS | VKY_MCR_TEXT)) == (VKY_MCR_GRAPHICS | VKY_MCR_MEMTEXT)) {
@@ -253,98 +216,12 @@ static short txt_mem_set_mode(short mode) {
  * @return 0 on success, any other number means the resolution is unsupported
  */
 static short txt_mem_set_resolution(short width, short height) {
-    // TODO: If no size specified, set it based on the DIP switch
+    // This does really nothing on the VickyIII... at least in its current form
 
-    /* Turn off resolution bits */
-    /* TODO: there gotta be a better way to do that */
-    mem_mcr_shadow &= ~(VKY_MCR_RES_MASK);
+    mem_resolution.width = width;
+    mem_resolution.height = height;
 
-    if ((width == 640) && (height == 480)) {
-        mem_mcr_shadow |= VKY_MCR_RES_640x480;
-        mem_resolution.width = width;
-        mem_resolution.height = height;
-
-        // Recalculate the size of the screen
-        txt_mem_set_sizes();
-
-        *tvky_mstr_ctrl = mem_mcr_shadow;
-        return 0;
-    }
-    else if ((width == 640) && (height == 400)) {
-        mem_mcr_shadow |= VKY_MCR_RES_640x400;
-        mem_resolution.width = width;
-        mem_resolution.height = height;
-
-        // Recalculate the size of the screen
-        txt_mem_set_sizes();
-
-        *tvky_mstr_ctrl = mem_mcr_shadow;
-        return 0;
-    }
-    else if ((width == 320) && (height == 240)) {
-        mem_mcr_shadow |= VKY_MCR_RES_320x240;
-        mem_resolution.width = width;
-        mem_resolution.height = height;
-
-        // Recalculate the size of the screen
-        txt_mem_set_sizes();
-
-        *tvky_mstr_ctrl = mem_mcr_shadow;
-        return 0;
-    }
-    else if ((width == 320) && (height == 200)) {
-        mem_mcr_shadow |= VKY_MCR_RES_320x200;
-        mem_resolution.width = width;
-        mem_resolution.height = height;
-
-        // Recalculate the size of the screen
-        txt_mem_set_sizes();
-
-        *tvky_mstr_ctrl = mem_mcr_shadow;
-        return 0;
-    }
-
-    else {
-        /* Unsupported resolution */
-        return -1;
-    }
-}
-
-/**
- * Set the size of the border of the screen (if supported)
- *
- * @param width the horizontal size of one side of the border (0 - 32 pixels)
- * @param height the vertical size of one side of the border (0 - 32 pixels)
- */
-static void txt_mem_set_border(short width, short height) {
-    if ((width > 0) || (height > 0)) {
-        mem_border_width = width;
-        mem_border_height = height;
-        tvky_brdr_ctrl->control = 0x01;
-        tvky_brdr_ctrl->size_x = width;
-        tvky_brdr_ctrl->sizy_y = height;
-        
-    } else {
-        tvky_brdr_ctrl->control = 0;
-        tvky_brdr_ctrl->size_x = 0;
-        tvky_brdr_ctrl->sizy_y = 0;
-    }
-
-    // Recalculate the size of the screen
-    txt_mem_set_sizes();    
-}
-
-/**
- * Set the size of the border of the screen (if supported)
- *
- * @param red the red component of the color (0 - 255)
- * @param green the green component of the color (0 - 255)
- * @param blue the blue component of the color (0 - 255)
- */
-static void txt_mem_set_border_color(unsigned char red, unsigned char green, unsigned char blue) {
-    tvky_brdr_ctrl->color.red = red;
-    tvky_brdr_ctrl->color.green = green;
-    tvky_brdr_ctrl->color.blue = blue;
+    return 0;
 }
 
 /**
@@ -397,7 +274,12 @@ static short txt_mem_set_font(short width, short height, const unsigned char * d
  * @param c the character in the current font to use as a cursor
  */
 static void txt_mem_set_cursor(short enable, short rate, char c) {
-    // TODO: Setup cursor
+    if (enable) {
+        uint32_t control = MEMTEXT->control & ~MEMTEXT_CRSR_RATE;
+        MEMTEXT->control = control | MEMTEXT_CRSR_EN | ((rate & 0x03) << 9);
+    } else {
+        MEMTEXT->control &= ~MEMTEXT_CRSR_EN; 
+    }
 }
 
 /**
@@ -406,7 +288,11 @@ static void txt_mem_set_cursor(short enable, short rate, char c) {
  * @param enable 0 to hide, any other number to make visible
  */
 static void txt_mem_set_cursor_visible(short enable) {
-    // TODO: set cursor visibilty
+    if (enable) {
+        MEMTEXT->control |= MEMTEXT_CRSR_EN;
+    } else {
+        MEMTEXT->control &= ~MEMTEXT_CRSR_EN; 
+    }
 }
 
 /**
@@ -478,79 +364,6 @@ static short txt_mem_set_color(unsigned char foreground, unsigned char backgroun
 }
 
 /**
- * Fill a rectangular area with a 16-bit value
- * 
- * @param dest the starting address to receive the data
- * @param src the starting address of the source data
- * @param size the number of 16-bit words to copy
- */
-static void dma_copy_16_1d(uint16_t * dest, uint16_t *src, uint32_t size) {
-    static short count = 0;
-    short index = 0;
-
-    if (++count > 99) count = 0;
-    for (int i = 0; i < 10; i++) {
-        mem_text_matrix[i] = ' ';
-    }
-
-    mem_text_matrix[index++] = (count / 10) + '0';
-    mem_text_matrix[index++] = (count % 10) + '0';
-
-    index++;
-    mem_text_matrix[index++] = '0';
-
-    *DMA_CTRL = DMA_CTRL_EN | DMA_16BIT_EN;
-
-    mem_text_matrix[index++] = '1';
-
-    *DMA_SRC_ADDR = src;
-    *DMA_DST_ADDR = dest;
-    *DMA_SIZE = size;
-
-    mem_text_matrix[index++] = '2';
-
-    // Start the DMA operation
-    *DMA_CTRL = DMA_CTRL_EN | DMA_16BIT_EN | DMA_CTRL_TRF;
-
-    mem_text_matrix[index++] = '3';
-
-    for (int i = 0; i < 100; i++) ;
-
-    mem_text_matrix[index++] = '4';
-
-    // Wait for the DMA operation to finish
-    while ((*DMA_STAT & DMA_STAT_TFR_BUSY) == DMA_STAT_TFR_BUSY) ;
-
-    mem_text_matrix[index++] = '5';
-
-    // Shut down the DMA operation
-    *DMA_CTRL = 0;
-
-    mem_text_matrix[index++] = '6';
-}
-
-/**
- * Fill a rectangular area with a 16-bit value
- * 
- * @param dest the starting address to receive the data
- * @param src the starting address of the source data
- * @param width the width of the rectangular area to fill (number of 16-bit words)
- * @param height the height of the rectangular area to fill (number of 16-bit words)
- * @param stride the number of 16-bit words that compose a row of the over all rectangular data in memory
- */
-void dma_copy_16_2d(uint16_t * dest, uint16_t *src, short width, short height, short dest_stride, short src_stride) {
-    dma_2d_cmd_t dma_cmd;
-    dma_cmd.destination = dest;
-    dma_cmd.source = src;
-    dma_cmd.width = width;
-    dma_cmd.height = height;
-    dma_cmd.dest_stride = dest_stride;
-    dma_cmd.src_stride = src_stride;
-
-    dma_copyw_2d(&dma_cmd);
-}
-
-/**
  * Scroll the screen for the most common case: full screen scrolls up by one full row.
  * 
  * TODO: reimplement using DMA
@@ -613,8 +426,8 @@ static void txt_mem_scroll_complex(short horizontal, short vertical) {
     }
 
     // TODO: implement horizontal scrolling
- 
 }
+
 /**
  * Scroll the text in the current region
  * 
@@ -650,7 +463,7 @@ static void txt_mem_fill(char c) {
         int offset_row = ((mem_region.origin.y + y) * (int)mem_max_size.width);
         for (x = 0; x < mem_region.size.width; x++) {
             int offset = offset_row + mem_region.origin.x + x;
-            mem_text_matrix[offset] = c;
+            mem_text_matrix[offset] = ((uint16_t)mem_attribute << 8) | (c & 0xff);
             mem_color_matrix[offset] = mem_color;
         }
     }
@@ -686,9 +499,7 @@ static void txt_mem_set_xy(short x, short y) {
     mem_cursor.y = y;
 
     /* Set register */
-    // TODO: set 
-    *MEMTEXT_CRSR_X = mem_region.origin.x + x;
-    *MEMTEXT_CRSR_Y = mem_region.origin.y + y;
+    MEMTEXT->cursor_position = ((uint32_t)(mem_region.origin.y + y)) << 16 | (uint32_t)(mem_region.origin.x + x);
 }
 
 /**
@@ -715,10 +526,19 @@ static void txt_mem_put(char c) {
     x = mem_region.origin.x + mem_cursor.x;
     y = mem_region.origin.y + mem_cursor.y;
     offset = y * mem_max_size.width + x;
-    mem_text_matrix[offset] = (c & 0xff);
+    mem_text_matrix[offset] = ((uint16_t)mem_attribute << 8) | (c & 0xff);
     mem_color_matrix[offset] = mem_color;
 
     txt_mem_set_xy(mem_cursor.x + 1, mem_cursor.y);
+}
+
+uint32_t color_to_raw(t_color4 * color) {
+    uint32_t raw = 0;
+    raw |= (uint32_t)color->blue & 0x000000ff;
+    raw |= (uint32_t)color->green << 8 & 0x0000ff00;
+    raw |= (uint32_t)color->red << 12 & 0x00ff0000;
+
+    return raw;
 }
 
 /**
@@ -749,8 +569,8 @@ static void txt_mem_init() {
     /* Specify the screen number. We have only one so... */
     mem_caps.number = TXT_SCREEN_MEM_F256;
 
-    /* This screen can be text, bitmap or can be put to sleep */
-    mem_caps.supported_modes = TXT_MODE_TEXT | TXT_MODE_SPRITE | TXT_MODE_BITMAP | TXT_MODE_TILE | TXT_MODE_SLEEP;
+    /* This screen can be text, bitmap */
+    mem_caps.supported_modes = TXT_MODE_TEXT | TXT_MODE_BITMAP | TXT_MODE_SLEEP;
 
     /* Supported resolutions */
     mem_caps.resolution_count = sizeof(mem_resolutions) / sizeof(t_extent);
@@ -761,37 +581,30 @@ static void txt_mem_init() {
     mem_caps.font_sizes = mem_fonts;
 
     /* Initialize the color lookup tables */
-    for (i = 0; i < sizeof(mem_clut)/sizeof(t_color4); i++) {
-		MEMTEXT_FG[i] = mem_clut[i];
-		MEMTEXT_BG_0[i] = mem_clut[i];        
+    for (i = 0; i < 256; i++) {
+		MEMTEXT_FG_0[i] = (uint32_t)i << 12;
+        MEMTEXT_FG_0[i+256] = (uint32_t)i << 12;
+		MEMTEXT_BG_0[i] = color_to_raw(&mem_clut[i]);
+        MEMTEXT_BG_0[i+256] = color_to_raw(&mem_clut[i]);
     }
 
-    *MEMTEXT_CHAR_PTR = mem_text_matrix;
-    *MEMTEXT_COLOR_PTR = mem_color_matrix;
+    MEMTEXT->text_addr = mem_text_matrix;
+    MEMTEXT->color_addr = mem_color_matrix;
 
     /* Set the mode to text */
     txt_mem_set_mode(TXT_MODE_TEXT);
 
     /* Set the resolution */
-#if MODEL == MODEL_FOENIX_F256K2 || MODEL == MODEL_FOENIX_F256K2X
-    txt_mem_set_resolution(640, 480);
-#elif MODEL == MODEL_FOENIX_FA256K2
     txt_mem_set_resolution(1024, 768);
-#endif
-
 
     /* Set the default color: light grey on blue */
-    txt_mem_set_color(0x07, 0x04);
+    txt_mem_set_color(0xff, 0x04);
 
     /* Set the font */
     txt_mem_set_font(8, 8, MSX_CP437_8x8_bin);             /* Use 8x8 font */
 
     /* Set the cursor */
     txt_mem_set_cursor(1, 0, 0xB1);
-
-    /* Set the border */
-    txt_mem_set_border(0, 0);                              /* Set up the border */
-    txt_mem_set_border_color(0xf0, 0, 0);
 
     /*
      * Enable set_sizes, now that everything is set up initially
@@ -808,7 +621,7 @@ static void txt_mem_init() {
     txt_mem_set_region(&region);
 
     /* Clear the screen */
-    txt_mem_fill('+');
+    txt_mem_fill(' ');
 
     /* Home the cursor */
     txt_mem_set_xy(0, 0);
@@ -830,8 +643,8 @@ short txt_mem_install() {
     device.set_mode = txt_mem_set_mode;
     device.set_sizes = txt_mem_set_sizes;
     device.set_resolution = txt_mem_set_resolution;
-    device.set_border = txt_mem_set_border;
-    device.set_border_color = txt_mem_set_border_color;
+    device.set_border = 0;
+    device.set_border_color = 0;
     device.set_font = txt_mem_set_font;
     device.set_cursor = txt_mem_set_cursor;
     device.set_cursor_visible = txt_mem_set_cursor_visible;
@@ -850,13 +663,18 @@ short txt_mem_install() {
 }
 
 void txt_mem_test() {
-    txt_set_mode(TXT_SCREEN_MEM_F256, TXT_MODE_TEXT);
+    printf("Starting MEMTEXT\n");
+    short result = txt_set_mode(TXT_SCREEN_MEM_F256, TXT_MODE_TEXT);
+    if (result < 0) {
+        printf("Could not set MEMTEXT: %d\n", result);
+        return;
+    }
     
     t_rect region;
     region.origin.x = 5;
     region.origin.y = 5;
-    region.size.width = 70;
-    region.size.height = 50;
+    region.size.width = 1024 / 8 - 10;
+    region.size.height = 768 / 8 - 10;
     txt_set_region(TXT_SCREEN_MEM_F256, &region);
 
     txt_set_xy(TXT_SCREEN_MEM_F256, 0, 0);

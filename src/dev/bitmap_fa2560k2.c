@@ -8,7 +8,8 @@
 #include "FA2560K2/vkyii_legacy_Channelb.h"
 #include "FA2560K2/VICKYIII_fa2560k2.h"
 
-volatile uint8_t * vram = (uint8_t *) 0x00400000;   
+volatile uint8_t * vram = (uint8_t *) 0x00200000;   
+volatile uint32_t * vicky_mcr = (uint32_t *)0xffd00000;
 
 /**
  * Initialize a blank bitmap
@@ -19,9 +20,9 @@ void bm_init() {
     white.green = 255;
     white.blue = 255;
 
-    txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_BITMAP);
-    VICKY3->control = 0x00000009;
-    VICKY3->bitmap_addr = 0x00400000;
+    *vicky_mcr = 0x00000007;
+    VICKY3->control = 0x0000000b;
+    VICKY3->bitmap_addr = (uint32_t)vram >> 1;
     VICKY3->mono_color = white;
 
     for (short y = 0; y < 384; y++) {

@@ -10,14 +10,14 @@
 #include "../include/sys_macros.h"
 #include "../include/sys_types.h"
 
-#define TXT_CNT_SCREENS 5       /**< The maximum number of screens supported */
+#define TXT_CNT_SCREENS 5       // The maximum number of screens supported
 
-#define TXT_MODE_TEXT   0x0001  /**< The bit to enable text mode */
-#define TXT_MODE_BITMAP 0x0002  /**< The bit to enable bitmap graphics mode */
-#define TXT_MODE_SPRITE 0x0004  /**< The bit to enable sprite graphics mode */
-#define TXT_MODE_TILE   0x0008  /**< The bit to enable tile graphics mode */
-#define TXT_MODE_SLEEP  0x0010  /**< The bit to put the monitor to sleep by disabling sync */
-
+#define TXT_MODE_TEXT   0x0001  // The bit to enable text mode
+#define TXT_MODE_BITMAP 0x0002  // The bit to enable bitmap graphics mode
+#define TXT_MODE_SPRITE 0x0004  // The bit to enable sprite graphics mode
+#define TXT_MODE_TILE   0x0008  // The bit to enable tile graphics mode
+#define TXT_MODE_SLEEP  0x0010  // The bit to put the monitor to sleep by disabling sync
+#define TXT_MODE_MEMORY 0x0020  // The bit to replace regular text mode with MEMTEXT
 
 
 typedef void (*p_init)();

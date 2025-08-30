@@ -39,6 +39,7 @@
 #include "dev/txt_mem.h"
 #include "dev/kbd_f256.h"
 #elif MODEL == MODEL_FOENIX_FA2560K2
+#include "dev/txt_mem.h"
 #include "FA2560K2/vkyii_legacy_Channelb.h"
 #include "dev/txt_fa2560k2.h"
 #endif
@@ -163,13 +164,12 @@ void initialize() {
 	txt_f256_install();
 	txt_init_screen(TXT_SCREEN_F256);
   
-  txt_mem_install();
-  txt_init_screen(TXT_SCREEN_MEM_F256);
+    txt_mem_install();
+    txt_init_screen(TXT_SCREEN_MEM_F256);
 
 #elif MODEL == MODEL_FOENIX_FA2560K2
     txt_fa2560k2_install();
     txt_init_screen(TXT_SCREEN_FA2560K2);
-
   #else
 #error Cannot identify screen setup
 #endif
@@ -320,10 +320,13 @@ void initialize() {
 int main(int argc, char * argv[]) {
     short result;
     short i;
-    char message[256];
 
     initialize();
 
+    txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_MEMORY);
+    txt_set_color(0, 0xff, 0x00);
+    txt_fill(0, ' ');
+    
 	printf("Foenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
     printf("Model: %s\n", info.model_name);
     int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
@@ -338,7 +341,12 @@ int main(int argc, char * argv[]) {
     // printf("\n");
     // test_dir("/sd1");
     // test_serial();
-    test_kbd();
+    // txt_mem_test();
+    // test_kbd();
+
+    // bm_init();
+
+    // test_cli_repl();
 
     // printf("\n\nShould display boot screen here.\n");
 

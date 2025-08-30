@@ -5,17 +5,47 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "errors.h"
 #include "log.h"
 #include "sys_general.h"
 #include "utilities.h"
-#include "FA2560K2/vkyii_legacy_Channelb.h"
+#include "FA2560K2/vicky_ii_fa2560k2.h"
+#include "FA2560K2/memtext_fa2560k2.h"
 #include "dev/txt_screen.h"
 #include "dev/txt_fa2560k2.h"
+
+//
+// Types
+//
+
+typedef struct text_state_e {
+    bool use_memtext;                   // True if the screen should use the MEMTEXT system
+    bool enable_set_sizes;              // True if setsizes should actually update the variables
+    t_txt_capabilities caps;            // Capabilities of this screen
+    t_rect region;                      // The current region
+    t_point cursor;                     // The current cursor position
+    t_extent resolution;                // The current display resolution
+    t_extent font_size;                 // The current font size
+    t_extent max_size;                  // The size of the screen in characters (without border removed)
+    t_extent visible_size;              // The size of the visible screen in characters (with border removed)
+    short border_width;                 // Width of the border on one side
+    short border_height;                // Height of the border on one side
+    uint16_t color;                     // The current color
+    uint16_t attribute;                 // The current attribute for MEMTEXT
+    uint32_t msr_shadow_b;              // A shadow register for the Master Control Register
+} text_state_t, *text_state_p;
+
+//
+// Constants
+//
 
 extern const unsigned char MSX_CP437_8x8_bin[];
 
 /* Default text color lookup table values (AARRGGBB) */
-const unsigned long fa2560k2_lut[VKY3_B_LUT_SIZE] = {
+const unsigned long fa2560k2_lut[] = {
     0xFF000000,	// Black (transparent) - 0x00
 	0xFF800000, // Mid-Tone Red - 0x01
 	0xFF008000, // Mid-Tone Green - 0x02
@@ -33,44 +63,80 @@ const unsigned long fa2560k2_lut[VKY3_B_LUT_SIZE] = {
 	0xFF55FFFF, // Bright Cyan - 0x0E
 	0xFFFFFFFF 	// White - 0x0F
 };
-/*
-const unsigned short fa2560k2_lut[] = {
-	0x0000, 0xFF00,	// Black (transparent)
-	0x0000, 0xFF80, // Mid-Tone Red
-	0x8000, 0xFF00, // Mid-Tone Green
-	0x8000, 0xFF80, // Mid-Tone Yellow
-	0x0080, 0xFF00, // Mid-Tone Blue
-	0x5500, 0xFFAA, // Mid-Tone Orange
-	0x8080, 0xFF00, // Mid-Tone Cian
-	0x8080, 0xFF80, // 50% Grey
-	0x5555, 0xFF55, // Dark Grey
-    0x5555, 0xFFFF, // Bright Red
-	0xFF55, 0xFF55, // Bright Green
-	0xFF55, 0xFFFF, // Bright Yellow
-	0x55FF, 0xFF55, // Bright Blue
-	0x7FFF, 0xFFFF, // Bright Orange
-	0xFFFF, 0xFF55, // Bright Cyan
-	0xFFFF, 0xFFFF 	// White
-};
-*/
+
 /*
  * Driver level variables for the screen
  */
 
-unsigned char fa2560k2_enable_set_sizes;    /* Flag to enable set_sizes to actually do its computation */
-t_txt_capabilities fa2560k2_caps;           /* The capabilities of Channel B */
-t_extent fa2560k2_resolutions[1];           /* The list of display resolutions */
-t_extent fa2560k2_fonts[2];                 /* The list of font resolutions */
-t_rect fa2560k2_region;                     /* The current region */
-t_point fa2560k2_cursor;                    /* The current cursor position */
-t_extent fa2560k2_resolution;               /* The current display resolution */
-t_extent fa2560k2_font_size;                /* The current font size */
-t_extent fa2560k2_max_size;                 /* The size of the screen in characters (without border removed) */
-t_extent fa2560k2_visible_size;             /* The size of the visible screen in characters (with border removed) */
-short fa2560k2_border_width;                /* Width of the border on one side */
-short fa2560k2_border_height;               /* Height of the border on one side */
-unsigned char fa2560k2_color;               /* The current color */
-unsigned long msr_shadow_b;                   /* A shadow register for the Master Control Register */
+static text_state_t self;
+static t_extent textmode_resolutions[1];            // Resolutions for the legacy textmode
+static t_extent memtext_resolutions[1];             // Resolutions for the MEMTEXT mode
+static t_extent font_sizes[1];                      // The list of font resolutions in block text mode
+static t_extent memtext_font_sizes[2];              // List of font sizes in MEMTEXT mode
+
+static __attribute__((aligned(16))) uint16_t memtext_text[128 * 96];
+static __attribute__((aligned(16))) uint16_t memtext_color[128 * 96];
+
+//
+// Functions
+//
+
+void txt_fa2560k2_set_sizes();
+short txt_fa2560k2_set_resolution(short width, short height);
+short txt_fa2560k2_set_region(p_rect region);
+
+static void txt_fa2560k2_set_attribute(uint16_t attr) {
+    self.attribute = attr;
+}
+
+/**
+ * Change between legacy text mode and memtext mode
+ */
+static void switch_text_mode(bool use_memtext) {
+    t_rect region;
+
+    region.origin.x = 0;
+    region.origin.y = 0;
+    region.size.width = 0;
+    region.size.height = 0;
+
+    if (use_memtext) {
+        // Switch to MEMTEXT mode
+        self.use_memtext = true;
+        self.caps.resolutions = &memtext_resolutions;
+        self.caps.resolution_count = sizeof(memtext_resolutions) / sizeof(t_extent);
+        self.caps.font_sizes = &memtext_font_sizes;
+        self.caps.font_size_count = sizeof(memtext_font_sizes) / sizeof(t_extent);
+        
+        *MEMTEXT_CTRL = MEMTEXT_MAIN_EN;
+        *MEMTEXT_TEXT_ADDR = memtext_text;
+        *MEMTEXT_COLOR_ADDR = memtext_color;
+
+        self.msr_shadow_b |= VKY_MCR_MEMTEXT;
+        *tvky_mstr_ctrl = self.msr_shadow_b;
+
+        txt_fa2560k2_set_resolution(1024, 768);
+        txt_fa2560k2_set_sizes();
+        txt_fa2560k2_set_region(&region);
+
+    } else {
+        // Switch to block text mode
+        self.use_memtext = false;
+        self.caps.resolutions = &textmode_resolutions;
+        self.caps.resolution_count = sizeof(textmode_resolutions) / sizeof(t_extent);
+        self.caps.font_sizes = &font_sizes;
+        self.caps.font_size_count = sizeof(font_sizes) / sizeof(t_extent);
+
+        *MEMTEXT_CTRL = 0;
+
+        self.msr_shadow_b &= ~VKY_MCR_MEMTEXT;
+        *tvky_mstr_ctrl = self.msr_shadow_b;
+
+        txt_fa2560k2_set_resolution(640, 480);
+        txt_fa2560k2_set_sizes();
+        txt_fa2560k2_set_region(&region);
+    }
+}
 
 /**
  * Gets the description of a screen's capabilities
@@ -78,7 +144,7 @@ unsigned long msr_shadow_b;                   /* A shadow register for the Maste
  * @return a pointer to the read-only description (0 on error)
  */
 const p_txt_capabilities txt_fa2560k2_get_capabilities() {
-    return &fa2560k2_caps;
+    return &self.caps;
 }
 
 /**
@@ -88,7 +154,7 @@ const p_txt_capabilities txt_fa2560k2_get_capabilities() {
  * NOTE: this should be called whenever the VKY3 Channel B registers are changed
  */
 void txt_fa2560k2_set_sizes() {
-    if (fa2560k2_enable_set_sizes) {
+    if (self.enable_set_sizes) {
         /* Only recalculate after initialization is mostly completed */
 
         /*
@@ -96,16 +162,16 @@ void txt_fa2560k2_set_sizes() {
          * This controls text layout in memory
          */
 
-         // DIVISION HERE ***********************
-        fa2560k2_max_size.width = fa2560k2_resolution.width / fa2560k2_font_size.width;
-        fa2560k2_max_size.height = fa2560k2_resolution.height / fa2560k2_font_size.height;
+        self.max_size.width = self.resolution.width / self.font_size.width;
+        self.max_size.height = self.resolution.height / self.font_size.height;
 
         /*
          * Calculate the characters that are visible in whole or in part
-         */
-        // There is no Border in the Vicky II Legacy Block of the fa2560k2
-        fa2560k2_visible_size.width = fa2560k2_max_size.width;
-        fa2560k2_visible_size.height = fa2560k2_max_size.height;
+         *
+         * NOTE: There is no Border in the Vicky II Legacy Block of the fa2560k2
+         */ 
+        self.visible_size.width = self.max_size.width;
+        self.visible_size.height = self.max_size.height;
     }
 }
 
@@ -117,13 +183,13 @@ void txt_fa2560k2_set_sizes() {
  */
 void txt_fa2560k2_get_sizes(p_extent text_size, p_extent pixel_size) {
     if (text_size) {
-        text_size->width = fa2560k2_visible_size.width;
-        text_size->height = fa2560k2_visible_size.height;
+        text_size->width = self.visible_size.width;
+        text_size->height = self.visible_size.height;
     }
 
     if (pixel_size) {
-        pixel_size->width = fa2560k2_resolution.width;
-        pixel_size->height = fa2560k2_resolution.height;
+        pixel_size->width = self.resolution.width;
+        pixel_size->height = self.resolution.height;
     }
 }
 
@@ -137,29 +203,30 @@ void txt_fa2560k2_get_sizes(p_extent text_size, p_extent pixel_size) {
 short txt_fa2560k2_set_mode(short mode) {
     /* Turn off anything not set */
     // FYI, there is no more Graphics Mode in the fa2560k2 VICKY II Legacy Block (only the text mode)
-    msr_shadow_b &= ~(VKY3_B_MCR_TEXT);
+    self.msr_shadow_b &= ~(VKY_MCR_TEXT | VKY_MCR_MEMTEXT);
 
     if (mode & TXT_MODE_SLEEP) {
         /* Put the monitor to sleep: overrides all other option bits */
-        msr_shadow_b |= VKY3_B_MCR_SLEEP;
-        *VKY3_B_MCR = msr_shadow_b;
+        self.msr_shadow_b |= VKY_MCR_SLEEP;
+        *tvky_mstr_ctrl = self.msr_shadow_b;
         return 0;
 
     } else {
-        if (mode & ~( TXT_MODE_TEXT )) {
+        if (mode & ~(TXT_MODE_TEXT | TXT_MODE_MEMORY)) {
             /* A mode bit was set beside one of the supported ones... */
             return -1;
 
         } else {
-            if (mode & TXT_MODE_TEXT) {
-                msr_shadow_b |= VKY3_B_MCR_TEXT;
+            if (mode & (TXT_MODE_TEXT | TXT_MODE_MEMORY)) {
+                self.msr_shadow_b |= VKY_MCR_TEXT;
             }
 
-//            if (mode & TXT_MODE_BITMAP) {
-//                msr_shadow_b |= VKY3_B_MCR_GRAPHICS | VKY3_B_MCR_BITMAP;
-//            }
+            if (mode & TXT_MODE_MEMORY) {
+                switch_text_mode(true);
+            } else {
+                switch_text_mode(false);
+            }
 
-            *VKY3_B_MCR = msr_shadow_b;
             return 0;
         }
     }
@@ -176,42 +243,21 @@ short txt_fa2560k2_set_mode(short mode) {
 short txt_fa2560k2_set_resolution(short width, short height) {
     int i;
 
-    width = 640;
-    height = 480;    
-    // Update the kernel variables
-    fa2560k2_resolution.width = width;
-    fa2560k2_resolution.height = height;
+    for (i = 0; i < self.caps.resolution_count; i++) {
+        if ((width == self.caps.resolutions[i].width) && (height == self.caps.resolutions[i].height)) {
+            // We support this resolution, update the kernel variables
+            self.resolution.width = width;
+            self.resolution.height = height;
 
-    // Recalculate the size of the screen
-    txt_fa2560k2_set_sizes();
+            // Recalculate the size of the screen
+            txt_fa2560k2_set_sizes();
 
-    return 0;
-}
+            return 0;
+        }
+    }
 
-/**
- * Set the size of the border of the screen (if supported)
- *
- * @param width the horizontal size of one side of the border (0 - 32 pixels)
- * @param height the vertical size of one side of the border (0 - 32 pixels)
- */
-void txt_fa2560k2_set_border(short width, short height) {
-    fa2560k2_border_width = 0;
-    fa2560k2_border_height = 0;
-    *VKY3_B_BCR = 0;
-
-    // Recalculate the size of the screen
-    txt_fa2560k2_set_sizes();
-}
-
-/**
- * Set the size of the border of the screen (if supported)
- *
- * @param red the red component of the color (0 - 255)
- * @param green the green component of the color (0 - 255)
- * @param blue the blue component of the color (0 - 255)
- */
-void txt_fa2560k2_set_border_color(unsigned char red, unsigned char green, unsigned char blue) {
-    *VKY3_B_BRDCOLOR = (unsigned long)(((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff));
+    // We don't support this resolution
+    return ERR_NOT_SUPPORTED;
 }
 
 /**
@@ -222,23 +268,33 @@ void txt_fa2560k2_set_border_color(unsigned char red, unsigned char green, unsig
  * @param data pointer to the raw font data to be loaded
  */
 short txt_fa2560k2_set_font(short width, short height, const unsigned char * data) {
-    if ((width == 8) && (height == 8)) {
-        int i;
+    for (short i = 0; i < self.caps.font_size_count; i++) {
+        if ((width == self.caps.font_sizes[i].width) && (height == self.caps.font_sizes[i].height)) {
+            // We support this font size, update the kernel variables
 
-        /* The size is valid... set the font */
-        fa2560k2_font_size.width = width;
-        fa2560k2_font_size.height = height;
+            /* The size is valid... set the font */
+            self.font_size.width = width;
+            self.font_size.height = height;
 
-        /* Copy the font data... this assumes a width of one byte! */
-        for (i = 0; i < 256 * height; i++) {
-            VKY3_B_FONT_MEMORY[i] = data[i];
+            if (self.use_memtext) {
+                /* Copy the font data to MEMTEXT font #0... this assumes a width of one byte! */
+                for (i = 0; i < 256 * height; i++) {
+                    MEMTEXT_FONT[i] = data[i];
+                }
+
+            } else {
+                /* Copy the font data to the block text font... this assumes a width of one byte! */
+                for (i = 0; i < 256 * height; i++) {
+                    tvky_font_set_0[i] = data[i];
+                }
+            }
+
+            return 0;
         }
-
-        return 0;
-
-    } else {
-        return -1;
     }
+
+    // We don't support this font size
+    return ERR_NOT_SUPPORTED;
 }
 
 /**
@@ -249,7 +305,18 @@ short txt_fa2560k2_set_font(short width, short height, const unsigned char * dat
  * @param c the character in the current font to use as a cursor
  */
 void txt_fa2560k2_set_cursor(short enable, short rate, char c) {
-    *VKY3_B_CCR = ((fa2560k2_color & 0xff) << 24) | ((c & 0xff) << 16) | ((rate & 0x03) << 1) | (enable & 0x01);
+    if (self.use_memtext) {
+        uint32_t raw = *MEMTEXT_CTRL & ~(MEMTEXT_CRSR_EN | MEMTEXT_CRSR_RATE | MEMTEXT_CRSR_FLASH);
+
+        if (enable) {
+            *MEMTEXT_CTRL = raw | MEMTEXT_CRSR_EN | ((uint32_t)(rate & 0x03) << 9) | MEMTEXT_CRSR_FLASH;
+        } else {
+            *MEMTEXT_CTRL = raw; 
+        }
+        
+    } else {
+        tvky_crsr_ctrl->control = ((self.color & 0xff) << 24) | ((c & 0xff) << 16) | ((rate & 0x03) << 1) | (enable & 0x01);
+    }
 }
 
 /**
@@ -257,13 +324,24 @@ void txt_fa2560k2_set_cursor(short enable, short rate, char c) {
  *
  * @param enable 0 to hide, any other number to make visible
  */
- void txt_fa2560k2_set_cursor_visible(short enable) {
-     if (enable) {
-         *VKY3_B_CCR |= 0x01;
-     } else {
-         *VKY3_B_CCR &= ~0x01;
-     }
- }
+void txt_fa2560k2_set_cursor_visible(short enable) {
+    if (self.use_memtext) {
+        uint32_t raw = *MEMTEXT_CTRL & ~(MEMTEXT_CRSR_EN);
+
+        if (enable) {
+            *MEMTEXT_CTRL = raw | MEMTEXT_CRSR_EN;
+        } else {
+            *MEMTEXT_CTRL = raw;
+        }
+
+    } else {
+        if (enable) {
+            tvky_crsr_ctrl->enable = 1;
+        } else {
+            tvky_crsr_ctrl->enable = 0;
+        }
+    }
+}
 
 /**
  * Set a region to restrict further character display, scrolling, etc.
@@ -276,16 +354,16 @@ void txt_fa2560k2_set_cursor(short enable, short rate, char c) {
  short txt_fa2560k2_set_region(p_rect region) {
      if ((region->size.width == 0) || (region->size.height == 0)) {
          /* Set the region to the default (full screen) */
-         fa2560k2_region.origin.x = 0;
-         fa2560k2_region.origin.y = 0;
-         fa2560k2_region.size.width = fa2560k2_visible_size.width;
-         fa2560k2_region.size.height = fa2560k2_visible_size.height;
+         self.region.origin.x = 0;
+         self.region.origin.y = 0;
+         self.region.size.width = self.visible_size.width;
+         self.region.size.height = self.visible_size.height;
 
      } else {
-         fa2560k2_region.origin.x = region->origin.x;
-         fa2560k2_region.origin.y = region->origin.y;
-         fa2560k2_region.size.width = region->size.width;
-         fa2560k2_region.size.height = region->size.height;
+         self.region.origin.x = region->origin.x;
+         self.region.origin.y = region->origin.y;
+         self.region.size.width = region->size.width;
+         self.region.size.height = region->size.height;
      }
 
      return 0;
@@ -299,10 +377,10 @@ void txt_fa2560k2_set_cursor(short enable, short rate, char c) {
  * @return 0 on success, any other number means the region was invalid
  */
 short txt_fa2560k2_get_region(p_rect region) {
-    region->origin.x = fa2560k2_region.origin.x;
-    region->origin.y = fa2560k2_region.origin.y;
-    region->size.width = fa2560k2_region.size.width;
-    region->size.height = fa2560k2_region.size.height;
+    region->origin.x = self.region.origin.x;
+    region->origin.y = self.region.origin.y;
+    region->size.width = self.region.size.width;
+    region->size.height = self.region.size.height;
 
     return 0;
 }
@@ -314,7 +392,13 @@ short txt_fa2560k2_get_region(p_rect region) {
  * @param background the Text LUT index of the new current background color (0 - 15)
  */
 short txt_fa2560k2_set_color(unsigned char foreground, unsigned char background) {
-    fa2560k2_color = ((foreground & 0x0f) << 4) | (background & 0x0f);
+    if (self.use_memtext) {
+        self.color = ((uint16_t)(foreground & 0xff) << 8) | (uint16_t)(background & 0xff);
+
+    } else {
+        self.color = ((foreground & 0x0f) << 4) | (background & 0x0f);
+    }
+
     return 0;
 }
 
@@ -325,8 +409,15 @@ short txt_fa2560k2_set_color(unsigned char foreground, unsigned char background)
  * @param pointer to the background the Text LUT index of the new current background color (0 - 15)
  */
 short txt_fa2560k2_get_color(unsigned char * foreground, unsigned char * background) {
-    *foreground = (fa2560k2_color & 0xf0) >> 4;
-    *background = fa2560k2_color & 0x0f;
+    if (self.use_memtext) {
+        *foreground = (self.color & 0xff00) >> 8;
+        *background = self.color & 0xff;
+
+    } else {
+        *foreground = (self.color & 0xf0) >> 4;
+        *background = self.color & 0x0f;
+    }
+
     return 0;
 }
 
@@ -355,15 +446,15 @@ void txt_fa2560k2_scroll(short horizontal, short vertical) {
     // Determine the row limits
 
     if (vertical >= 0) {
-        y0 = fa2560k2_region.origin.y;
+        y0 = self.region.origin.y;
         y1 = y0 + vertical;
-        y3 = fa2560k2_region.origin.y + fa2560k2_region.size.height;
+        y3 = self.region.origin.y + self.region.size.height;
         y2 = y3 - vertical;
         dy = 1;
     } else {
-        y0 = fa2560k2_region.origin.y + fa2560k2_region.size.height - 1;
+        y0 = self.region.origin.y + self.region.size.height - 1;
         y1 = y0 + vertical;
-        y3 = fa2560k2_region.origin.y - 1;
+        y3 = self.region.origin.y - 1;
         y2 = y3 - vertical;
         dy = -1;
     }
@@ -371,52 +462,98 @@ void txt_fa2560k2_scroll(short horizontal, short vertical) {
     // Determine the column limits
 
     if (horizontal >= 0) {
-        x0 = fa2560k2_region.origin.x;
+        x0 = self.region.origin.x;
         x1 = x0 + horizontal;
-        x3 = fa2560k2_region.origin.x + fa2560k2_region.size.width;
+        x3 = self.region.origin.x + self.region.size.width;
         x2 = x3 - horizontal;
         dx = 1;
     } else {
-        x0 = fa2560k2_region.origin.x + fa2560k2_region.size.width - 1;
+        x0 = self.region.origin.x + self.region.size.width - 1;
         x1 = x0 + horizontal;
-        x3 = fa2560k2_region.origin.x - 1;
+        x3 = self.region.origin.x - 1;
         x2 = x3 - horizontal;
         dx = -1;
     }
 
     /* Copy the rectangle */
 
-    for (y = y0; y != y2; y += dy) {
-        int row_dst = y * fa2560k2_max_size.width;
-        int row_src = (y + vertical) * fa2560k2_max_size.width;
+    if (self.use_memtext) {
+        // Copy the rectangle in the memtext mode
+        
+        for (y = y0; y != y2; y += dy) {
+            int row_dst = y * self.max_size.width;
+            int row_src = (y + vertical) * self.max_size.width;
 
-        for (x = x0; x != x2; x += dx) {
-            int offset_dst = row_dst + x;
-            int offset_src = row_src + x + horizontal;
+            for (x = x0; x != x2; x += dx) {
+                int offset_dst = row_dst + x;
+                int offset_src = row_src + x + horizontal;
 
-            VKY3_B_TEXT_MATRIX[offset_dst] = VKY3_B_TEXT_MATRIX[offset_src];
-            VKY3_B_COLOR_MATRIX[offset_dst] = VKY3_B_COLOR_MATRIX[offset_src];
+                memtext_text[offset_dst] = memtext_text[offset_src];
+                memtext_color[offset_dst] = memtext_color[offset_src];
+            }
+        }
+
+    } else {
+        // Copy the rectangle in the block text mode
+
+        for (y = y0; y != y2; y += dy) {
+            int row_dst = y * self.max_size.width;
+            int row_src = (y + vertical) * self.max_size.width;
+
+            for (x = x0; x != x2; x += dx) {
+                int offset_dst = row_dst + x;
+                int offset_src = row_src + x + horizontal;
+
+                tvky_text_matrix[offset_dst] = tvky_text_matrix[offset_src];
+                tvky_color_matrix[offset_dst] = tvky_color_matrix[offset_src];
+            }
         }
     }
 
     /* Clear the rectangles */
 
     if (horizontal != 0) {
-        for (y = y0; y != y3; y += dy) {
-            int row_dst = y * fa2560k2_max_size.width;
-            for (x = x2; x != x3; x += dx) {
-                VKY3_B_TEXT_MATRIX[row_dst + x] = ' ';
-                VKY3_B_COLOR_MATRIX[row_dst + x] = fa2560k2_color;
+        if (self.use_memtext) {
+            // Clear the rectangle in memtext mode
+            for (y = y0; y != y3; y += dy) {
+                int row_dst = y * self.max_size.width;
+                for (x = x2; x != x3; x += dx) {
+                    memtext_text[row_dst + x] = ' ';
+                    memtext_color[row_dst + x] = self.color;
+                }
+            }
+
+        } else {
+            // Clear the rectangle in block text mode
+            for (y = y0; y != y3; y += dy) {
+                int row_dst = y * self.max_size.width;
+                for (x = x2; x != x3; x += dx) {
+                    tvky_text_matrix[row_dst + x] = ' ';
+                    tvky_color_matrix[row_dst + x] = self.color;
+                }
             }
         }
     }
 
     if (vertical != 0) {
-        for (y = y2; y != y3; y += dy) {
-            int row_dst = y * fa2560k2_max_size.width;
-            for (x = x0; x != x3; x += dx) {
-                VKY3_B_TEXT_MATRIX[row_dst + x] = ' ';
-                VKY3_B_COLOR_MATRIX[row_dst + x] = fa2560k2_color;
+        if (self.use_memtext) {
+            // Clear the rectangle in memtext mode
+            for (y = y2; y != y3; y += dy) {
+                int row_dst = y * self.max_size.width;
+                for (x = x0; x != x3; x += dx) {
+                    memtext_text[row_dst + x] = ' ';
+                    memtext_color[row_dst + x] = self.color;
+                }
+            }
+
+        } else {
+            // Clear the rectangle in block text mode
+            for (y = y2; y != y3; y += dy) {
+                int row_dst = y * self.max_size.width;
+                for (x = x0; x != x3; x += dx) {
+                    tvky_text_matrix[row_dst + x] = ' ';
+                    tvky_color_matrix[row_dst + x] = self.color;
+                }
             }
         }
     }
@@ -432,12 +569,28 @@ void txt_fa2560k2_fill(char c) {
     int x;
     int y;
 
-    for (y = 0; y < fa2560k2_region.size.height; y++) {
-        int offset_row = (fa2560k2_region.origin.y + y) * fa2560k2_max_size.width;
-        for (x = 0; x < fa2560k2_region.size.width; x++) {
-            int offset = offset_row + fa2560k2_region.origin.x + x;
-            VKY3_B_TEXT_MATRIX[offset] = c;
-            VKY3_B_COLOR_MATRIX[offset] = fa2560k2_color;
+    if (self.use_memtext) {
+        // Fill the region in memtext mode
+        
+        for (y = 0; y < self.region.size.height; y++) {
+            int offset_row = (self.region.origin.y + y) * self.max_size.width;
+            for (x = 0; x < self.region.size.width; x++) {
+                int offset = offset_row + self.region.origin.x + x;
+                memtext_text[offset] = c;
+                memtext_color[offset] = self.color;
+            }
+        }
+
+    } else {
+        // Fill the region in block text mode
+
+        for (y = 0; y < self.region.size.height; y++) {
+            int offset_row = (self.region.origin.y + y) * self.max_size.width;
+            for (x = 0; x < self.region.size.width; x++) {
+                int offset = offset_row + self.region.origin.x + x;
+                tvky_text_matrix[offset] = c;
+                tvky_color_matrix[offset] = self.color;
+            }
         }
     }
 }
@@ -455,7 +608,7 @@ void txt_fa2560k2_set_xy(short x, short y) {
     /* Make sure X is within range for the current region... "print" a newline if not */
     if (x < 0) {
         x = 0;
-    } else if (x >= fa2560k2_region.size.width) {
+    } else if (x >= self.region.size.width) {
         x = 0;
         y++;
     }
@@ -463,16 +616,25 @@ void txt_fa2560k2_set_xy(short x, short y) {
     /* Make sure Y is within range for the current region... scroll if not */
     if (y < 0) {
         y = 0;
-    } else if (y >= fa2560k2_region.size.height) {
-        txt_fa2560k2_scroll(0, y - fa2560k2_region.size.height + 1);
-        y = fa2560k2_region.size.height - 1;
+    } else if (y >= self.region.size.height) {
+        txt_fa2560k2_scroll(0, y - self.region.size.height + 1);
+        y = self.region.size.height - 1;
     }
 
-    fa2560k2_cursor.x = x;
-    fa2560k2_cursor.y = y;
+    self.cursor.x = x;
+    self.cursor.y = y;
 
     /* Set register */
-    *VKY3_B_CPR = (((fa2560k2_region.origin.y + y) & 0xffff) << 16) | ((fa2560k2_region.origin.x + x) & 0xffff);
+    if (self.use_memtext) {
+        // Set the cursor position in memtext mode
+
+        *MEMTEXT_CRSR_XY = (((uint32_t)(self.region.origin.y + y) & 0x0000ffff) << 16) |
+                            ((uint32_t)(self.region.origin.x + x) & 0xffff);
+
+    } else {
+        // Set the cursor position in block text mode
+        tvky_crsr_ctrl->cursor_xy = (((self.region.origin.y + y) & 0xffff) << 16) | ((self.region.origin.x + x) & 0xffff);
+    }
 }
 
 /**
@@ -482,8 +644,8 @@ void txt_fa2560k2_set_xy(short x, short y) {
  * @param position pointer to a t_point record to fill out
  */
 void txt_fa2560k2_get_xy(p_point position) {
-    position->x = fa2560k2_cursor.x;
-    position->y = fa2560k2_cursor.y;
+    position->x = self.cursor.x;
+    position->y = self.cursor.y;
 }
 
 /**
@@ -497,13 +659,20 @@ void txt_fa2560k2_put(char c) {
     short y;
     unsigned int offset;
 
-    x = fa2560k2_region.origin.x + fa2560k2_cursor.x;
-    y = fa2560k2_region.origin.y + fa2560k2_cursor.y;
-    offset = y * fa2560k2_max_size.width + x;
-    VKY3_B_TEXT_MATRIX[offset] = c;
-    VKY3_B_COLOR_MATRIX[offset] = fa2560k2_color;
+    x = self.region.origin.x + self.cursor.x;
+    y = self.region.origin.y + self.cursor.y;
+    offset = y * self.max_size.width + x;
 
-    txt_fa2560k2_set_xy(fa2560k2_cursor.x + 1, fa2560k2_cursor.y);
+    if (self.use_memtext) {
+        memtext_text[offset] = c;
+        memtext_color[offset] = self.color;
+
+    } else {
+        tvky_text_matrix[offset] = c;
+        tvky_color_matrix[offset] = self.color;
+    }
+    
+    txt_fa2560k2_set_xy(self.cursor.x + 1, self.cursor.y);
 }
 
 /**
@@ -514,46 +683,69 @@ void txt_fa2560k2_init() {
     t_rect region;
     int i;
 
-    fa2560k2_resolution.width = 0;
-    fa2560k2_resolution.height = 0;
-    fa2560k2_font_size.width = 0;
-    fa2560k2_font_size.height = 0;
+    self.use_memtext = false;
+
+    self.resolution.width = 0;
+    self.resolution.height = 0;
+    self.font_size.width = 0;
+    self.font_size.height = 0;
 
     /* Disable the set_sizes call for now */
-    fa2560k2_enable_set_sizes = 0;
+    self.enable_set_sizes = 0;
 
     /* Start with nothing on */
-    msr_shadow_b = 0;
+    self.msr_shadow_b = 0;
+    *tvky_mstr_ctrl = self.msr_shadow_b;
+    *MEMTEXT_CTRL = 0;
+
+    // Default attribute is 0
+    self.attribute = 0;
 
     /* Define the capabilities */
 
     /* Specify the screen number */
-    fa2560k2_caps.number = TXT_SCREEN_FA2560K2;
+    self.caps.number = TXT_SCREEN_FA2560K2;
 
-    /* This screen can be nothing, sleep, or any combination of text, sprite, bitmap, and tile */
-    fa2560k2_caps.supported_modes = TXT_MODE_TEXT;
+    // Set the capabilities of this display.
+    // For the moment, that's just BLOCK TEXT and MEMTEXT
+    self.caps.supported_modes = TXT_MODE_TEXT | TXT_MODE_MEMORY;
 
-    /* Resolutions supported: 320x200, 320x240, 400x300, 640x400, 640x480, 800x600 */
-    fa2560k2_resolutions[0].width = 640;
-    fa2560k2_resolutions[0].height = 480;
-    fa2560k2_caps.resolution_count = 1;
-    fa2560k2_caps.resolutions = fa2560k2_resolutions;
+    /* Resolutions supported: 640x480 */
+    textmode_resolutions[0].width = 640;
+    textmode_resolutions[0].height = 480;
+    self.caps.resolution_count = 1;
+    self.caps.resolutions = textmode_resolutions;
 
-    /* Channel B supports 8x8 fonts ONLY */
-    fa2560k2_fonts[0].width = 8;
-    fa2560k2_fonts[0].height = 8;
-    fa2560k2_caps.font_size_count = 1;
-    fa2560k2_caps.font_sizes = fa2560k2_fonts;
+    memtext_resolutions[0].width = 1024;
+    memtext_resolutions[0].height = 768;
 
-    for (i = 0; i < VKY3_B_LUT_SIZE; i++) {
+    /* Block text supports 8x8 fonts ONLY */
+    font_sizes[0].width = 8;
+    font_sizes[0].height = 8;
+    self.caps.font_size_count = 1;
+    self.caps.font_sizes = font_sizes;
+
+    // MEMTEXT supports 8x8 and 8x16 fonts */
+    memtext_font_sizes[0].width = 8;
+    memtext_font_sizes[0].height = 8;
+    memtext_font_sizes[1].width = 8;
+    memtext_font_sizes[1].height = 16;
+
+    for (i = 0; i < 16; i++) {
         VKY3_B_TEXT_LUT_FG[i] = fa2560k2_lut[i];
         VKY3_B_TEXT_LUT_BG[i] = fa2560k2_lut[i];
+
+        MEMTEXT_FG_0[i] = fa2560k2_lut[i];
+        MEMTEXT_BG_0[i] = fa2560k2_lut[i];
+
+        MEMTEXT_FG_1[i] = fa2560k2_lut[i];
+        MEMTEXT_BG_1[i] = fa2560k2_lut[i];
     }
 
-    txt_fa2560k2_set_color(0x0f, 0x00);
+    txt_fa2560k2_set_color(0x0f, 0x04);
 
     /* Set the mode to text */
-    txt_fa2560k2_set_mode( TXT_MODE_TEXT );
+    txt_fa2560k2_set_mode(TXT_MODE_TEXT);
 
     /* Set the resolution */
     txt_fa2560k2_set_resolution(640, 480);                  /* Default resolution is 640x480 */
@@ -565,7 +757,7 @@ void txt_fa2560k2_init() {
      * Enable set_sizes, now that everything is set up initially
      * And calculate the size of the screen
      */
-    fa2560k2_enable_set_sizes = 1;
+    self.enable_set_sizes = 1;
     txt_fa2560k2_set_sizes();
 
     /* Set region to default */
@@ -599,8 +791,8 @@ short txt_fa2560k2_install() {
     device.set_mode = txt_fa2560k2_set_mode;
     device.set_sizes = txt_fa2560k2_set_sizes;
     device.set_resolution = txt_fa2560k2_set_resolution;
-    device.set_border = txt_fa2560k2_set_border;
-    device.set_border_color = txt_fa2560k2_set_border_color;
+    device.set_border = 0;
+    device.set_border_color = 0;
     device.set_font = txt_fa2560k2_set_font;
     device.set_cursor = txt_fa2560k2_set_cursor;
     device.set_cursor_visible = txt_fa2560k2_set_cursor_visible;
@@ -614,6 +806,7 @@ short txt_fa2560k2_install() {
     device.scroll = txt_fa2560k2_scroll;
     device.fill = txt_fa2560k2_fill;
     device.get_sizes = txt_fa2560k2_get_sizes;
+    
     INFO("txt_fa2560k2_install_Done");
     return txt_register(&device);
 }

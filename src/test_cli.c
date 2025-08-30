@@ -16,6 +16,7 @@
 #include "utilities.h"
 #include "dev/channel.h"
 #include "dev/fsys.h"
+#include "dev/txt_screen.h"
 
 //
 // Macros
@@ -368,7 +369,9 @@ short test_cli_readline(short chan, char * line, short size) {
 short test_cli_repl() {
     short output = 0;
 
-    output = chan_open(CDEV_COM1, 0, 0);
+    txt_set_mode(1, TXT_MODE_TEXT);
+
+    output = 1; // chan_open(CDEV_COM1, 0, 0);
     if (output >= 0) {
         sprintf(buffer, "\e[2J\e[HFoenix Test Command Line Interpreter\r\n");
         chan_write(output, (uint8_t *)buffer, strlen(buffer));
@@ -381,7 +384,7 @@ short test_cli_repl() {
             sprintf(buffer, "\r\n> ");
             chan_write(output, (uint8_t *)buffer, strlen(buffer));
 
-            short n = test_cli_readline(output, input_line, LINE_LEN);
+            short n = test_cli_readline(0, input_line, LINE_LEN);
             if (strlen(input_line) > 0) {
                 sprintf(buffer, "\r\n");
                 chan_write(output, (uint8_t *)buffer, strlen(buffer));
