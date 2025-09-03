@@ -15,8 +15,12 @@
 #include "sys_types.h"
 #include "utilities.h"
 #include "dev/channel.h"
+#include "dev/console.h"
 #include "dev/fsys.h"
 #include "dev/txt_screen.h"
+
+#include "sys_general.h"
+#include "version.h"
 
 //
 // Macros
@@ -152,6 +156,24 @@ short test_cli_directory(short chan, char * path) {
     return result;
 }
 
+short test_cli_sysinfo(short chan) {
+    char buffer[80];
+    t_sys_info info;
+
+    sys_get_information(&info);
+   	sprintf(buffer, "Foenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
+    chan_write(chan, (uint8_t *)buffer, strlen(buffer));
+
+    sprintf(buffer, "Model: %s\n", info.model_name);
+    chan_write(chan, (uint8_t *)buffer, strlen(buffer));
+
+    int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
+	sprintf(buffer, "CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
+    chan_write(chan, (uint8_t *)buffer, strlen(buffer));
+
+    return 0;
+}
+
 short test_cli_find_word(char * text, short initial, char * word, short word_size) {
     short i = initial;
 
@@ -201,6 +223,9 @@ short test_cli_execute(short chan, char * line) {
 
         } else if (strcmp(token, "wizfi") == 0) {
             return test_cli_wizfi(chan);
+
+        } else if (strcmp(token, "sysinfo") == 0) {
+            return test_cli_sysinfo(chan);
 
         }
     } else {
@@ -369,9 +394,9 @@ short test_cli_readline(short chan, char * line, short size) {
 short test_cli_repl() {
     short output = 0;
 
-    txt_set_mode(1, TXT_MODE_TEXT);
+    chan_ioctrl(output, CON_IOCTRL_ECHO_OFF, 0, 0);
 
-    output = 1; // chan_open(CDEV_COM1, 0, 0);
+    // output = chan_open(CDEV_COM1, 0, 0);
     if (output >= 0) {
         sprintf(buffer, "\e[2J\e[HFoenix Test Command Line Interpreter\r\n");
         chan_write(output, (uint8_t *)buffer, strlen(buffer));

@@ -84,6 +84,7 @@ static __attribute__((aligned(16))) uint16_t memtext_color[128 * 96];
 void txt_fa2560k2_set_sizes();
 short txt_fa2560k2_set_resolution(short width, short height);
 short txt_fa2560k2_set_region(p_rect region);
+short txt_fa2560k2_get_color(unsigned char * foreground, unsigned char * background);
 
 static void txt_fa2560k2_set_attribute(uint16_t attr) {
     self.attribute = attr;
@@ -309,11 +310,28 @@ void txt_fa2560k2_set_cursor(short enable, short rate, char c) {
         uint32_t raw = *MEMTEXT_CTRL & ~(MEMTEXT_CRSR_EN | MEMTEXT_CRSR_RATE | MEMTEXT_CRSR_FLASH);
 
         if (enable) {
-            *MEMTEXT_CTRL = raw | MEMTEXT_CRSR_EN | ((uint32_t)(rate & 0x03) << 9) | MEMTEXT_CRSR_FLASH;
+            *MEMTEXT_CTRL = raw | MEMTEXT_CRSR_EN | ((uint32_t)(rate & 0x03) << 9);
         } else {
             *MEMTEXT_CTRL = raw; 
         }
-        
+
+        switch(c) {
+            case 0:
+                MEMTEXT_CRSR_BITS[0] = 0x00000000;
+                MEMTEXT_CRSR_BITS[1] = 0xffff0000;
+                break;
+
+            default:
+                MEMTEXT_CRSR_BITS[0] = 0xffffffff;
+                MEMTEXT_CRSR_BITS[1] = 0xffffffff;
+                break;
+        }
+
+        uint8_t background = 0;
+        uint8_t foreground = 0;
+        txt_fa2560k2_get_color(&foreground, &background);
+        *MEMTEXT_CRSR_COLOR = MEMTEXT_FG_0[foreground];
+                
     } else {
         tvky_crsr_ctrl->control = ((self.color & 0xff) << 24) | ((c & 0xff) << 16) | ((rate & 0x03) << 1) | (enable & 0x01);
     }
@@ -394,6 +412,7 @@ short txt_fa2560k2_get_region(p_rect region) {
 short txt_fa2560k2_set_color(unsigned char foreground, unsigned char background) {
     if (self.use_memtext) {
         self.color = ((uint16_t)(foreground & 0xff) << 8) | (uint16_t)(background & 0xff);
+        *MEMTEXT_CRSR_COLOR = MEMTEXT_FG_0[foreground];
 
     } else {
         self.color = ((foreground & 0x0f) << 4) | (background & 0x0f);
@@ -628,8 +647,8 @@ void txt_fa2560k2_set_xy(short x, short y) {
     if (self.use_memtext) {
         // Set the cursor position in memtext mode
 
-        *MEMTEXT_CRSR_XY = (((uint32_t)(self.region.origin.y + y) & 0x0000ffff) << 16) |
-                            ((uint32_t)(self.region.origin.x + x) & 0xffff);
+        *MEMTEXT_CRSR_XY = (((uint32_t)(self.region.origin.y + y) & 0x000000ff) << 8) |
+                            ((uint32_t)(self.region.origin.x + x) & 0x00ff);
 
     } else {
         // Set the cursor position in block text mode
@@ -742,16 +761,26 @@ void txt_fa2560k2_init() {
         MEMTEXT_BG_1[i] = fa2560k2_lut[i];
     }
 
-    txt_fa2560k2_set_color(0x0f, 0x04);
+    /* Set the mode to memtext */
+    txt_fa2560k2_set_mode(TXT_MODE_TEXT | TXT_MODE_MEMORY);
 
-    /* Set the mode to text */
-    txt_fa2560k2_set_mode(TXT_MODE_TEXT);
+    if (self.use_memtext) {
+        txt_fa2560k2_set_cursor(1, 1, 0);
+        txt_fa2560k2_set_color(0xff, 0x04);
 
-    /* Set the resolution */
-    txt_fa2560k2_set_resolution(640, 480);                  /* Default resolution is 640x480 */
+        /* Set the resolution */
+        txt_fa2560k2_set_resolution(1024, 768);                 /* Default resolution is 1024x768 */
+
+    } else {
+        txt_fa2560k2_set_cursor(1, 1, 0);
+        txt_fa2560k2_set_color(0x0f, 0x04);
+
+        /* Set the resolution */
+        txt_fa2560k2_set_resolution(640, 480);                  /* Default resolution is 640x480 */
+    }
 
     /* Set the font */
-    txt_fa2560k2_set_font(8, 8, MSX_CP437_8x8_bin);         /* Use 8x8 font */
+    txt_fa2560k2_set_font(8, 8, MSX_CP437_8x8_bin);             /* Use 8x8 font */
 
     /*
      * Enable set_sizes, now that everything is set up initially

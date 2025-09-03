@@ -196,7 +196,7 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
 #endif
 
 #elif MODEL == MODEL_FOENIX_FA2560K2
-	cpu = CPU_M68000;
+	cpu = CPU_M68020;
 	clock_speed = SYSCLK_50MHZ;
     
     info->system_ram_size = 2 * (uint32_t)1024 * (uint32_t)1024 * (uint32_t)1024;

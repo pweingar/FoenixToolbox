@@ -323,30 +323,9 @@ int main(int argc, char * argv[]) {
 
     initialize();
 
-    txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_MEMORY);
-    txt_set_color(0, 0xff, 0x00);
-    txt_fill(0, ' ');
-    
-	printf("Foenix Toolbox v%d.%02d.%04d\n", VER_MAJOR, VER_MINOR, VER_BUILD);
-    printf("Model: %s\n", info.model_name);
-    int clock_MHz = (int)(info.cpu_clock_khz / 1000L);
-	printf("CPU:   %s at %d MHz\n", info.cpu_name, clock_MHz);
-
-    // // test_hd();
-    // test_sd0();
-    // test_sd1();
-
-    // printf("\nTesting FATFS:\n");
-    // test_dir("/sd0");
-    // printf("\n");
-    // test_dir("/sd1");
-    // test_serial();
-    // txt_mem_test();
-    // test_kbd();
-
     // bm_init();
 
-    // test_cli_repl();
+    test_cli_repl();
 
     // printf("\n\nShould display boot screen here.\n");
 
