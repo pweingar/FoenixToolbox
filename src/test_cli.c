@@ -174,6 +174,21 @@ short test_cli_sysinfo(short chan) {
     return 0;
 }
 
+/**
+ * Test the keyboard by echoing scancodes
+ */
+short test_cli_kbd() {
+    printf("Type something:\n");
+    do {
+        unsigned short scancode = kbd_get_scancode();
+        if (scancode) {
+            printf("%04X ", scancode);
+        }
+    } while(true);
+
+    return 0;
+}
+
 short test_cli_find_word(char * text, short initial, char * word, short word_size) {
     short i = initial;
 
@@ -226,6 +241,9 @@ short test_cli_execute(short chan, char * line) {
 
         } else if (strcmp(token, "sysinfo") == 0) {
             return test_cli_sysinfo(chan);
+
+        } else if (strcmp(token, "keys") == 0) {
+            return test_cli_kbd();
 
         }
     } else {

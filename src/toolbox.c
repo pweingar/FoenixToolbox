@@ -325,6 +325,7 @@ int main(int argc, char * argv[]) {
 
     // bm_init();
 
+    // test_kbd();
     test_cli_repl();
 
     // printf("\n\nShould display boot screen here.\n");

@@ -13,6 +13,7 @@
 #define DEFAULT_LOG_LEVEL LOG_ERROR
 
 #include <ctype.h>
+#include <stdio.h>
 
 #include "log.h"
 #include "kbd_f256.h"
@@ -307,12 +308,12 @@ char kbd_getc() {
 
     } else {
         // Otherwise, we need to check the scan code queue...
-        unsigned short raw_code = kbd_get_scancode();
+        uint16_t raw_code = kbd_get_scancode();
         while (raw_code != 0) {
             if ((raw_code & 0x80) == 0) {
                 // If it's a make code, let's try to look it up...
-                unsigned char modifiers = (raw_code >> 8) & 0xff;    // Get the modifiers
-                unsigned char scan_code = raw_code & 0x7f;           // Get the base code for the key
+                uint16_t modifiers = (raw_code & 0xff00) >> 8;    // Get the modifiers
+                uint8_t scan_code = raw_code & 0x7f;           // Get the base code for the key
 
                 // Check the modifiers to see what we should lookup...
 
