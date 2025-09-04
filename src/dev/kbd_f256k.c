@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "indicators.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ring_buffer.h"
@@ -131,6 +132,8 @@ static void kbd_set_caps_led(bool cap_en) {
 	} else {
 		*GABE_MSTR_CTRL &= (~GABE_CAP_EN);
 	}
+#elif MODEL == MODEL_FOENIX_FA2560K2
+	ind_set(IND_CAPS, cap_en);
 #endif
 }
 

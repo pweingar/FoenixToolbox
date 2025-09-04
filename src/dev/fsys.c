@@ -1137,6 +1137,9 @@ short fsys_pgz_loader(short chan, long destination, long * start) {
         }
     }
 
+    if (chunk != 0) {
+        free(chunk);
+    }
     return result;
 }
 
