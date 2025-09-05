@@ -27,7 +27,7 @@ extern void restart_cli();
 
 extern void call_user(long start, long stack, int argc, char * argv[]);
 
-#ifdef __CALYPSI_CORE_65816__
+// #ifdef __CALYPSI_CORE_65816__
 typedef __attribute__((simple_call)) int (*user_proc)(int, char **);
 
 void call_user(long start, long stack, int argc, char * argv[]) {
@@ -35,7 +35,7 @@ void call_user(long start, long stack, int argc, char * argv[]) {
 	g_proc_result = start_point(argc, argv);
 	restart_cli();
 }
-#endif
+// #endif
 
 /*
  * Start a user mode process
@@ -72,7 +72,8 @@ SYSTEMCALL void proc_exit(int result) {
     g_proc_result = result;
 	if (proc_shell_address != 0) {
 		INFO("proc_exit: Attempting to call into shell");
-		call_user(proc_shell_address,  k_default_stack, 0, 0);
+        restart_cli();
+		// call_user(proc_shell_address, k_default_stack, 0, 0);
 		reboot();
 
 	} else {
