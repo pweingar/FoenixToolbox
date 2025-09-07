@@ -106,7 +106,7 @@ else ifeq ($(UNIT),A2560K)
 else ifeq ($(UNIT),FA2560K2)
 	CPU=m68k
 	C_SRCS_DEBUGGER=
-	SRCS_FOR_UNIT=FA2560K2/a2560-lowlevel.c FA2560K2/a2560-startup.s FA2560K2/io_stubs.c FA2560K2/jumptable.s FA2560K2/extras.s timers.c tests.c test_cli.c
+	SRCS_FOR_UNIT=FA2560K2/a2560-lowlevel.c FA2560K2/a2560-startup.s FA2560K2/io_stubs.c FA2560K2/jumptable.s FA2560K2/extras.s boot_fa2560k2.c timers.c tests.c test_cli.c
 	CFLAGS_FOR_UNIT=-DMODEL=24 -DCPU=5 --core 68000 --code-model large --data-model large # --target Foenix
 
 	ifeq ($(MEMORY),ROM)
@@ -140,7 +140,7 @@ else
 	LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file toolbox.map
 endif
 
-SRCS = toolbox.c log.c memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c boot.c $(SRCS_FOR_UNIT) # tests.c(C_SRCS_DEBUGGER)
+SRCS = toolbox.c log.c memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c $(SRCS_FOR_UNIT) # tests.c(C_SRCS_DEBUGGER)
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = dev/devices.a snd/sound.a fatfs/fatfs.a

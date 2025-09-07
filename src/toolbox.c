@@ -326,11 +326,11 @@ int main(int argc, char * argv[]) {
     // bm_init();
 
     // test_kbd();
-    test_cli_repl();
+    // test_cli_repl();
 
     // printf("\n\nShould display boot screen here.\n");
 
- 	// boot_screen();
+ 	boot_screen();
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);
