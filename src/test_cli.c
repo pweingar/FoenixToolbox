@@ -18,6 +18,7 @@
 #include "dev/console.h"
 #include "dev/fsys.h"
 #include "dev/txt_screen.h"
+#include "dev/kbd_f256.h"
 
 #include "sys_general.h"
 #include "version.h"

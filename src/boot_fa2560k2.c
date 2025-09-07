@@ -374,11 +374,11 @@ void boot_screen() {
 
 	i = 0;
 	boot_src_cnt = 0;
-	// if ((*GABE_DIP_REG & DIP_BOOT_RAM) == 0) {
+	if ((get_dip() & DIP_BOOT_RAM) == 0) {
 		boot_chain[0] = BOOT_SRC_RAM;
 		i = 1;
 		boot_src_cnt++;
-	// }
+	}
 	boot_chain[i++] = BOOT_SRC_CARTRIDGE;
 	boot_chain[i++] = BOOT_SRC_SD0;
 	boot_chain[i++] = BOOT_SRC_SD1;

@@ -14,6 +14,7 @@
 #include "dev/channel.h"
 #include "dev/fsys.h"
 #include "dev/kbd_mo.h"
+#include "dev/kbd_f256.h"
 #include "dev/txt_screen.h"
 #include "serial_reg.h"
 #include "serial_reg.h"
@@ -57,7 +58,7 @@ void dump_buffer(const uint8_t * buffer, short size, short labels) {
 				sprintf(line, "%04X:", i);
                 txt_print(0, line);
             } else if (labels == 2) {
-				sprintf(line, "%08lX:", (uint32_t)(buffer + i));
+				sprintf(line, "%08X:", (uint32_t)(buffer + i));
                 txt_print(0, line);
             }
         }

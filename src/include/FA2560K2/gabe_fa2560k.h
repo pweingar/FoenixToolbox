@@ -33,6 +33,8 @@
 #define GABE_DIP_BOOT_MASK  0x01E00000  /* Mask for the boot mode: */
 #define GABE_DIP_USER_MASK  0x0E000000  /* Mask for the user switches: */
 
+#define DIP_BOOT_RAM		0x01
+
 // ControlRegisters[1] $FFB0_0004
 #define GABE_LFSR_REG0		((volatile uint32_t *)0xFFB00004)
 #define GABE_LFSR_STATDATA	((volatile uint32_t *)0xFFB00004)    // Read Only

@@ -209,7 +209,7 @@ static short ser_write(p_channel chan, const uint8_t * data, short count) {
         for (i = 0; i < count; i++) {
             while (!ser_can_txd(dev)) ;
             ser_put(dev, data[i]);
-            if ((data == '\r') && chan->data[0]) {
+            if ((data[i] == '\r') && chan->data[0]) {
                 // If we should translate CR to CRLF, and we have a CR... send a LF
                 ser_put(dev, '\n');
             }

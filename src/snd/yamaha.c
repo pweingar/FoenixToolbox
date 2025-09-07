@@ -62,8 +62,8 @@ void ym_write(enum e_ym_snd_dev dev, enum e_ym_position position, short port, un
  * Initialize and mute all the Yamaha sound chips
  */
 void ym_init() {
-    short position;
-    short port;
+    short position = 0;
+    short port = 0;
 
 #if HAS_OPN
     /* OPN */

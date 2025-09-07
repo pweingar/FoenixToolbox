@@ -104,9 +104,9 @@ static void switch_text_mode(bool use_memtext) {
     if (use_memtext) {
         // Switch to MEMTEXT mode
         self.use_memtext = true;
-        self.caps.resolutions = &memtext_resolutions;
+        self.caps.resolutions = memtext_resolutions;
         self.caps.resolution_count = sizeof(memtext_resolutions) / sizeof(t_extent);
-        self.caps.font_sizes = &memtext_font_sizes;
+        self.caps.font_sizes = memtext_font_sizes;
         self.caps.font_size_count = sizeof(memtext_font_sizes) / sizeof(t_extent);
         
         *MEMTEXT_CTRL = MEMTEXT_MAIN_EN;
@@ -123,9 +123,9 @@ static void switch_text_mode(bool use_memtext) {
     } else {
         // Switch to block text mode
         self.use_memtext = false;
-        self.caps.resolutions = &textmode_resolutions;
+        self.caps.resolutions = textmode_resolutions;
         self.caps.resolution_count = sizeof(textmode_resolutions) / sizeof(t_extent);
-        self.caps.font_sizes = &font_sizes;
+        self.caps.font_sizes = font_sizes;
         self.caps.font_size_count = sizeof(font_sizes) / sizeof(t_extent);
 
         *MEMTEXT_CTRL = 0;

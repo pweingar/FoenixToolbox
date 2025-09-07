@@ -39,6 +39,7 @@
 #include "dev/txt_mem.h"
 #include "dev/kbd_f256.h"
 #elif MODEL == MODEL_FOENIX_FA2560K2
+#include "dev/kbd_f256.h"
 #include "dev/txt_mem.h"
 #include "FA2560K2/vkyii_legacy_Channelb.h"
 #include "dev/txt_fa2560k2.h"

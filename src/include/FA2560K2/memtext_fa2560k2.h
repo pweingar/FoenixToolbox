@@ -92,8 +92,8 @@ typedef struct memtext_reg_s {
 #define MEMTEXT_TEXT_SIZE   0x00004000
 
 #define MEMTEXT_CRSR_XY     ((volatile uint32_t *)0xffb28004)
-#define MEMTEXT_TEXT_ADDR   ((volatile uint32_t **)0xffb28008)
-#define MEMTEXT_COLOR_ADDR  ((volatile uint32_t **)0xffb2800c)
+#define MEMTEXT_TEXT_ADDR   ((volatile uint16_t **)0xffb28008)
+#define MEMTEXT_COLOR_ADDR  ((volatile uint16_t **)0xffb2800c)
 #define MEMTEXT_CRSR_COLOR  ((volatile uint32_t *)0xffb28010)
 #define MEMTEXT_CRSR_BITS   ((volatile uint32_t *)0xffb28020)
 

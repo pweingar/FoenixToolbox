@@ -573,7 +573,6 @@ short sdc_install() {
     short result = bdev_register(&dev);
 
 #if HAS_INTERNAL_SD
-	#pragma message("Including SD1")
 	if (result == 0) {
 		sd1_card_info.reg = SD1_REG;
 		sd1_card_info.status = 0;

@@ -79,6 +79,13 @@ extern SYSTEMCALL void sys_get_information(p_sys_info info);
  */
 extern SYSTEMCALL void reboot();
 
+/**
+ * Get the status of the DIP switches
+ * 
+ * @return the current value of the DIP switches
+ */
+extern uint8_t get_dip();
+
 #if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X
 /*
  * Set the color of the LED for the floppy drive

@@ -368,6 +368,24 @@ SYSTEMCALL void reboot() {
 #endif
 }
 
+/**
+ * Get the status of the DIP switches
+ * 
+ * @return the current value of the DIP switches
+ */
+uint8_t get_dip() {
+    uint8_t result = 0;
+#if MODEL_FOENIX_F256_GEN
+    result = *GABE_DIP_REG;
+
+#elif MODEL == MODEL_FOENIX_FA2560K2
+    uint32_t raw = *GABE_DIP_REG >> 24;
+    result = (uint8_t)(raw * 0x7f);
+
+#endif
+    return result;
+}
+
 #if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X
 static short genx_leds = 0;
 
