@@ -1561,7 +1561,6 @@ short fsys_init() {
         }
     }
 
-    printf("Install loaders...\n");
     for (i = 0; i < MAX_LOADERS; i++) {
         g_file_loader[i].status = 0;
         g_file_loader[i].loader = 0;

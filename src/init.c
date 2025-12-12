@@ -232,10 +232,8 @@ short tb_init() {
     INFO("Interrupts enabled");
 
     /* Play the SID test bong on the Gideon SID implementation */
-    printf("\e[1;3HTesting SID...\n");
     sid_test_internal();
 	INFO("SID boot bong played.");
-    printf("SID boot bong played.\n");
 
 #if HAS_PATA
     if ((res = pata_install())) {
