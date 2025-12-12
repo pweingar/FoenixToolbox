@@ -28,7 +28,7 @@ endif
 # Currently: just do it for the FA2560K2
 # TODO: actually set the parameters based on the UNIT, supporting other models
 
-ifeq $(UNIT),FA2560K2
+ifeq ($(UNIT),FA2560K2)
 	CPU=m68k
 	SRCS_FOR_UNIT = FA2560K2/io_stubs.c
 	DEV_FOR_UNIT = bitmap_fa2560k2.c indicators_fa2560k2.c interrupts_fa2560k2.c txt_fa2560k2.c sdc_spi.c kbd_f256.c kbd_f256k.c serial_common.c
@@ -49,7 +49,7 @@ SUB_SRCS = $(addprefix dev/,$(DEV_SRC)) $(addprefix fatfs/,$(FAT_SRC)) $(addpref
 
 # Figure out all the source and object files
 
-SRCS = toolbox.c log.c memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c $(SUB_SRCS) $(SRCS_FOR_UNIT)
+SRCS = init.c log.c memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c $(SUB_SRCS) $(SRCS_FOR_UNIT)
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 
