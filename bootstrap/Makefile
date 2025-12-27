@@ -29,7 +29,7 @@ endif
 CORE_SRCS = tb_firmware.c boot.c
 SRCS = $(CORE_SRCS) $(ARC_SRCS_EXPAND)
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
-INCLUDES=-I. -I./include -I../src/include
+INCLUDES=-I. -I./include -I../src/include -I../src/dev
 CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) --data-model $(DATA) --code-model $(CODE)
 ASFLAGS=$(INCLUDES) --data-model $(DATA) --code-model $(CODE)
 LDFLAGS=$(LDFLAGS_FOR_UNIT)
