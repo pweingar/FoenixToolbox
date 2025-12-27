@@ -18,67 +18,70 @@ typedef volatile __attribute__((far24)) uint16_t *memcolor_p;
 // $F0_8800 = IOBANK4 - BG
 // $F0_9000 = FONT
 
-// /**
-//  * Union representing a memtext character
-//  */
-// typedef union memtext_char_u {
-//     uint16_t raw;
-//     struct {
-//         uint16_t character:8;           // 8-bit codepoint for the character
-//         uint16_t font:2;                // Font to use for the character (4 8x8 fonts, 2 8x16 fonts)
-//         uint16_t foreground_lut:1;      // Foreground LUT to use
-//         uint16_t background_lut:1;      // Background LUT to use
-//         uint16_t inverse:1;             // Render character inverted
-//         uint16_t flash:1;               // Render character as flashing
-//         uint16_t reserved:2;
-//     };
-// } memtext_char_t, *memtext_char_p;
 
-// /**
-//  * Structure to represent the memtext cursor
-//  */
-// struct memtext_crsr_s {
-//     union {
-//         uint8_t raw;
-//         struct memtext_crsr_ctrl_s {
-//             uint8_t enable:1;           // Enable display of the cursor
-//             uint8_t rate:2;             // Rate of flashing (rates???)
-//             uint8_t reserved:4;
-//             uint8_t flash_disable:1;    // Disable flashing
-//         } control;
-//     };
 
-//     uint8_t cursor_x;                   // Cursor column position
-//     uint8_t cursor_y;                   // Cursor row position
-// };
+/**
+ * MEMTEXT character format
+ */
+typedef struct memtext_char_s {
+    uint16_t raw;
+    union {
+        uint16_t character : 8;
+        uint16_t font : 2;
+        uint16_t foreground_lut : 1;
+        uint16_t background_lut : 1;
+        uint16_t invert : 1;
+        uint16_t flash : 1;
+        uint16_t rsrv : 2;
+    };
+} memtext_char_t, *memtext_char_p;
 
-// /**
-//  * Structure to represent the memtext hardware registers
-//  */
-// typedef struct memtext_reg_s {
-//     union {
-//         uint8_t raw;
-//         struct memtext_ctrl_s {
-//             uint8_t enable:1;           // Enable memtext display
-//             uint8_t size_8x6:1;         // Size of characters (1 = 8x16, 0 = 8x8)
-//             uint8_t reserved:6;
-//         } control;
-//     };
+/**
+ * MEMTEXT color format
+ */
+typedef struct memtext_color_s {
+    uint16_t raw;
+    union {
+        uint16_t background : 8;
+        uint16_t foreground : 8;
+    };
+} memtext_color_t, *memtext_color_p;
 
-//     struct memtext_crsr_s cursor;       // Cursor registers
+/**
+ * Structure to represent the MEMTEXT registers
+ */
+typedef struct memtext_reg_s {
+    union {
+        uint16_t control;
+        struct {
+            uint16_t enable : 1;
+            uint16_t size_8x16 : 1;
+            uint16_t rsrv_1 : 6;
+            uint16_t cursor_en : 1;
+            uint16_t cursor_rate : 2;
+            uint16_t cursor_flash : 1;
+            uint16_t text_rate : 2;
+            uint16_t font_8x16 : 1;
+            uint16_t rsrv_2 : 1;
+        };
+    };
+       
+    union {
+        uint16_t cursor_position;
+        struct {
+            uint16_t cursor_x : 8;
+            uint16_t cursor_y : 8;
+        };
+    };
 
-//     memtext_p mem_char_ptr;             // Pointer to the character matrix
+    memtext_p text_addr;                        // Pointer to the character matrix
 
-//     uint8_t reserved_1;
+    memcolor_p color_addr;                      // Pointer to the color matrix
 
-//     uint16_t * mem_color_ptr;            // Pointer to the color matrix
+    uint32_t cursor_color;                      // ARGB color for the cursor
 
-//     uint8_t reserved_2;                 // Skip a bit
-
-//     t_color3 cursor_color;              // Color registers for the cursor
-
-//     uint8_t cursor_graph[16];           // Cursor shape data (first 8 bytes for 8x8, all 16 for 8x16)
-// } memtext_reg_t, *memtext_reg_p;
+    uint8_t cursor_graph[16];                   // 8x8 or 8x16 pixel matrix for cursor
+} memtext_reg_t, *memtext_reg_p;
 
 
 #define MEMTEXT         ((volatile memtext_reg_p)0xf01300)

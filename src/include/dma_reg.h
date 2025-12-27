@@ -15,6 +15,9 @@
 
 #elif MODEL == MODEL_FOENIX_FMX || MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS
 #include "C256/dma_c256.h"
+
+#elif MODEL == MODEL_F256K2X
+#include "F256/dma_f256.h"
 #endif
 
 #endif

@@ -215,7 +215,7 @@ static short txt_mem_set_mode(short mode) {
 
                 if (mem_font_size.height == 16) {
                     MEMTEXT->enable = 1;
-                    MEMTEXT->size8x16 = 1;
+                    MEMTEXT->font_8x16 = 1;
                 } else {
                     MEMTEXT->enable = 1;
                 }
@@ -477,78 +477,78 @@ static short txt_mem_set_color(unsigned char foreground, unsigned char backgroun
     return 0;
 }
 
-/**
- * Fill a rectangular area with a 16-bit value
- * 
- * @param dest the starting address to receive the data
- * @param src the starting address of the source data
- * @param size the number of 16-bit words to copy
- */
-static void dma_copy_16_1d(uint16_t * dest, uint16_t *src, uint32_t size) {
-    static short count = 0;
-    short index = 0;
+// /**
+//  * Fill a rectangular area with a 16-bit value
+//  * 
+//  * @param dest the starting address to receive the data
+//  * @param src the starting address of the source data
+//  * @param size the number of 16-bit words to copy
+//  */
+// static void dma_copy_16_1d(uint16_t * dest, uint16_t *src, uint32_t size) {
+//     static short count = 0;
+//     short index = 0;
 
-    if (++count > 99) count = 0;
-    for (int i = 0; i < 10; i++) {
-        mem_text_matrix[i] = ' ';
-    }
+//     if (++count > 99) count = 0;
+//     for (int i = 0; i < 10; i++) {
+//         mem_text_matrix[i] = ' ';
+//     }
 
-    mem_text_matrix[index++] = (count / 10) + '0';
-    mem_text_matrix[index++] = (count % 10) + '0';
+//     mem_text_matrix[index++] = (count / 10) + '0';
+//     mem_text_matrix[index++] = (count % 10) + '0';
 
-    index++;
-    mem_text_matrix[index++] = '0';
+//     index++;
+//     mem_text_matrix[index++] = '0';
 
-    *DMA_CTRL = DMA_CTRL_EN | DMA_16BIT_EN;
+//     *DMA_CTRL = DMA_CTRL_EN | DMA_16BIT_EN;
 
-    mem_text_matrix[index++] = '1';
+//     mem_text_matrix[index++] = '1';
 
-    *DMA_SRC_ADDR = src;
-    *DMA_DST_ADDR = dest;
-    *DMA_SIZE = size;
+//     *DMA_SRC_ADDR = src;
+//     *DMA_DST_ADDR = dest;
+//     *DMA_SIZE = size;
 
-    mem_text_matrix[index++] = '2';
+//     mem_text_matrix[index++] = '2';
 
-    // Start the DMA operation
-    *DMA_CTRL = DMA_CTRL_EN | DMA_16BIT_EN | DMA_CTRL_TRF;
+//     // Start the DMA operation
+//     *DMA_CTRL = DMA_CTRL_EN | DMA_16BIT_EN | DMA_CTRL_TRF;
 
-    mem_text_matrix[index++] = '3';
+//     mem_text_matrix[index++] = '3';
 
-    for (int i = 0; i < 100; i++) ;
+//     for (int i = 0; i < 100; i++) ;
 
-    mem_text_matrix[index++] = '4';
+//     mem_text_matrix[index++] = '4';
 
-    // Wait for the DMA operation to finish
-    while ((*DMA_STAT & DMA_STAT_TFR_BUSY) == DMA_STAT_TFR_BUSY) ;
+//     // Wait for the DMA operation to finish
+//     while ((*DMA_STAT & DMA_STAT_TFR_BUSY) == DMA_STAT_TFR_BUSY) ;
 
-    mem_text_matrix[index++] = '5';
+//     mem_text_matrix[index++] = '5';
 
-    // Shut down the DMA operation
-    *DMA_CTRL = 0;
+//     // Shut down the DMA operation
+//     *DMA_CTRL = 0;
 
-    mem_text_matrix[index++] = '6';
-}
+//     mem_text_matrix[index++] = '6';
+// }
 
-/**
- * Fill a rectangular area with a 16-bit value
- * 
- * @param dest the starting address to receive the data
- * @param src the starting address of the source data
- * @param width the width of the rectangular area to fill (number of 16-bit words)
- * @param height the height of the rectangular area to fill (number of 16-bit words)
- * @param stride the number of 16-bit words that compose a row of the over all rectangular data in memory
- */
-void dma_copy_16_2d(uint16_t * dest, uint16_t *src, short width, short height, short dest_stride, short src_stride) {
-    dma_2d_cmd_t dma_cmd;
-    dma_cmd.destination = dest;
-    dma_cmd.source = src;
-    dma_cmd.width = width;
-    dma_cmd.height = height;
-    dma_cmd.dest_stride = dest_stride;
-    dma_cmd.src_stride = src_stride;
+// /**
+//  * Fill a rectangular area with a 16-bit value
+//  * 
+//  * @param dest the starting address to receive the data
+//  * @param src the starting address of the source data
+//  * @param width the width of the rectangular area to fill (number of 16-bit words)
+//  * @param height the height of the rectangular area to fill (number of 16-bit words)
+//  * @param stride the number of 16-bit words that compose a row of the over all rectangular data in memory
+//  */
+// void dma_copy_16_2d(uint16_t * dest, uint16_t *src, short width, short height, short dest_stride, short src_stride) {
+//     dma_2d_cmd_t dma_cmd;
+//     dma_cmd.destination = dest;
+//     dma_cmd.source = src;
+//     dma_cmd.width = width;
+//     dma_cmd.height = height;
+//     dma_cmd.dest_stride = dest_stride;
+//     dma_cmd.src_stride = src_stride;
 
-    dma_copyw_2d(&dma_cmd);
-}
+//     dma_copyw_2d(&dma_cmd);
+// }
 
 /**
  * Scroll the screen for the most common case: full screen scrolls up by one full row.
@@ -763,7 +763,7 @@ static void txt_mem_init() {
     /* Initialize the color lookup tables */
     for (i = 0; i < sizeof(mem_clut)/sizeof(t_color4); i++) {
 		MEMTEXT_FG[i] = mem_clut[i];
-		MEMTEXT_BG_0[i] = mem_clut[i];        
+		MEMTEXT_BG[i] = mem_clut[i];        
     }
 
     *MEMTEXT_CHAR_PTR = mem_text_matrix;

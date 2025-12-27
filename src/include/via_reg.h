@@ -10,6 +10,12 @@
 #if MODEL == MODEL_FOENIX_F256_GEN
 #include "F256/via_f256.h"
 
+#elif MODEL == MODEL_FOENIX_F256K2
+#include "F256/via_f256.h"
+
+#elif MODEL == MODEL_FOENIX_F256K2X
+#include "F256/via_f256.h"
+
 #elif MODEL == MODEL_FOENIX_FA2560K2
 #include "FA2560K2/via_fa2560k.h"
 
