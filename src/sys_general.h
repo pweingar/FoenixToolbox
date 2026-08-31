@@ -24,7 +24,7 @@
 #define MODEL_FOENIX_A2560U         9
 #define MODEL_FOENIX_A2560M         10
 #define MODEL_FOENIX_A2560K         11
-#define MODEL_FOENIX_A2560K40       12
+#define MODEL_FOENIX_A2560ME        12
 #define MODEL_FOENIX_A2560K60       13
 #define MODEL_FOENIX_F256P			16
 #define MODEL_FOENIX_F256K2			17

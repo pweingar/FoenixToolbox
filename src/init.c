@@ -30,6 +30,8 @@
 #if HAS_DUAL_SCREEN
 #include "dev/txt_a2560k_a.h"
 #include "dev/txt_a2560k_b.h"
+#elif MODEL == MODEL_FOENIX_A2560ME
+#include "dev/txt_a2560me.h"
 #elif MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS
 #include "dev/txt_a2560u.h"
 #elif MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_FMX
@@ -145,6 +147,10 @@ short tb_init() {
     txt_init_screen(TXT_SCREEN_A2560K_A);
     txt_init_screen(TXT_SCREEN_A2560K_B);
 
+#elif MODEL == MODEL_FOENIX_A2560ME
+    txt_a2560me_install();
+    txt_init_screen(TXT_SCREEN_A2560ME);
+
 #elif MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS
     txt_a2560u_install();
     txt_init_screen(TXT_SCREEN_A2560U);
@@ -170,12 +176,18 @@ short tb_init() {
 #elif MODEL == MODEL_FOENIX_FA2560K2
     txt_fa2560k2_install();
     txt_init_screen(TXT_SCREEN_FA2560K2);
-  #else
+#else
 #error Cannot identify screen setup
 #endif
 
 	INFO("Text system initialized.");
 	INFO1("Top of memory: %lx", mem_get_ramtop());
+
+    txt_clear(TXT_SCREEN_A2560ME, 2);
+    txt_set_xy(TXT_SCREEN_A2560ME, 0, 0);
+    txt_print(TXT_SCREEN_A2560ME, "This is a test of the Toolbox on A2560Me");
+
+    while (1) ;
 
     /* Initialize the indicators */
     ind_init();
@@ -249,13 +261,13 @@ short tb_init() {
         INFO("SDC driver installed.");
     }
 
-#if HAS_FLOPPY
-    if ((res = fdc_install())) {
-        ERROR1("FAILED: Floppy drive initialization %d", res);
-    } else {
-        INFO("Floppy drive initialized.");
-    }
-#endif
+// #if HAS_FLOPPY
+//     if ((res = fdc_install())) {
+//         ERROR1("FAILED: Floppy drive initialization %d", res);
+//     } else {
+//         INFO("Floppy drive initialized.");
+//     }
+// #endif
 
 //     // At this point, we should be able to call into to console to print to the screens
 
@@ -266,24 +278,24 @@ short tb_init() {
 //     // }
 
 	// Initialize the keyboard
+#if MODEL == MODEL_FOENIX_A2560K
+    if ((res = kbdmo_init())) {
+        log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
+    } else {
+        log(LOG_INFO, "A2560K built-in keyboard initialized.");
+    }
+#else
 	kbd_init();
 	INFO("Keyboard initialized");
+#endif
 
-// #if MODEL == MODEL_FOENIX_A2560K
-//     if ((res = kbdmo_init())) {
-//         log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
+// #if HAS_PARALLEL_PORT
+//     if ((res = lpt_install())) {
+//         log_num(LOG_ERROR, "FAILED: LPT installation", res);
 //     } else {
-//         log(LOG_INFO, "A2560K built-in keyboard initialized.");
+//         log(LOG_INFO, "LPT installed.");
 //     }
 // #endif
-
-#if HAS_PARALLEL_PORT
-    if ((res = lpt_install())) {
-        log_num(LOG_ERROR, "FAILED: LPT installation", res);
-    } else {
-        log(LOG_INFO, "LPT installed.");
-    }
-#endif
 
 // #if HAS_MIDI_PORTS
 //     if ((res = midi_install())) {

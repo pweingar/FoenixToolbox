@@ -13,7 +13,9 @@
  * Interrupt control registers
  */
 
-#if (MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X)
+// TODO: separate A2560Me definitions
+
+#if (MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X || MODEL == MODEL_FOENIX_A2560ME)
 
 #define PENDING_GRP0 		((volatile unsigned short *)0xFEC00100)
 #define PENDING_GRP1 		((volatile unsigned short *)0xFEC00102)

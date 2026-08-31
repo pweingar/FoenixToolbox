@@ -27,7 +27,7 @@ int main(int argc, char * argv[]) {
     short i;
 
     tb_init();
- 	boot_screen();
+ 	// boot_screen();
 
 #ifdef _CALYPSI_MCP_DEBUGGER
 	extern int CalypsiDebugger(void);

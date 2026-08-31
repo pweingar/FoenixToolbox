@@ -19,7 +19,7 @@ const char * sys_model_name[] = {
 	"A2560 U+",
 	"A2560 M",		// 10
 	"A2560 K",		
-	"A2560 K40",
+	"A2560Me",
 	"A2560 K60",
 	"Reserved",
 	"Reserved",		// 15

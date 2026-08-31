@@ -30,6 +30,27 @@
     #define HAS_OPM 1
     #define HAS_SNES_GAMEPAD 1
     #define HAS_OPL3 1
+#elif MODEL == MODEL_FOENIX_A2560ME
+    #define HAS_SUPERIO 1
+
+    // // Actually, for the X this depends on the submodel. E.g. Pizza Box doesn't have floppy.
+    // #define HAS_FLOPPY 1
+
+	// Does the model have a PATA / IDE interface
+	#define HAS_PATA 1
+
+	#define HAS_SDC_SPI 1
+
+    // // Actually, for the X this depends on the submodel. E.g. Pizza Box doesn't have floppy.
+    // #define HAS_PARALLEL_PORT 1
+
+    #define HAS_MIDI_PORTS 1
+
+    // Sounchips
+    #define HAS_OPN 1
+    #define HAS_OPM 1
+    #define HAS_SNES_GAMEPAD 1
+    #define HAS_OPL3 1
 #elif MODEL == MODEL_FOENIX_A2560U
     #define HAS_OPL3 1
 	#define HAS_PATA 1

@@ -1,7 +1,7 @@
 # VPATH=.:../../module/Calypsi-remote-debug/src
 DEBUGGER=../module/Calypsi-remote-debug/src
 
-UNIT := FA2560K2
+UNIT := A2560ME
 MEMORY := RAM
 
 # Define OS-dependent variables
@@ -96,7 +96,18 @@ else ifeq ($(UNIT),A2560K)
 	CPU=m68k
 	C_SRCS_DEBUGGER=
 	SRCS_FOR_UNIT=superio.c A2560/a2560-lowlevel.c A2560/a2560-startup.s A2560/io_stubs.c interrupt.c timers.c
-	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large --target Foenix
+	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large
+
+	ifeq ($(MEMORY),ROM)
+		LDFLAGS_FOR_UNIT=A2560/a2560-flash.scm clib-68000-lc-ld.a --rtattr printf=medium --cstartup=a2560
+	else
+		LDFLAGS_FOR_UNIT=A2560/a2560-ram.scm clib-68000-lc-ld.a --rtattr printf=medium --cstartup=a2560
+	endif
+else ifeq ($(UNIT),A2560ME)
+	CPU=m68k
+	C_SRCS_DEBUGGER=
+	SRCS_FOR_UNIT=superio.c A2560/a2560-lowlevel.c A2560/a2560-startup.s A2560/io_stubs.c interrupt.c timers.c
+	CFLAGS_FOR_UNIT=-DMODEL=12 -DCPU=5 --code-model large --data-model large
 
 	ifeq ($(MEMORY),ROM)
 		LDFLAGS_FOR_UNIT=A2560/a2560-flash.scm clib-68000-lc-ld.a --rtattr printf=medium --cstartup=a2560

@@ -1,5 +1,5 @@
 
-UNIT := F256K2
+UNIT := A2560K
 
 # Define OS-dependent variables
 
@@ -80,7 +80,12 @@ else ifeq ($(UNIT),A2560K)
 	CPU=m68k
 
 	SRCS_FOR_UNIT=toolbox_bdev.c
-	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large --target Foenix
+	CFLAGS_FOR_UNIT=-DMODEL=11 -DCPU=5 --code-model large --data-model large
+else ifeq ($(UNIT),A2560ME)
+	CPU=m68k
+
+	SRCS_FOR_UNIT=toolbox_bdev.c
+	CFLAGS_FOR_UNIT=-DMODEL=12 -DCPU=5 --code-model large --data-model large
 else ifeq ($(UNIT),FA2560K2)
 	CPU=m68k
 
