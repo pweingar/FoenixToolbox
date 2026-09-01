@@ -9,6 +9,9 @@
 #if MODEL == MODEL_FOENIX_A2560K    // The Trinity Registers are 32bits in the A2560K
 #include "A2560K/gabe_a2560k.h"
 
+#elif MODEL == MODEL_FOENIX_A2560ME
+#include "A2560Me/gabe_a2560me.h"
+
 #elif MODEL == MODEL_FOENIX_A2560X || MODEL == MODEL_FOENIX_GENX    // The Trinity Registers are 16bits wide in the GenX/A2560X
 #include "A2560X/gabe_a2560x.h"
 

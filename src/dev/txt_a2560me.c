@@ -13,7 +13,7 @@
 #include "dev/txt_screen.h"
 #include "dev/txt_a2560me.h"
 
-extern const unsigned char MSX_CP437_8x8_bin[];
+#include "rsrc/font/foenix_st_8_16.h"
 
 /* Default text color lookup table values (AARRGGBB) */
 const unsigned long a2560me_lut[VKY3_B_LUT_SIZE] = {
@@ -260,7 +260,7 @@ void txt_a2560me_set_border_color(unsigned char red, unsigned char green, unsign
  * @param data pointer to the raw font data to be loaded
  */
 short txt_a2560me_set_font(short width, short height, const unsigned char * data) {
-    // if ((width == 8) && (height == 8)) {
+    if ((width == 8) && (height == 16)) {
         int i;
 
         /* The size is valid... set the font */
@@ -269,15 +269,15 @@ short txt_a2560me_set_font(short width, short height, const unsigned char * data
 
         // TODO: be able to load the font...
         /* Copy the font data... this assumes a width of one byte! */
-        // for (i = 0; i < 256 * height; i++) {
-        //     VKY3_B_FONT_MEMORY[i] = data[i];
-        // }
+        for (i = 0; i < 256 * height; i++) {
+            VKY3_B_FONT_MEMORY[i] = data[i];
+        }
 
         return 0;
 
-    // } else {
-    //     return -1;
-    // }
+    } else {
+        return -1;
+    }
 }
 
 /**
@@ -608,14 +608,14 @@ void txt_a2560me_init() {
     txt_a2560me_set_color(0x07, 0x04);
 
     // /* Set the font */
-    txt_a2560me_set_font(8, 16, MSX_CP437_8x8_bin);         /* Use 8x16 font */
+    txt_a2560me_set_font(8, 16, foenix_st_8_16_bin);        /* Use 8x16 font */
 
     /* Set the cursor */
     txt_a2560me_set_cursor(1, 0, 0xB1);
 
     /* Set the border */
-    txt_a2560me_set_border(0, 0);                            /* Set up the border */
-    txt_a2560me_set_border_color(0, 0, 0x3f);
+    txt_a2560me_set_border(16, 16);                         /* Set up the border to 16x16 */
+    txt_a2560me_set_border_color(0, 0x3f, 0x3f);            /* Set the border to cyan */
 
     /*
      * Enable set_sizes, now that everything is set up initially

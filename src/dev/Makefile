@@ -79,7 +79,7 @@ else ifeq ($(UNIT),A2560ME)
 	AS=as68k
 	AR=nlib
 
-	SRCS_FOR_UNIT=indicators_a2560.c txt_a2560me.c pata.c sdc_spi.c
+	SRCS_FOR_UNIT=indicators_a2560me.c txt_a2560me.c pata.c sdc_spi.c
 	CFLAGS_FOR_UNIT=-DMODEL=12 -DCPU=5 --code-model large --data-model large
 else ifeq ($(UNIT),FA2560K2)
 	CC=cc68k

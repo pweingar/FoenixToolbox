@@ -21,6 +21,7 @@
 #define IND_FDC             0x03        /* Number for the flopy drive LED */
 #define IND_NET             0x04        /* Network activity indicator for machines that have it */
 #define IND_CAPS            0x05        /* Caps lock for machines with the caps lock built-in */
+#define IND_SDC1            0x06        /* Number for the alternate SD card */
 
 /*
  * Initialize the indicators

@@ -187,11 +187,13 @@ short tb_init() {
     txt_set_xy(TXT_SCREEN_A2560ME, 0, 0);
     txt_print(TXT_SCREEN_A2560ME, "This is a test of the Toolbox on A2560Me");
 
-    while (1) ;
-
     /* Initialize the indicators */
     ind_init();
     INFO("Indicators initialized");
+
+    txt_set_xy(TXT_SCREEN_A2560ME, 0, 1);
+    txt_print(TXT_SCREEN_A2560ME, "Indicators initialized\n");
+    while (1) ;
 
     /* Initialize the interrupt system */
     int_init();
