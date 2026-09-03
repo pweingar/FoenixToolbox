@@ -69,6 +69,10 @@ void ind_set(short ind_number, short state) {
             *GABE_A2560M_NET_RGB = int_state_color(ind_number, state);
             break;
 
+        case IND_BUZZER:
+            // We don't set a color for the buzzer
+            break;
+
         default:
             return;
     }
@@ -95,6 +99,10 @@ void ind_set(short ind_number, short state) {
             mask = NETWORK_LED;
             break;
 
+        case IND_BUZZER:
+            mask = BUZZER_CONTROL;
+            break;
+
         default:
             return;
     }
@@ -118,4 +126,5 @@ void ind_init() {
     ind_set(IND_SDC, IND_OFF);
     ind_set(IND_SDC1, IND_OFF);
     ind_set(IND_NET, IND_OFF);
+    ind_set(IND_BUZZER, IND_OFF);
 }

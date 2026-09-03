@@ -185,48 +185,60 @@ short tb_init() {
 
     txt_clear(TXT_SCREEN_A2560ME, 2);
     txt_set_xy(TXT_SCREEN_A2560ME, 0, 0);
-    txt_print(TXT_SCREEN_A2560ME, "This is a test of the Toolbox on A2560Me");
+
+    txt_print(TXT_SCREEN_A2560ME, "  __   ____   ___   ___   __   _  _  ____ \n");
+    txt_print(TXT_SCREEN_A2560ME, " / _\\ (___ \\ / __) / __) /  \\ ( \\/ )(  __)\n");
+    txt_print(TXT_SCREEN_A2560ME, "/    \\ / __/(___ \\(  _ \\(  0 )/ \\/ \\ ) _) \n");
+    txt_print(TXT_SCREEN_A2560ME, "\\_/\\_/(____)(____/ \\___/ \\__/ \\_)(_/(____)\n\n");
+    txt_print(TXT_SCREEN_A2560ME, "Foenixt Toolbox starting up...\n");
 
     /* Initialize the indicators */
     ind_init();
     INFO("Indicators initialized");
-
-    txt_set_xy(TXT_SCREEN_A2560ME, 0, 1);
     txt_print(TXT_SCREEN_A2560ME, "Indicators initialized\n");
-    while (1) ;
 
     /* Initialize the interrupt system */
     int_init();
 	INFO("Interrupts initialized");
+    txt_print(TXT_SCREEN_A2560ME, "Interrupts initialized\n");
 
     /* Mute the PSG */
     psg_mute_all();
 	INFO("PSG initialized.");
+    txt_print(TXT_SCREEN_A2560ME, "PSG initialized.\n");
 
     /* Initialize and mute the SID chips */
     sid_init_all();
 	INFO("SID chips initialized.");
+    txt_print(TXT_SCREEN_A2560ME, "SID chips initialized.\n");
 
 #if HAS_OPN || HAS_OPM || HAS_OPL3
     /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
     ym_init();
 	INFO("Yamaha initialized.");
+    txt_print(TXT_SCREEN_A2560ME, "Yamaha initialized.\n");
 #endif
 
     /* Initialize the CODEC */
     init_codec();
 	INFO("CODEC initialized.");
+    txt_print(TXT_SCREEN_A2560ME, "CODEC initialized.\n");
 
     cdev_init_system();   // Initialize the channel device system
     INFO("Channel device system ready.");
+    txt_print(TXT_SCREEN_A2560ME, "Channel device system ready.\n");
 
     bdev_init_system();   // Initialize the channel device system
     INFO("Block device system ready.");
+    txt_print(TXT_SCREEN_A2560ME, "Block device system ready.\n");
+
+    while (1) ;
 
     if ((res = con_install())) {
 		ERROR1("FAILED: Console installation", res);
     } else {
         INFO("Console installed.");
+        txt_print(TXT_SCREEN_A2560ME, "Console installed.\n");
     }
 
 #if HAS_IEC
