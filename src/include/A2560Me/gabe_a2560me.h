@@ -19,11 +19,21 @@
 #define GABE_CTRL_REG		((volatile uint32_t *)0xFEC00000)
 #define POWER_ON_LED		0x00000001
 #define SDC0_LED			0x00000002
-#define SDC1_LED            0x00000004
-#define MSATA_LED           0x00000008
-#define NETWORK_LED         0x00000010
+#define SDC1_LED			0x00000004
+#define MSATA_LED			0x00000008
+#define NETWORK_LED			0x00000010
 #define BUZZER_CONTROL		0x00000020
-#define MANUAL_RESET		0x00008000		// Make sure the word "DEAD" is written in GABE_RESET_ID
+#define DDR_ENDIAN_CTRL     0x00000040      // CPU -> DDR3 Endianness Inversion (When dumping Data for Graphics or else) -> 0: Big Endian, 1: Little Endian (Default is set to 1)
+#define SPEAKER_CONTROL     0x00000080      // Speaker Control (ATX Header Speaker Control) Has its own oscillator Now.
+#define MANUAL_RESET		0x00008000		// Make sure the word "DEAD" is written in bits[31..24]
+
+#define GABE_DIP_REG        ((volatile uint32_t *)0xFEC00000)
+#define GABE_DIP_BOOT_MASK  0x00f00000      // DIP Boot Switch Positions (4 bits - read only)
+#define GABE_DIP_USER_MASK  0x07000000      // DIP User Switch Positions (3 bits - read only)
+#define SD0_CD              0x10000000      // SD0 (front) Card Detect (read only)
+#define SD0_WP              0x20000000      // SD0 (front) Write-protect (read only)
+#define SD1_CD              0x40000000      // SD1 (back) Card Detect (read only)
+#define SD1_WP              0x80000000      // SD1 (back) Write-protect (read only)
 
 #define GABE_LFSR_REG0		((volatile uint32_t *)0xFEC00004)
 
@@ -45,14 +55,21 @@
 #define GABE_FIRMWARE_DATE_MONTH_MASK 0x0000FF00
 #define GABE_FIRMWARE_DATE_DAY_MASK   0x00FF0000
 
-#define GABE_DIP_REG        ((volatile uint32_t *)0xFEC00518)
-#define GABE_DIP_BOOT_MASK  0x00000003  /* Mask for the boot mode: */
-#define GABE_DIP_USER_MASK  0x00000700  /* Mask for the user switches: */
+// #define GABE_DIP_REG        ((volatile uint32_t *)0xFEC00518)
+// #define GABE_DIP_BOOT_MASK  0x00000003  /* Mask for the boot mode: */
+// #define GABE_DIP_USER_MASK  0x00000700  /* Mask for the user switches: */
 
-#define GABE_A2560M_PWR_RGB ((volatile uint32_t *)0xFEC00010)    // POWER ON - Value
-#define GABE_A2560M_SD0_RGB ((volatile uint32_t *)0xFEC00014)    // SDC0
-#define GABE_A2560M_SD1_RGB ((volatile uint32_t *)0xFEC00018)    // SDC1
-#define GABE_A2560M_HDC_RGB ((volatile uint32_t *)0xFEC0001C)    // MSATA
-#define GABE_A2560M_NET_RGB ((volatile uint32_t *)0xFEC00020)    // Network
+#define GABE_A2560M_PWR_RGB ((volatile uint32_t *)0xFEC00020)    // POWER ON - Value
+#define GABE_A2560M_SD0_RGB ((volatile uint32_t *)0xFEC00024)    // SDC0
+#define GABE_A2560M_SD1_RGB ((volatile uint32_t *)0xFEC00028)    // SDC1
+#define GABE_A2560M_HDC_RGB ((volatile uint32_t *)0xFEC0002C)    // MSATA
+#define GABE_A2560M_NET_RGB ((volatile uint32_t *)0xFEC00030)    // Network
+
+// Counter values for PCB buzzer and PC case speaker
+// Counter Value x 2 (Down counter with a CPU Local Bus Frequency of 50.250Mhz)
+// Concert A (440 Hz) should be approximately 56818
+#define GABE_SOUND_COUNT	((volatile uint32_t *)0xFEC00034)
+#define GABE_BUZZ_CNT_MASK	0x0000ffff
+#define GABE_SPKR_CNT_MASK	0xffff0000
 
 #endif

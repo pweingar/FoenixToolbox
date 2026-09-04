@@ -14,6 +14,7 @@
 #define IND_ON              0x01        /* The LED should be on for a normal condition */
 #define IND_ERROR           0x02        /* The LED should be on for an error condition (if possible) */
 #define IND_FOENIX          0x03        /* Special Foenix color (purple) */
+#define IND_WARN            0x04        /* The LED should be on for a warning condition */
 
 #define IND_POWER           0x00        /* Number for the power LED */
 #define IND_SDC             0x01        /* Number for the SD Card's LED */

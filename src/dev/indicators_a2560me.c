@@ -28,9 +28,17 @@
             // Blank for off
             return 0x00000000;
 
+        case IND_WARN:
+            // Yellow for warning
+            return 0x00808000;
+
         case IND_ERROR:
             // Red for error
             return 0x00800000;
+
+        case IND_FOENIX:
+            // Purple
+            return 0x00800080;
 
         default:
             return 0x00000000;
@@ -120,7 +128,7 @@ void ind_set(short ind_number, short state) {
  * Generally, this means the indicators will all be turned off
  */
 void ind_init() {
-    ind_set(IND_POWER, IND_ON);
+    ind_set(IND_POWER, IND_FOENIX);
     ind_set(IND_FDC, IND_OFF);
     ind_set(IND_HDC, IND_OFF);
     ind_set(IND_SDC, IND_OFF);
