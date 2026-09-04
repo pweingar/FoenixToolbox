@@ -106,6 +106,14 @@ const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1" };
 
 t_sys_info info;    // Stores the copy of the system information
 
+#define MYSCREEN    ((volatile unsigned char *)0xFECA0000)
+#define MYCOLOR     ((volatile unsigned char *)0xFECA8000)
+
+void handle_sof() {
+    MYSCREEN[0] = MYSCREEN[0] + 1;
+    MYCOLOR[0] = 0xf0;
+}
+
 /**
  * Initialize the Toolbox
  * 
@@ -232,30 +240,33 @@ short tb_init() {
     INFO("Block device system ready.");
     txt_print(TXT_SCREEN_A2560ME, "Block device system ready.\n");
 
-    while (1) ;
-
-    if ((res = con_install())) {
-		ERROR1("FAILED: Console installation", res);
-    } else {
-        INFO("Console installed.");
-        txt_print(TXT_SCREEN_A2560ME, "Console installed.\n");
-    }
+    // if ((res = con_install())) {
+	// 	ERROR1("FAILED: Console installation", res);
+    // } else {
+    //     INFO("Console installed.");
+    //     txt_print(TXT_SCREEN_A2560ME, "Console installed.\n");
+    // }
 
 #if HAS_IEC
 	iec_init();
 #endif
 
     /* Initialize the timers the MCP uses */
-    timers_init();
-	INFO("Timers initialized");
+    // timers_init();
+	// INFO("Timers initialized");
 
     /* Initialize the real time clock */
-    rtc_init();
-	INFO("Real time clock initialized");
+    // rtc_init();
+	// INFO("Real time clock initialized");
+
+    int_register(INT_SOF_A, handle_sof);
+    int_enable(INT_SOF_A);
 
     /* Enable all interrupts */
     int_enable_all();
     INFO("Interrupts enabled");
+
+    while (1) ;
 
     /* Play the SID test bong on the Gideon SID implementation */
     sid_test_internal();

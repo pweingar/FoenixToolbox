@@ -106,7 +106,7 @@ else ifeq ($(UNIT),A2560K)
 else ifeq ($(UNIT),A2560ME)
 	CPU=m68k
 	C_SRCS_DEBUGGER=
-	SRCS_FOR_UNIT=superio.c A2560/a2560-lowlevel.c A2560/a2560-startup.s A2560/io_stubs.c interrupt.c timers.c
+	SRCS_FOR_UNIT=superio.c A2560/a2560-lowlevel.c A2560/a2560-startup.s A2560/io_stubs.c timers.c
 	CFLAGS_FOR_UNIT=-DMODEL=12 -DCPU=5 --code-model large --data-model large
 
 	ifeq ($(MEMORY),ROM)
