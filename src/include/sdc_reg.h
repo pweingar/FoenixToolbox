@@ -15,9 +15,27 @@
  *
  */
 #if (MODEL != MODEL_FOENIX_FA2560K2) && (MODEL != MODEL_FOENIX_A2560ME)
+//
+// NOTE: [A2560Me] delay registers are set at reset by the FPGA. These set the divisor for the low speed
+//       SPI clock. Here are details from Stefany:
+//
+//       * SD0: is controlled from the main FPGA and the running clock for the SPI is 100.5Mhz and
+//         the overall state-machine will divide that clock by 4, so in high-speed mode, the SPI Clock
+//         is actually 25.125Mhz. So, the value of that new register to have a clock between
+//         100Khz - 400Khz for the slow-mode is 80.
+// 
+//       * SD1: is the same as SD0.
+//
+//       * Now, in the case of SD2, the SPI Controller is inside the 10M02 FPGA (the north bridge) and
+//         the main clock for the CPU is the local bus Clock which is 50.250Mhz, so the value of this
+//         new register is 40... So, for the RECORD, do not forget about this.
+//
+
 typedef struct s_sdc_spi {
 	uint8_t ctrl;
 	uint8_t data;
+	uint8_t delay;			// Delay for low speed mode (default set by FPGA)
+	uint8_t delay_copy;		// Copy of delay
 } t_sdc_spi, *p_sdc_spi;
 #endif
 

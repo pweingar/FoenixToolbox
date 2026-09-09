@@ -240,24 +240,32 @@ short tb_init() {
     INFO("Block device system ready.");
     txt_print(TXT_SCREEN_A2560ME, "Block device system ready.\n");
 
-    // if ((res = con_install())) {
-	// 	ERROR1("FAILED: Console installation", res);
-    // } else {
-    //     INFO("Console installed.");
-    //     txt_print(TXT_SCREEN_A2560ME, "Console installed.\n");
-    // }
+    if ((res = con_install())) {
+		ERROR1("FAILED: Console installation", res);
+    } else {
+        INFO("Console installed.");
+        txt_print(TXT_SCREEN_A2560ME, "Console installed.\n");
+    }
 
 #if HAS_IEC
 	iec_init();
 #endif
 
-    /* Initialize the timers the MCP uses */
-    // timers_init();
-	// INFO("Timers initialized");
+    /* Initialize the timers the Toolbox uses */
+    timers_init();
+	INFO("Timers initialized");
+    txt_print(TXT_SCREEN_A2560ME, "Timers initialized.\n");
+
+    // while (1) {
+    //     char time[40];
+    //     txt_set_xy(0, 10, 0);
+    //     sprintf(time, "%ld", timers_jiffies());
+    //     txt_print(0, time);
+    // }
 
     /* Initialize the real time clock */
-    // rtc_init();
-	// INFO("Real time clock initialized");
+    rtc_init();
+	INFO("Real time clock initialized");
 
     int_register(INT_SOF_A, handle_sof);
     int_enable(INT_SOF_A);
@@ -265,26 +273,25 @@ short tb_init() {
     /* Enable all interrupts */
     int_enable_all();
     INFO("Interrupts enabled");
-
-    while (1) ;
+    txt_print(TXT_SCREEN_A2560ME, "Interrupts enabled.\n");
 
     /* Play the SID test bong on the Gideon SID implementation */
-    sid_test_internal();
-	INFO("SID boot bong played.");
+    // sid_test_internal();
+	// INFO("SID boot bong played.");
 
-#if HAS_PATA
-    if ((res = pata_install())) {
-        log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
-    } else {
-        INFO("PATA driver installed.");
-    }
-#endif
+// #if HAS_PATA
+//     if ((res = pata_install())) {
+//         log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
+//     } else {
+//         INFO("PATA driver installed.");
+//     }
+// #endif
 
-    if ((res = sdc_install())) {
-        ERROR1("FAILED: SDC driver installation %d", res);
-    } else {
-        INFO("SDC driver installed.");
-    }
+    // if ((res = sdc_install())) {
+    //     ERROR1("FAILED: SDC driver installation %d", res);
+    // } else {
+    //     INFO("SDC driver installed.");
+    // }
 
 // #if HAS_FLOPPY
 //     if ((res = fdc_install())) {
@@ -294,13 +301,24 @@ short tb_init() {
 //     }
 // #endif
 
-//     // At this point, we should be able to call into to console to print to the screens
+    // At this point, we should be able to call into to console to print to the screens
 
-//     // if ((res = ps2_init())) {
-//     //     ERROR1("FAILED: PS/2 keyboard initialization", res);
-//     // } else {
-//     //     log(LOG_INFO, "PS/2 keyboard initialized.");
-//     // }
+    if ((res = ps2_init())) {
+        ERROR1("FAILED: PS/2 keyboard initialization", res);
+        char buffer[80];
+        sprintf(buffer, "FAILED: PS/2 keyboard initialization: %d", res);
+        txt_print(TXT_SCREEN_A2560ME, buffer);
+    } else {
+        log(LOG_INFO, "PS/2 keyboard initialized.");
+        txt_print(TXT_SCREEN_A2560ME, "PS/2 keyboard initialized.\n");
+    }
+
+    while (1) {
+        char c = kbd_getc();
+        if (c) {
+            txt_put(TXT_SCREEN_A2560ME, c);
+        }
+    }
 
 	// Initialize the keyboard
 #if MODEL == MODEL_FOENIX_A2560K

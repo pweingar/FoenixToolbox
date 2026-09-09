@@ -8,18 +8,21 @@
  * Initialize the timers and their interrupts
  */
 void timers_init() {
-#if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_FA2560K2
+#if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_A2560ME || MODEL == MODEL_FOENIX_FA2560K2
 
     *TIMER_TCR0 = 0;    // Reset timers 0, 1, and 2
     *TIMER_TCR1 = 0;    // Reset timers 3, and 4 (if 4 is available)
 
-    // Clear timer 3
+    // Clear timers 2 and 3
 
+	*TIMER_VALUE_2 = 0;
     *TIMER_VALUE_3 = 0;
+	*TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2 | TCR_CLEAR_2;
     *TIMER_TCR1 = TCR_ENABLE_3 | TCR_CNTUP_3 | TCR_CLEAR_3;
 
-    // Set timer 3 to count up and auto clear
+    // Set timers 2 and 3 to count up and auto clear
 
+	*TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2;
     *TIMER_TCR1 = TCR_ENABLE_3 | TCR_CNTUP_3;
 
 #elif MODEL_FOENIX_F256_GEN
@@ -47,11 +50,34 @@ void timers_init() {
 #endif
 }
 
+/**
+ * Wait for N microseconds (approximately)
+ * 
+ * NOTE: this will make use of TIMER2 on the A2560 models, which is based on the system clock
+ * 
+ * @param n the number of microseconds to wait
+ */
+void timer_wait_usec(unsigned int n) {
+	// TODO: flesh out for other models of A2560
+#if MODEL == MODEL_FOENIX_A2560ME
+	unsigned int clock_ticks = n * 50;
+
+	// Clear timer 2
+	*TIMER_VALUE_2 = 0;
+	*TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2 | TCR_CLEAR_2;
+
+	// Start timer 2 in count up mode
+	*TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2;
+
+	while (*TIMER_VALUE_2 < clock_ticks) ;
+#endif
+}
+
 /*
  * Return the number of jiffies (1/60 of a second) since last reset time
  */
 SYSTEMCALL long timers_jiffies() {
-#if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_FA2560K2
+#if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_FA2560K2 || MODEL == MODEL_FOENIX_A2560ME
     return *TIMER_VALUE_3;
 
 #elif MODEL_FOENIX_F256_GEN

@@ -17,6 +17,9 @@
 #include <stdint.h>
 
 #define GABE_CTRL_REG		((volatile uint32_t *)0xFEC00000)
+#define GABE_DIP_REG        ((volatile uint32_t *)0xFEC00000)
+
+// Bit assignments on write:
 #define POWER_ON_LED		0x00000001
 #define SDC0_LED			0x00000002
 #define SDC1_LED			0x00000004
@@ -27,7 +30,10 @@
 #define SPEAKER_CONTROL     0x00000080      // Speaker Control (ATX Header Speaker Control) Has its own oscillator Now.
 #define MANUAL_RESET		0x00008000		// Make sure the word "DEAD" is written in bits[31..24]
 
-#define GABE_DIP_REG        ((volatile uint32_t *)0xFEC00000)
+// Bit assignments on read
+#define GABE_PCI_1X_DETECT	0x00020000		// PCI Express Card 1x Present
+#define GABE_PCI_4X_DETECT	0x00040000		// PCI Express Card 4x Present
+#define GABE_PCI_8X_DETECT	0x00080000		// PCI Express Card 8x Present
 #define GABE_DIP_BOOT_MASK  0x00f00000      // DIP Boot Switch Positions (4 bits - read only)
 #define GABE_DIP_USER_MASK  0x07000000      // DIP User Switch Positions (3 bits - read only)
 #define SD0_CD              0x10000000      // SD0 (front) Card Detect (read only)

@@ -922,7 +922,7 @@ void mouse_handle_irq() {
 
     } else {
         /* Send the byte to Vicky */
-        MousePtr_A_Mouse0[g_mouse_state++] = (unsigned short)mouse_byte;
+        // TODO: MousePtr_A_Mouse0[g_mouse_state++] = (unsigned short)mouse_byte;
 
         /* After three bytes, return to state 0 */
         if (g_mouse_state > 2) {
@@ -995,7 +995,7 @@ short ps2_mouse_get_packet() {
         unsigned char data = *PS2_DATA_BUF;
 
         /* Send the byte to Vicky */
-        MousePtr_A_Mouse0[i] = (unsigned short)data;
+        // TODO: MousePtr_A_Mouse0[i] = (unsigned short)data;
     }
 
     return 0;
@@ -1011,15 +1011,15 @@ void mouse_set_visible(short is_visible) {
     short i;
 
     if (is_visible != 0) {
-        *MousePtr_A_CTRL_Reg = MousePtr_En;
+        // TODO: *MousePtr_A_CTRL_Reg = MousePtr_En;
     } else {
-        *MousePtr_A_CTRL_Reg = 0;
+        // TODO: *MousePtr_A_CTRL_Reg = 0;
 
         for (i = 0; i < 256; i++) {
             short dest_offset = 2*i;
 
-            MousePointer_Mem_A[dest_offset] = 0;
-            MousePointer_Mem_A[dest_offset+1] = 0;
+            // TODO: MousePointer_Mem_A[dest_offset] = 0;
+            // TODO: MousePointer_Mem_A[dest_offset+1] = 0;
         }
     }
 }
@@ -1095,8 +1095,8 @@ short mouse_init() {
     for (i = 0; i < 256; i++) {
         low_components = (Color_Pointer_bin[src_offset+1] << 8) + Color_Pointer_bin[src_offset];
         hi_components = Color_Pointer_bin[src_offset+2];
-        MousePointer_Mem_A[dest_offset] = low_components;
-        MousePointer_Mem_A[dest_offset+1] = hi_components;
+        // TODO: _Mem_A[dest_offset] = low_components;
+        // TODO: MousePointer_Mem_A[dest_offset+1] = hi_components;
 
         src_offset += 3;
         dest_offset += 2;

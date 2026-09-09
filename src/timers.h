@@ -17,4 +17,13 @@ extern void timers_init();
  */
 extern SYSTEMCALL long timers_jiffies();
 
+/**
+ * Wait for N microseconds (approximately)
+ * 
+ * NOTE: this will make use of TIMER2 on the A2560 models, which is based on the system clock
+ * 
+ * @param n the number of microseconds to wait
+ */
+extern void timer_wait_usec(unsigned int n);
+
 #endif
