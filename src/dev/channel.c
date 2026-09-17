@@ -133,7 +133,9 @@ void chan_free(p_channel chan) {
 //
 short chan_get_records(short channel, p_channel * chan, p_dev_chan * cdev) {
     if (channel < CHAN_MAX) {
-        *chan = &g_channels[channel];
+        // TODO: remove this workaround
+        short index = channel;
+        *chan = &g_channels[index];
         if ((*chan)->number == channel) {
             if ((*chan)->dev < CDEV_DEVICES_MAX) {
                 *cdev = &g_channel_devs[(*chan)->dev];
@@ -164,11 +166,17 @@ short chan_get_records(short channel, p_channel * chan, p_dev_chan * cdev) {
 //
 short cdev_init(short dev) {
     short ret = DEV_ERR_BADDEV;
+
     if (dev < CDEV_DEVICES_MAX) {
-        p_dev_chan cdev = &g_channel_devs[dev];
-        if (cdev->number == dev)
-            ret = cdev->init ? cdev->init() : 0;
+        // TODO: remove this workaround
+        short index = dev;
+
+        p_dev_chan cdev = &g_channel_devs[index];
+        if (cdev->number == dev) {
+            ret = (cdev->init == 0) ? 0 : cdev->init();
+        }
     }
+
     return ret;
 }
 
@@ -192,8 +200,11 @@ SYSTEMCALL short chan_open(short dev, const uint8_t * path, short mode) {
     log_num(LOG_DEBUG, "dev = ", dev);
 
     if (dev < CDEV_DEVICES_MAX) {
+        // TODO: remove this workaround
+        short index = dev;
+
         /* Get the device record */
-        cdev = &g_channel_devs[dev];
+        cdev = &g_channel_devs[index];
         if (cdev->number != dev) {
             /* Double check we have a real device */
             return DEV_ERR_BADDEV;

@@ -93,8 +93,8 @@ short bdev_init(short dev) {
     short ret = DEV_ERR_BADDEV;
 
     p_dev_block bdev = bdev_find(dev);
-    if ((bdev != 0) && (bdev->init != 0)) {
-        ret = bdev->init(bdev);
+    if (bdev != 0) {
+        ret = (bdev->init == 0) ? 0 : bdev->init(bdev);
     }
 
     TRACE1("bdev_init returning %d", (int)ret);
@@ -119,8 +119,8 @@ SYSTEMCALL short bdev_read(short dev, long lba, unsigned char * buffer, short si
     short ret = DEV_ERR_BADDEV;
 
     p_dev_block bdev = bdev_find(dev);
-    if ((bdev != 0) && (bdev->read != 0)) {
-        ret = bdev->read(bdev, lba, buffer, size);
+    if (bdev != 0) {
+        ret = (bdev->read == 0) ? 0 : bdev->read(bdev, lba, buffer, size);
     }
 
     TRACE1("bdev_read returning %d", (int)ret);
@@ -145,8 +145,8 @@ SYSTEMCALL short bdev_write(short dev, long lba, const unsigned char * buffer, s
     short ret = DEV_ERR_BADDEV;
 
     p_dev_block bdev = bdev_find(dev);
-    if ((bdev != 0) && (bdev->write != 0)) {
-        ret = bdev->write(bdev, lba, buffer, size);
+    if (bdev != 0) {
+        ret = (bdev->write == 0) ? 0 : bdev->write(bdev, lba, buffer, size);
     }
 
     TRACE1("bdev_write returning %d", (int)ret);
@@ -168,8 +168,8 @@ SYSTEMCALL short bdev_status(short dev) {
     short ret = DEV_ERR_BADDEV;
 
     p_dev_block bdev = bdev_find(dev);
-    if ((bdev != 0) && (bdev->status != 0)) {
-        ret = bdev->status(bdev);
+    if (bdev != 0) {
+        ret = (bdev->status == 0) ? 0 : bdev->status(bdev);
     }
 
     TRACE1("bdev_status returning %d", (int)ret);
@@ -191,8 +191,8 @@ SYSTEMCALL short bdev_flush(short dev) {
     short ret = DEV_ERR_BADDEV;
 
     p_dev_block bdev = bdev_find(dev);
-    if ((bdev != 0) && (bdev->flush != 0)) {
-        ret = bdev->flush(bdev);
+    if (bdev != 0) {
+        ret = (bdev->flush == 0) ? 0 : bdev->flush(bdev);
     }
 
     TRACE1("bdev_flush returning %d", (int)ret);
@@ -217,8 +217,8 @@ SYSTEMCALL short bdev_ioctrl(short dev, short command, unsigned char * buffer, s
     short ret = DEV_ERR_BADDEV;
 
     p_dev_block bdev = bdev_find(dev);
-    if ((bdev != 0) && (bdev->ioctrl != 0)) {
-        ret = bdev->ioctrl(bdev, command, buffer, size);
+    if (bdev != 0) {
+        ret = (bdev->ioctrl == 0) ? 0 : bdev->ioctrl(bdev, command, buffer, size);
     }
 
     TRACE1("bdev_ioctrl returning %d", (int)ret);
