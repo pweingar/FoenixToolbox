@@ -60,6 +60,24 @@ SYSTEMCALL short bdev_register(p_dev_block device) {
     }
 }
 
+/**
+ * Find a block device by its number
+ * 
+ * @param dev the number of the block device to find
+ * @return pointer to the block device descriptor, 0 if not found
+ */
+static p_dev_block bdev_find(short dev) {
+    if (dev < BDEV_DEVICES_MAX) {
+        short index = dev;
+        p_dev_block bdev = &g_block_devs[index];
+        if (bdev->number == dev) {
+            return bdev;
+        }
+    }
+
+    return 0;
+}
+
 //
 // Initialize the device
 //
@@ -74,11 +92,9 @@ short bdev_init(short dev) {
 
     short ret = DEV_ERR_BADDEV;
 
-    if (dev < BDEV_DEVICES_MAX) {
-        p_dev_block bdev = &g_block_devs[dev];
-        if (bdev->number == dev) {
-            ret = bdev->init(bdev);
-		}
+    p_dev_block bdev = bdev_find(dev);
+    if ((bdev != 0) && (bdev->init != 0)) {
+        ret = bdev->init(bdev);
     }
 
     TRACE1("bdev_init returning %d", (int)ret);
@@ -102,11 +118,9 @@ SYSTEMCALL short bdev_read(short dev, long lba, unsigned char * buffer, short si
 
     short ret = DEV_ERR_BADDEV;
 
-    if (dev < BDEV_DEVICES_MAX) {
-        p_dev_block bdev = &g_block_devs[dev];
-        if (bdev->number == dev) {
-            ret = bdev->read(bdev, lba, buffer, size);
-        }
+    p_dev_block bdev = bdev_find(dev);
+    if ((bdev != 0) && (bdev->read != 0)) {
+        ret = bdev->read(bdev, lba, buffer, size);
     }
 
     TRACE1("bdev_read returning %d", (int)ret);
@@ -130,10 +144,9 @@ SYSTEMCALL short bdev_write(short dev, long lba, const unsigned char * buffer, s
 
     short ret = DEV_ERR_BADDEV;
 
-    if (dev < BDEV_DEVICES_MAX) {
-        p_dev_block bdev = &g_block_devs[dev];
-        if (bdev->number == dev)
-            ret = bdev->write(bdev, lba, buffer, size);
+    p_dev_block bdev = bdev_find(dev);
+    if ((bdev != 0) && (bdev->write != 0)) {
+        ret = bdev->write(bdev, lba, buffer, size);
     }
 
     TRACE1("bdev_write returning %d", (int)ret);
@@ -154,10 +167,9 @@ SYSTEMCALL short bdev_status(short dev) {
 
     short ret = DEV_ERR_BADDEV;
 
-    if (dev < BDEV_DEVICES_MAX) {
-        p_dev_block bdev = &g_block_devs[dev];
-        if (bdev->number == dev)
-            ret = bdev->status(bdev);
+    p_dev_block bdev = bdev_find(dev);
+    if ((bdev != 0) && (bdev->status != 0)) {
+        ret = bdev->status(bdev);
     }
 
     TRACE1("bdev_status returning %d", (int)ret);
@@ -178,10 +190,9 @@ SYSTEMCALL short bdev_flush(short dev) {
 
     short ret = DEV_ERR_BADDEV;
 
-    if (dev < BDEV_DEVICES_MAX) {
-        p_dev_block bdev = &g_block_devs[dev];
-        if (bdev->number == dev)
-            return bdev->flush(bdev);
+    p_dev_block bdev = bdev_find(dev);
+    if ((bdev != 0) && (bdev->flush != 0)) {
+        ret = bdev->flush(bdev);
     }
 
     TRACE1("bdev_flush returning %d", (int)ret);
@@ -205,10 +216,9 @@ SYSTEMCALL short bdev_ioctrl(short dev, short command, unsigned char * buffer, s
 
     short ret = DEV_ERR_BADDEV;
 
-    if (dev < BDEV_DEVICES_MAX) {
-        p_dev_block bdev = &g_block_devs[dev];
-        if (bdev->number == dev)
-            ret =  bdev->ioctrl(bdev, command, buffer, size);
+    p_dev_block bdev = bdev_find(dev);
+    if ((bdev != 0) && (bdev->ioctrl != 0)) {
+        ret = bdev->ioctrl(bdev, command, buffer, size);
     }
 
     TRACE1("bdev_ioctrl returning %d", (int)ret);

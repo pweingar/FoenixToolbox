@@ -25,6 +25,7 @@
 #include "utilities.h"
 #include "sys_general.h"
 #include "features.h"
+#include "timers.h"
 
 /* MMC/SD command (SPI mode) */
 #define CMD0	(0)			/* GO_IDLE_STATE */
@@ -124,7 +125,7 @@ static int SD0_wait_ready (p_sdc_spi sd) {
 	for (tmr = 5000; tmr; tmr--) {	// Wait for ready in timeout of 500ms
 		SD0_Rx(sd, &d, 1);
 		if (d == 0xFF) break;
-		dly_us(100);              	// 100us
+		timer_wait_usec(100);              	// 100us
 	}
 	return tmr ? 1 : 0;
 }
@@ -188,7 +189,7 @@ static int SD0_Rx_datablock (p_sdc_spi sd, uint8_t * buff, unsigned int btr) {
 		if (d[0] != 0xFF) {
 			break;
 		}
-		dly_us(100);    			// 100us
+		timer_wait_usec(100);    			// 100us
 	}
 
 	if (d[0] != 0xFE) {				// If not valid data token, return with error
@@ -306,8 +307,9 @@ static short sdc_init(p_dev_block dev) {
 	int tmr;
 	short s;
 
+	printf("SDC: init %d\n", dev->number);
 	
-	dly_us(10000);			/* 10ms */
+	timer_wait_usec(10000);			/* 10ms */
     sd->ctrl |= SDx_SLOW;   // Set the SPI in Slow Mode
 	for (n = 10; n; n--) {
 		SD0_Rx(sd, buf, 1);	// Apply 80 dummy clocks and the card gets ready to receive command
@@ -315,14 +317,16 @@ static short sdc_init(p_dev_block dev) {
 
 	card->type = 0;
 	if (SD0_Tx_cmd(sd, CMD0, 0) == 1) {			/* Enter Idle state */
+		printf("SDC: entered idle state.\n");
 	  	if (SD0_Tx_cmd(sd, CMD8, 0x1AA) == 1) {	/* SDv2? */
+			printf("SDv2\n");
 	  		SD0_Rx(sd, buf, 4);							/* Get trailing return value of R7 resp */
 	  		if (buf[2] == 0x01 && buf[3] == 0xAA) {		/* The card can work at vdd range of 2.7-3.6V */
 	  			for (tmr = 1000; tmr; tmr--) {			/* Wait for leaving idle state (ACMD41 with HCS bit) */
 	  				if (SD0_Tx_cmd(sd, ACMD41, 1UL << 30) == 0) {
 						break;
 					}
-	  				dly_us(1000);
+	  				timer_wait_usec(1000);
 	  			}
 	  			if (tmr && SD0_Tx_cmd(sd, CMD58, 0) == 0) {	/* Check CCS bit in the OCR */
 	  				SD0_Rx(sd, buf, 4);
@@ -331,13 +335,16 @@ static short sdc_init(p_dev_block dev) {
 	  		}
 
 	  	} else {							/* SDv1 or MMCv3 */
+			printf("SDv1 or MMCv3\n");
 	  		if (SD0_Tx_cmd(sd, ACMD41, 0) <= 1) {
 				/* SDv1 */
+				printf("SDv1\n");
 	  			card->type = CT_SDC2;
 				cmd = ACMD41;	
 
 	  		} else {
 				/* MMCv3 */
+				printf("MMCv3\n");
 	  			card->type = CT_MMC3;
 				cmd = CMD1;	
 	  		}
@@ -347,21 +354,25 @@ static short sdc_init(p_dev_block dev) {
 	  			if (SD0_Tx_cmd(sd, cmd, 0) == 0) {
 					break;
 				}
-	  			dly_us(1000);
+	  			timer_wait_usec(1000);
 	  		}
 
 			/* Set R/W block length to 512 */
-	  		if (!tmr || SD0_Tx_cmd(sd, CMD16, 512) != 0) {	
+	  		if (!tmr || SD0_Tx_cmd(sd, CMD16, 512) != 0) {
 	  			card->type = 0;
 			}
 	  	}
+	} else {
+		printf("SDC: Did not enter idle state.\n");
 	}
 
 	sd->ctrl &= ~SDx_SLOW;   // Bring back the Fast Mode - 25Mhz
 	card->status = card->type ? 0 : SDC_STAT_NOINIT;
 
-	INFO1("SD0_CardType: %x", card->type);	
+	INFO1("SD0_CardType: %x", card->type);
+	printf("SD0_CardType: %x\n", card->type);
 	INFO1("SD0_Stat: %x", card->status);
+	printf("SD0_Stat: %x\n", card->status);
 	
 	SD0_deselect(sd);
 
@@ -571,6 +582,20 @@ short sdc_install() {
     dev.ioctrl = sdc_ioctrl;
 
     short result = bdev_register(&dev);
+
+	printf("SDC: Registered #%d, result %d\n", dev.number, result);
+
+	sd1_card_info.reg = SD1_REG;
+	sd1_card_info.status = 0;
+	sd1_card_info.type = 0;
+
+    dev.number = BDEV_SD1;
+    dev.name = "SD1";
+	dev.data = &sd1_card_info;
+
+    result = bdev_register(&dev);
+
+	printf("SDC: Registered #%d, result %d\n", dev.number, result);
 
 #if HAS_INTERNAL_SD
 	if (result == 0) {

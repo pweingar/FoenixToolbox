@@ -151,7 +151,7 @@ else
 	LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file toolbox.map
 endif
 
-SRCS = toolbox.c init.c log.c memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c $(SRCS_FOR_UNIT) # tests.c(C_SRCS_DEBUGGER)
+SRCS = toolbox.c init.c log.c memory.c proc.c ring_buffer.c simpleio.c sys_general.c timers.c utilities.c tests.c $(SRCS_FOR_UNIT) # (C_SRCS_DEBUGGER)
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = dev/devices.a snd/sound.a fatfs/fatfs.a

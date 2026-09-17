@@ -79,7 +79,7 @@
 #include "dev/iec.h"
 #include "iecll.h"
 #include "dev/bitmap.h"
-#include "dev/ps2.h"
+#include "dev/ps2_general.h"
 #include "dev/rtc.h"
 #include "dev/txt_screen.h"
 #include "dev/uart.h"
@@ -96,7 +96,11 @@
 #include "rsrc/font/MSX_CP437_8x8.h"
 
 // The list of drives for FATFS
-#if HAS_PATA
+#if MODEL == MODEL_FOENIX_A2560ME
+// List front and back SD cards.
+// TODO: add bottom SD card.
+const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1" };
+#elif HAS_PATA
 // Machines with an IDE/PATA interface have an internal hard drive
 const char* VolumeStr[FF_VOLUMES] = { "sd0", "hd0" };
 #else
@@ -110,8 +114,13 @@ t_sys_info info;    // Stores the copy of the system information
 #define MYCOLOR     ((volatile unsigned char *)0xFECA8000)
 
 void handle_sof() {
-    MYSCREEN[0] = MYSCREEN[0] + 1;
-    MYCOLOR[0] = 0xf0;
+    char time[30];
+    int n = snprintf(time, 30, "%ld", timers_jiffies());
+
+    for (int i = 0; i < n; i++) {
+        MYSCREEN[i] = time[i];
+        MYCOLOR[i] = 0xf4;
+    }
 }
 
 /**
@@ -256,13 +265,6 @@ short tb_init() {
 	INFO("Timers initialized");
     txt_print(TXT_SCREEN_A2560ME, "Timers initialized.\n");
 
-    // while (1) {
-    //     char time[40];
-    //     txt_set_xy(0, 10, 0);
-    //     sprintf(time, "%ld", timers_jiffies());
-    //     txt_print(0, time);
-    // }
-
     /* Initialize the real time clock */
     rtc_init();
 	INFO("Real time clock initialized");
@@ -287,11 +289,13 @@ short tb_init() {
 //     }
 // #endif
 
-    // if ((res = sdc_install())) {
-    //     ERROR1("FAILED: SDC driver installation %d", res);
-    // } else {
-    //     INFO("SDC driver installed.");
-    // }
+    if ((res = sdc_install())) {
+        ERROR1("FAILED: SDC driver installation %d", res);
+        printf("FAILED: SDC driver installation %d\n", res);
+    } else {
+        INFO("SDC driver installed.");
+        printf("SDC driver installed.\n");
+    }
 
 // #if HAS_FLOPPY
 //     if ((res = fdc_install())) {
@@ -303,34 +307,33 @@ short tb_init() {
 
     // At this point, we should be able to call into to console to print to the screens
 
-    if ((res = ps2_init())) {
-        ERROR1("FAILED: PS/2 keyboard initialization", res);
-        char buffer[80];
-        sprintf(buffer, "FAILED: PS/2 keyboard initialization: %d", res);
-        txt_print(TXT_SCREEN_A2560ME, buffer);
-    } else {
-        log(LOG_INFO, "PS/2 keyboard initialized.");
-        txt_print(TXT_SCREEN_A2560ME, "PS/2 keyboard initialized.\n");
-    }
+    // if ((res = ps2_init())) {
+    //     ERROR1("FAILED: PS/2 keyboard initialization", res);
+    //     printf("FAILED: PS/2 keyboard initialization: %d", res);
+    // } else {
+    //     log(LOG_INFO, "PS/2 keyboard initialized.");
+    //     printf("PS/2 keyboard initialized.\n");
+    // }
 
-    while (1) {
-        char c = kbd_getc();
-        if (c) {
-            txt_put(TXT_SCREEN_A2560ME, c);
-        }
-    }
+    // printf("\n> ");
+    // while (1) {
+    //     char c = kbd_getc();
+    //     if (c) {
+    //         txt_put(TXT_SCREEN_A2560ME, c);
+    //     }
+    // }
 
 	// Initialize the keyboard
-#if MODEL == MODEL_FOENIX_A2560K
-    if ((res = kbdmo_init())) {
-        log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
-    } else {
-        log(LOG_INFO, "A2560K built-in keyboard initialized.");
-    }
-#else
-	kbd_init();
-	INFO("Keyboard initialized");
-#endif
+// #if MODEL == MODEL_FOENIX_A2560K
+//     if ((res = kbdmo_init())) {
+//         log_num(LOG_ERROR, "FAILED: A2560K built-in keyboard initialization", res);
+//     } else {
+//         log(LOG_INFO, "A2560K built-in keyboard initialized.");
+//     }
+// #else
+// 	kbd_init();
+// 	INFO("Keyboard initialized");
+// #endif
 
 // #if HAS_PARALLEL_PORT
 //     if ((res = lpt_install())) {

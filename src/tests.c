@@ -117,7 +117,7 @@ void test_sd1() {
     printf("\nReading SD1's boot sector\n\n");
     short result = bdev_init(BDEV_SD1);
     if (result < 0) {
-        sprintf(line, "Unable to initialize SD1: %s [%d]\n", err_message(result), result);
+        sprintf(line, "Unable to initialize SD1 (%d): %s [%d]\n", BDEV_SD1, err_message(result), result);
         txt_print(0, line);
     } else {
         short n = bdev_read(BDEV_SD1, 0L, my_buf, 512);

@@ -27,6 +27,11 @@ int main(int argc, char * argv[]) {
     short i;
 
     tb_init();
+
+    // test_sd0();
+    test_sd1();
+    // test_dir("/sd1");
+
  	// boot_screen();
 
 #ifdef _CALYPSI_MCP_DEBUGGER

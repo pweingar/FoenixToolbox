@@ -19,7 +19,7 @@
 #include "dev/txt_screen.h"
 #include "rsrc/bitmaps/mouse_pointer.h"
 
-#define PS2_TIMEOUT_JF          10          /* Timeout in jiffies: 1/60 second units */
+#define PS2_TIMEOUT_JF          60          /* Timeout in jiffies: 1/60 second units */
 #define PS2_RESEND_MAX          50          /* Number of times we'll repeat a command on receiving a 0xFE reply */
 #define KBD_XLATE_TABLE_SIZE    128*8       /* Number of characters in the keyboard layout tables */
 
@@ -338,9 +338,9 @@ short ps2_wait_out() {
 
     // log(LOG_TRACE, "ps2_wait_out");
 
-    target_ticks = rtc_get_jiffies() + PS2_TIMEOUT_JF;
+    target_ticks = timers_jiffies() + PS2_TIMEOUT_JF;
     while ((*PS2_STATUS & PS2_STAT_OBF) == 0) {
-        if (rtc_get_jiffies() > target_ticks) {
+        if (timers_jiffies() > target_ticks) {
 			return -1;
         }
     }
@@ -359,9 +359,9 @@ short ps2_wait_in() {
 
     // log(LOG_TRACE, "ps2_wait_in");
 
-    target_ticks = rtc_get_jiffies() + PS2_TIMEOUT_JF;
+    target_ticks = timers_jiffies() + PS2_TIMEOUT_JF;
     while ((*PS2_STATUS & PS2_STAT_IBF) != 0) {
-        if (rtc_get_jiffies() > target_ticks) {
+        if (timers_jiffies() > target_ticks) {
             return -1;
         }
     }
@@ -378,12 +378,14 @@ short ps2_wait_in() {
 short ps2_controller_cmd(unsigned char cmd) {
     if (ps2_wait_in()) {
 		INFO("ps2_controller_cmd: ps2_wait_in timeout");
+        printf("ps2_controller_cmd: ps2_wait_in timeout\n");
 		return -1;
 	}
     *PS2_CMD_BUF = cmd;
 
     if (ps2_wait_out()) {
 		INFO("ps2_controller_cmd: ps2_wait_out timeout");
+        printf("ps2_controller_cmd: ps2_wait_out timeout\n");
  		return -1;
 	}
 
@@ -1262,6 +1264,7 @@ short ps2_init() {
     int_disable(INT_MOUSE);     /* Disable mouse interrupts */
     int_disable(INT_KBD_PS2);   /* Disable keyboar interrupts */
 	INFO("PS/2: Interrupts disabled.");
+    printf("PS/2: Interrupts disabled.\n");
 
     // Prevent the keyboard and mouse from sending events
     ps2_controller_cmd_noreply(PS2_CTRL_DISABLE_1);
@@ -1273,25 +1276,31 @@ short ps2_init() {
     // // Controller selftest...
     if (ps2_controller_cmd(PS2_CTRL_SELFTEST) != PS2_RESP_OK) {
 		INFO("PS/2: FAILED controller self test.");
+        printf("PS/2: FAILED controller self test.\n");
         ; // return PS2_FAIL_SELFTEST;
     } else {
 		DEBUG("PS/2: PASSED controller self test.");
+        printf("PS/2: PASSED controller self test.\n");
 	}
 
     // Keyboard test
     if (ps2_controller_cmd(PS2_CTRL_KBDTEST) != 0) {
 		INFO("PS/2: FAILED port #1 test.");
+        printf("PS/2: FAILED port #1 test.\n");
         ; // return PS2_FAIL_KBDTEST;
     } else {
 		DEBUG("PS/2: PASSED port #1 test.");
+        printf("PS/2: PASSED port #1 test.\n");
 	}
 
     /* Test if the mouse is working */
     if (ps2_controller_cmd(PS2_CTRL_MOUSETEST) != 0) {
 		INFO("PS/2: FAILED port #2 test.");
+        printf("PS/2: FAILED port #2 test.\n");
         mouse_present = 0;
     } else {
 		DEBUG("PS/2: PASSED port #2 test.");
+        printf("PS/2: PASSED port #2 test.\n");
         mouse_present = 1;
     }
 
