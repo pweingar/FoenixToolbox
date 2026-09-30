@@ -29,8 +29,11 @@ int main(int argc, char * argv[]) {
     tb_init();
 
     // test_sd0();
-    test_sd1();
-    // test_dir("/sd1");
+    // test_sd1();
+    test_dir("/hd0");
+    // test_com3();
+    // test_com1();
+    // test_hd();
 
  	// boot_screen();
 

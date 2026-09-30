@@ -194,7 +194,7 @@ int ps2_init() {
     int_disable(0x09);
     int_disable_all();
 
-    // // Disable devices
+    // // Enable devices
     // if (ps2_send_cmd(PS2_CTRL_ENABLE_1, ps2_timeout) < 0) {
     //     printf("PS/2: timeout attempting to enable channel 1\n");
     //     return PS2_TIMEOUT;

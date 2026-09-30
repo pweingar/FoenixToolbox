@@ -50,6 +50,16 @@ void timers_init() {
 #endif
 }
 
+static int clock_multiplier = 0;
+
+/**
+ * Set the multiplier used by the system clock based timers based on the CPU clock speed.
+ */
+void timer_set_sys_timers() {
+	int clock = sys_get_clock_speed();
+	clock_multiplier = (int)(clock / 1000);
+}
+
 /**
  * Wait for N microseconds (approximately)
  * 
@@ -60,7 +70,7 @@ void timers_init() {
 void timer_wait_usec(unsigned int n) {
 	// TODO: flesh out for other models of A2560
 #if MODEL == MODEL_FOENIX_A2560ME
-	unsigned int clock_ticks = n * 50;
+	unsigned int clock_ticks = n * clock_multiplier;
 
 	// Clear timer 2
 	*TIMER_VALUE_2 = 0;

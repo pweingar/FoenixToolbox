@@ -2,6 +2,7 @@
  * Definitions of the UART routines
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -37,6 +38,8 @@ volatile unsigned char * uart_get_base(short uart) {
  */
 void uart_setbps(short uart, unsigned short bps_code) {
     volatile unsigned char * uart_base = uart_get_base(uart);
+
+    printf("UART: set_bps -- 0x%08X %d\n", (uint32_t)uart_base, bps_code);
 
     if (uart_base) {
         /* Enable divisor latch */
@@ -482,9 +485,18 @@ short uart_install() {
         return result;
     }
 
+    printf("UART: COM1 installed\n");
+
     dev.name = "COM2";
     dev.number = CDEV_COM2;
 
     result = cdev_register(&dev);
+
+    if (result) {
+        return result;
+    }
+
+    printf("UART: COM2 installed\n");
+
     return result;
 }

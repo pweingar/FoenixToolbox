@@ -261,7 +261,7 @@ short pata_init() {
 // Returns:
 //  number of chars read, any negative number is an error code
 //
-short pata_read(long lba, unsigned char * buffer, short size) {
+short pata_read(p_dev_block dev, long lba, uint8_t * buffer, short size) {
     short i;
     unsigned short *wptr;
     TRACE("pata_read");
@@ -379,7 +379,7 @@ short pata_flush_cache() {
 // Returns:
 //  number of chars written, any negative number is an error code
 //
-short pata_write(long lba, const unsigned char * buffer, short size) {
+short pata_write(p_dev_block dev, long lba, const uint8_t * buffer, short size) {
     long target_ticks;
     short i;
     unsigned short *wptr;
@@ -472,7 +472,7 @@ short pata_write(long lba, const unsigned char * buffer, short size) {
 // Returns:
 //  the status of the device
 //
-short pata_status() {
+short pata_status(p_dev_block dev) {
     TRACE("pata_status");
     return g_pata_status;
 }
@@ -494,7 +494,7 @@ short pata_error() {
 // Returns:
 //  0 on success, any negative number is an error code
 //
-short pata_flush() {
+short pata_flush(p_dev_block dev) {
     TRACE("pata_flush");
     return 0;
 }
@@ -510,7 +510,7 @@ short pata_flush() {
 // Returns:
 //  0 on success, any negative number is an error code
 //
-short pata_ioctrl(short command, unsigned char * buffer, short size) {
+short pata_ioctrl(p_dev_block dev, short command, unsigned char * buffer, short size) {
     short result;
     long *p_long;
     unsigned short *p_word;

@@ -10,7 +10,7 @@
 #include "dev/txt_screen.h"
 #include "simpleio.h"
 #include "sys_general.h"
-#include "syscalls.h"
+#include "timers.h"
 
 #if HAS_PARALLEL_PORT
 
@@ -20,46 +20,8 @@
  * Wait a little bit...
  */
 void lpt_delay() {
-    long target_jiffies = sys_time_jiffies() + 1;
-    while (target_jiffies > sys_time_jiffies()) ;
-}
-
-/**
- * Initialize the printer... assert the INIT pin to trigger a reset on the printer
- */
-short lpt_initialize() {
-    int i;
-
-    /* Set the outputs to start the initialization process */
-    *LPT_CTRL_PORT = LPT_CTRL_SELECT;
-    lpt_delay();
-
-    /* Set the outputs to stop the initialization process */
-    *LPT_CTRL_PORT = LPT_CTRL_mINIT | LPT_CTRL_SELECT;
-
-    return 0;
-}
-
-/**
- * Open a connection to the printer... all we do is assert the SELECT pin
- */
-short lpt_open(t_channel * chan, const uint8_t * path, short mode) {
-    lpt_initialize();
-
-    *LPT_CTRL_PORT = LPT_CTRL_mINIT | LPT_CTRL_SELECT;
-
-    // Write a dummy character to kick everything off
-    lpt_write_b(0, "\x00", 0);
-
-    return 0;
-}
-
-/**
- * Close the connection to the printer... all we do is deassert the SELECT pin
- */
-short lpt_close(t_channel * chan) {
-    *LPT_CTRL_PORT = LPT_CTRL_mINIT;
-    return 0;
+    long target_jiffies = timers_jiffies() + 1;
+    while (target_jiffies > timers_jiffies()) ;
 }
 
 /**
@@ -70,10 +32,10 @@ short lpt_write_b(p_channel chan, unsigned char b) {
     long target_jiffies = 0;
 
     /* Wait until the printer is not busy */
-    target_jiffies = sys_time_jiffies() + MAX_LPT_JIFFIES;
+    target_jiffies = timers_jiffies() + MAX_LPT_JIFFIES;
     while ((*LPT_STAT_PORT & LPT_STAT_nBUSY) != LPT_STAT_nBUSY) {
         lpt_delay();
-        if (target_jiffies < sys_time_jiffies()) {
+        if (target_jiffies < timers_jiffies()) {
             return DEV_TIMEOUT;
         }
     }
@@ -87,10 +49,10 @@ short lpt_write_b(p_channel chan, unsigned char b) {
     *LPT_CTRL_PORT = LPT_CTRL_mINIT | LPT_CTRL_SELECT | LPT_CTRL_STROBE;
 
     /* Wait until the printer is not busy */
-    target_jiffies = sys_time_jiffies() + MAX_LPT_JIFFIES;
+    target_jiffies = timers_jiffies() + MAX_LPT_JIFFIES;
     while ((*LPT_STAT_PORT & LPT_STAT_nBUSY) != LPT_STAT_nBUSY) {
         lpt_delay();
-        if (target_jiffies < sys_time_jiffies()) {
+        if (target_jiffies < timers_jiffies()) {
             return DEV_TIMEOUT;
         }
     }
@@ -140,12 +102,50 @@ short lpt_status(p_channel chan) {
     if ((stat & LPT_STAT_nERROR) == 0) result |= LPT_STATUS_ERROR;
     if (stat & LPT_STAT_PO) result |= LPT_STATUS_PAPER;
     if (stat & LPT_STAT_SELECT) result |= LPT_STATUS_ONLINE;
-    if ((stat & (LPT_STAT_nERROR | LPT_STAT_PO | LPT_STAT_nBUSY | LPT_STAT_SELECT)) == LPT_STAT_nERROR | LPT_STAT_nBUSY | LPT_STAT_SELECT) {
+    if ((stat & (LPT_STAT_nERROR | LPT_STAT_PO | LPT_STAT_nBUSY | LPT_STAT_SELECT)) == (LPT_STAT_nERROR | LPT_STAT_nBUSY | LPT_STAT_SELECT)) {
         // Online, there's paper, not busy, and not in error
         result |= LPT_STATUS_WRITABLE;
     }
 
     return result;
+}
+
+/**
+ * Initialize the printer... assert the INIT pin to trigger a reset on the printer
+ */
+short lpt_initialize() {
+    int i;
+
+    /* Set the outputs to start the initialization process */
+    *LPT_CTRL_PORT = LPT_CTRL_SELECT;
+    lpt_delay();
+
+    /* Set the outputs to stop the initialization process */
+    *LPT_CTRL_PORT = LPT_CTRL_mINIT | LPT_CTRL_SELECT;
+
+    return 0;
+}
+
+/**
+ * Open a connection to the printer... all we do is assert the SELECT pin
+ */
+short lpt_open(t_channel * chan, const uint8_t * path, short mode) {
+    lpt_initialize();
+
+    *LPT_CTRL_PORT = LPT_CTRL_mINIT | LPT_CTRL_SELECT;
+
+    // Write a dummy character to kick everything off
+    lpt_write_b(0, 0);
+
+    return 0;
+}
+
+/**
+ * Close the connection to the printer... all we do is deassert the SELECT pin
+ */
+short lpt_close(t_channel * chan) {
+    *LPT_CTRL_PORT = LPT_CTRL_mINIT;
+    return 0;
 }
 
 /**

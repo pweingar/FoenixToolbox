@@ -16,6 +16,7 @@
 #include "simpleio.h"
 #include "log.h"
 #include "dev/indicators.h"
+#include "dev/lpt.h"
 #include "interrupt.h"
 #include "gabe_reg.h"
 #include "superio.h"
@@ -98,14 +99,13 @@
 // The list of drives for FATFS
 #if MODEL == MODEL_FOENIX_A2560ME
 // List front and back SD cards.
-// TODO: add bottom SD card.
-const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1" };
+const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1" , "sd2", "hd0"};
 #elif HAS_PATA
 // Machines with an IDE/PATA interface have an internal hard drive
-const char* VolumeStr[FF_VOLUMES] = { "sd0", "hd0" };
+const char* VolumeStr[FF_VOLUMES] = { "sd0", "hd0", "null0", "null1" };
 #else
 // Otherwise, machines have an internal SD card
-const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1" };
+const char* VolumeStr[FF_VOLUMES] = { "sd0", "sd1", "null0", "null1" };
 #endif
 
 t_sys_info info;    // Stores the copy of the system information
@@ -132,6 +132,9 @@ short tb_init() {
     long target_jiffies;
     int i;
     short res;
+
+    // Set the multiplier for the system clock timers
+    timer_set_sys_timers();
 
 #if HAS_SUPERIO
 	// First thing... make sure that the SuperIO is initialized
@@ -207,53 +210,44 @@ short tb_init() {
     txt_print(TXT_SCREEN_A2560ME, " / _\\ (___ \\ / __) / __) /  \\ ( \\/ )(  __)\n");
     txt_print(TXT_SCREEN_A2560ME, "/    \\ / __/(___ \\(  _ \\(  0 )/ \\/ \\ ) _) \n");
     txt_print(TXT_SCREEN_A2560ME, "\\_/\\_/(____)(____/ \\___/ \\__/ \\_)(_/(____)\n\n");
-    txt_print(TXT_SCREEN_A2560ME, "Foenixt Toolbox starting up...\n");
+    txt_print(TXT_SCREEN_A2560ME, "Foenix Toolbox starting up...\n");
 
     /* Initialize the indicators */
     ind_init();
     INFO("Indicators initialized");
-    txt_print(TXT_SCREEN_A2560ME, "Indicators initialized\n");
 
     /* Initialize the interrupt system */
     int_init();
 	INFO("Interrupts initialized");
-    txt_print(TXT_SCREEN_A2560ME, "Interrupts initialized\n");
 
     /* Mute the PSG */
     psg_mute_all();
 	INFO("PSG initialized.");
-    txt_print(TXT_SCREEN_A2560ME, "PSG initialized.\n");
 
     /* Initialize and mute the SID chips */
     sid_init_all();
 	INFO("SID chips initialized.");
-    txt_print(TXT_SCREEN_A2560ME, "SID chips initialized.\n");
 
 #if HAS_OPN || HAS_OPM || HAS_OPL3
     /* Initialize the Yamaha sound chips (well, turn their volume down at least) */
     ym_init();
 	INFO("Yamaha initialized.");
-    txt_print(TXT_SCREEN_A2560ME, "Yamaha initialized.\n");
 #endif
 
     /* Initialize the CODEC */
     init_codec();
 	INFO("CODEC initialized.");
-    txt_print(TXT_SCREEN_A2560ME, "CODEC initialized.\n");
 
     cdev_init_system();   // Initialize the channel device system
     INFO("Channel device system ready.");
-    txt_print(TXT_SCREEN_A2560ME, "Channel device system ready.\n");
 
     bdev_init_system();   // Initialize the channel device system
     INFO("Block device system ready.");
-    txt_print(TXT_SCREEN_A2560ME, "Block device system ready.\n");
 
     if ((res = con_install())) {
 		ERROR1("FAILED: Console installation", res);
     } else {
         INFO("Console installed.");
-        txt_print(TXT_SCREEN_A2560ME, "Console installed.\n");
     }
 
 #if HAS_IEC
@@ -263,31 +257,28 @@ short tb_init() {
     /* Initialize the timers the Toolbox uses */
     timers_init();
 	INFO("Timers initialized");
-    txt_print(TXT_SCREEN_A2560ME, "Timers initialized.\n");
 
     /* Initialize the real time clock */
     rtc_init();
 	INFO("Real time clock initialized");
 
-    int_register(INT_SOF_A, handle_sof);
-    int_enable(INT_SOF_A);
-
     /* Enable all interrupts */
     int_enable_all();
     INFO("Interrupts enabled");
-    txt_print(TXT_SCREEN_A2560ME, "Interrupts enabled.\n");
 
     /* Play the SID test bong on the Gideon SID implementation */
     // sid_test_internal();
 	// INFO("SID boot bong played.");
 
-// #if HAS_PATA
-//     if ((res = pata_install())) {
-//         log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
-//     } else {
-//         INFO("PATA driver installed.");
-//     }
-// #endif
+#if HAS_PATA
+    if ((res = pata_install())) {
+        log_num(LOG_ERROR, "FAILED: PATA driver installation", res);
+        printf("FAILED: PATA driver installation: %d\n", res);
+    } else {
+        INFO("PATA driver installed.");
+        printf("PATA driver installed.\n");
+    }
+#endif
 
     if ((res = sdc_install())) {
         ERROR1("FAILED: SDC driver installation %d", res);
@@ -309,18 +300,10 @@ short tb_init() {
 
     // if ((res = ps2_init())) {
     //     ERROR1("FAILED: PS/2 keyboard initialization", res);
-    //     printf("FAILED: PS/2 keyboard initialization: %d", res);
+    //     printf("FAILED: PS/2 keyboard initialization: %d\n", res);
     // } else {
     //     log(LOG_INFO, "PS/2 keyboard initialized.");
     //     printf("PS/2 keyboard initialized.\n");
-    // }
-
-    // printf("\n> ");
-    // while (1) {
-    //     char c = kbd_getc();
-    //     if (c) {
-    //         txt_put(TXT_SCREEN_A2560ME, c);
-    //     }
     // }
 
 	// Initialize the keyboard
@@ -335,13 +318,15 @@ short tb_init() {
 // 	INFO("Keyboard initialized");
 // #endif
 
-// #if HAS_PARALLEL_PORT
-//     if ((res = lpt_install())) {
-//         log_num(LOG_ERROR, "FAILED: LPT installation", res);
-//     } else {
-//         log(LOG_INFO, "LPT installed.");
-//     }
-// #endif
+#if HAS_PARALLEL_PORT
+    if ((res = lpt_install())) {
+        log_num(LOG_ERROR, "FAILED: LPT installation", res);
+        printf("FAILED: LPT installation: %d\n", res);
+    } else {
+        log(LOG_INFO, "LPT installed.");
+        printf("LPT installed.\n");
+    }
+#endif
 
 // #if HAS_MIDI_PORTS
 //     if ((res = midi_install())) {
@@ -351,24 +336,30 @@ short tb_init() {
 //     }
 // #endif
 
-//     if ((res = uart_install()) != 0) {
-//         log_num(LOG_ERROR, "FAILED: serial port initialization", res);
-//     } else {
-//         log(LOG_INFO, "Serial ports initialized.");
-//     }
+    if ((res = uart_install()) != 0) {
+        log_num(LOG_ERROR, "FAILED: serial port initialization", res);
+        printf("FAILED: serial port initialization: %d\n", res);
+    } else {
+        log(LOG_INFO, "Serial ports initialized.");
+        printf("Serial ports initialized.\n");
+    }
 
     if ((res = fsys_init())) {
         log_num(LOG_ERROR, "FAILED: file system initialization", res);
+        printf("FAILED: file system initialization: %d\n", res);
     } else {
         INFO("File system initialized.");
+        printf("File system initialized.\n");
     }
 
 #if HAS_COMMON_SERIAL
     ser_init();
     if ((res = ser_install_all())) {
         log_num(LOG_ERROR, "FAILED: installation of common serial devices", res);
+        printf("FAILED: installation of common serial devices: %d\n", res);
     } else {
         INFO("Common serial devices initialized.");
+        printf("Common serial devices initialized.\n");
     }
 #endif
 

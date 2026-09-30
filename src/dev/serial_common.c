@@ -305,14 +305,34 @@ short ser_install_all() {
     if (result) {
         return result;
     }
+    printf("serial_common: COM1 installed\n");
+#endif
+
+#ifdef SER_COM3
+    // Install the first USB Serial COM port
+    result = ser_install(SER_COM3, CDEV_COM3, "COM3");
+    if (result) {
+        return result;
+    }
+    printf("serial_common: COM3 installed\n");
+#endif
+
+#ifdef SER_COM4
+    // Install the first USB Serial COM port
+    result = ser_install(SER_COM4, CDEV_COM4, "COM4");
+    if (result) {
+        return result;
+    }
+    printf("serial_common: COM4 installed\n");
 #endif
 
 #ifdef SER_WIZFI
     // Install the first USB Serial COM port
-    result = ser_install(SER_WIZFI, CDEV_COM2, "WIZFI");
+    result = ser_install(SER_WIZFI, CDEV_WIZFI, "WIZFI");
     if (result) {
         return result;
     }
+    printf("serial_common: WIZFI installed\n");
 #endif
 
     return result;

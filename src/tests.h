@@ -43,6 +43,16 @@ extern void vky_txt_emit(char c);
 /**
  * Test the COM1 serial port
  */
-extern void test_serial();
+extern void test_com1();
+
+/**
+ * Test the COM3 serial port
+ */
+extern void test_com3();
+
+/**
+ * Send a message to the printer on LPT
+ */
+extern void test_printer();
 
 #endif

@@ -18,6 +18,11 @@ extern void timers_init();
 extern SYSTEMCALL long timers_jiffies();
 
 /**
+ * Set the multiplier used by the system clock based timers based on the CPU clock speed.
+ */
+extern void timer_set_sys_timers();
+
+/**
  * Wait for N microseconds (approximately)
  * 
  * NOTE: this will make use of TIMER2 on the A2560 models, which is based on the system clock

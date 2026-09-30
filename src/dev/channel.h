@@ -17,7 +17,7 @@
  * Preset channel device numbers
  */
 
-#define CDEV_DEVICES_MAX    8       // The maximum number of channel devices we will support
+#define CDEV_DEVICES_MAX    16      // The maximum number of channel devices we will support
 #define CHAN_MAX            16      // The maximum number of open channels we will support
 #define CHAN_DATA_SIZE      32      // The number of bytes in the channel's data area
 

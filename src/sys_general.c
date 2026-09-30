@@ -66,7 +66,7 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
 
     info->system_ram_size = 0x400000;
 
-#if MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X
+#if MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X || MODEL == MODEL_FOENIX_A2560ME
     gabe_id = *GABE_SUBVER_ID;
     clock_speed = (gabe_id & 0xE0) >> 5;
     cpu = (gabe_id & 0xF000) >> 12;
@@ -362,10 +362,58 @@ SYSTEMCALL void reboot() {
 	reboot_auth[0] = 0xde;
 	reboot_auth[1] = 0xad;
 	*GABE_MSTR_CTRL |= GABE_CTRL_WRM_RST;
-#elif MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_A2560X
+#elif MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_A2560X || MODEL == MODEL_FOENIX_A2560ME
 	*GABE_CTRL_REG |= 0xdead0000;
 	*GABE_CTRL_REG |= MANUAL_RESET;
 #endif
+}
+
+/**
+ * Return the clock speed of the machine
+ * 
+ * @param the speed of the processor in kilohertz
+ */
+int sys_get_clock_speed() {
+    uint16_t clock_speed = 0;
+
+#if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_A2560X || MODEL == MODEL_FOENIX_A2560ME
+    uint32_t gabe_id = *GABE_SUBVER_ID;
+    clock_speed = (gabe_id & 0xE0) >> 5;
+#endif
+
+    switch (clock_speed) {
+		case SYSCLK_6MHZ:
+		    /* 6 MHz */
+            return 6000;
+
+        case SYSCLK_14MHZ:
+            /* 14.318 MHz */
+            return 14318;
+
+        case SYSCLK_20MHZ:
+            return 20000;
+
+        case SYSCLK_25MHZ:
+            return 25000;
+
+        case SYSCLK_33MHZ:
+            return 33000;
+
+        case SYSCLK_40MHZ:
+            return 40000;
+
+        case SYSCLK_50MHZ:
+            return 50000;
+
+        case SYSCLK_66MHZ:
+            return 66000;
+
+        case SYSCLK_80MHZ:
+            return 80000;
+
+        default:
+            return 0;
+    }
 }
 
 /**

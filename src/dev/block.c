@@ -68,8 +68,7 @@ SYSTEMCALL short bdev_register(p_dev_block device) {
  */
 static p_dev_block bdev_find(short dev) {
     if (dev < BDEV_DEVICES_MAX) {
-        short index = dev;
-        p_dev_block bdev = &g_block_devs[index];
+        p_dev_block bdev = &g_block_devs[dev];
         if (bdev->number == dev) {
             return bdev;
         }

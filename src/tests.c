@@ -219,11 +219,60 @@ void test_kbd() {
 /**
  * Test the COM1 serial port
  */
-void test_serial() {
-    short com1 = chan_open(CDEV_COM1, 0, 0);
+void test_com1() {
+    printf("Testing COM1...\n");
+    short com1 = chan_open(CDEV_COM1, "9600,8,1,NONE", 0);
+    if (com1 < 0) {
+        printf("Unable to open COM1: %d\n", com1);
+        return;
+    }
+
     do {
         for (uint8_t c = 0x20; c < 0x7f; c++) {
             chan_write_b(com1, c);
         }
     } while (1);
+}
+
+/**
+ * Test the COM3 serial port
+ */
+void test_com3() {
+    printf("Attempting to send to COM3\n");
+    short com3 = chan_open(CDEV_COM3, 0, 0);
+    if (com3 > 0) {
+        do {
+            for (uint8_t c = 0x20; c < 0x7f; c++) {
+                chan_write_b(com3, c);
+            }
+        } while (1);
+    } else {
+        printf("Could not open COM3: %d\n", com3);
+    }
+}
+
+/**
+ * Send a message to the printer on LPT
+ */
+void test_printer() {
+    printf("Attempting to send to LPT\n");
+    short lpt = chan_open(CDEV_LPT, 0, 0);
+    short count = 0;
+    if (lpt > 0) {
+        short status = chan_status(lpt);
+        printf("LPT Status: 0x%02X\n", status);
+        do {
+            for (uint8_t c = 0x20; c < 0x7f; c++) {
+                chan_write_b(lpt, c);
+                count++;
+                if (count > 70) {
+                    count = 0;
+                    chan_write_b(lpt, 13);
+                    chan_write_b(lpt, 10);
+                }
+            }
+        } while (1);
+    } else {
+        printf("Could not open LPT: %d\n", lpt);
+    }
 }

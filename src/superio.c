@@ -2,19 +2,15 @@
 
 #include "features.h"
 #include "superio.h"
+#include "timers.h"
 
 #if HAS_SUPERIO
 
 /*
  * Initialize the SuperIO registers
  */
- void init_superio(void) {
-
-  //unsigned int i;
-   //configure_zones(); // This Init used to be done by the FPGA.
-  //for (i = 0; i < 2000000; i++);
-   
-	 *GP10_REG = 0x01;
+void init_superio(void) {
+    *GP10_REG = 0x01;
     *GP11_REG = 0x01;
     *GP12_REG = 0x01;
     *GP13_REG = 0x01;
@@ -23,49 +19,49 @@
     *GP16_REG = 0x05;
     *GP17_REG = 0x05;
 
- 	*GP20_REG = 0x00;
- 	*GP24_REG = 0x01;
- 	*GP25_REG = 0x05;
- 	*GP26_REG = 0x84;
+    *GP20_REG = 0x00;
+    *GP24_REG = 0x01;
+    *GP25_REG = 0x05;
+    *GP26_REG = 0x84;
 
- 	*GP30_REG = 0x01;
- 	*GP31_REG = 0x01;
- 	*GP32_REG = 0x01;
- 	*GP33_REG = 0x04; // FAN1 GPIO Config
- 	*GP34_REG = 0x01;
- 	*GP35_REG = 0x01;
- 	*GP36_REG = 0x01;
- 	*GP37_REG = 0x01;
+    *GP30_REG = 0x01;
+    *GP31_REG = 0x01;
+    *GP32_REG = 0x01;
+    *GP33_REG = 0x04; // FAN1 GPIO Config
+    *GP34_REG = 0x01;
+    *GP35_REG = 0x01;
+    *GP36_REG = 0x01;
+    *GP37_REG = 0x01;
 
- 	*GP42_REG = 0x01;
- 	*GP43_REG = 0x01;
+    *GP42_REG = 0x01;
+    *GP43_REG = 0x01;
 
- 	*GP50_REG = 0x05;
- 	*GP51_REG = 0x05;
- 	*GP52_REG = 0x05;
- 	*GP53_REG = 0x04;
- 	*GP54_REG = 0x05;
- 	*GP55_REG = 0x04;
- 	*GP56_REG = 0x05;
- 	*GP57_REG = 0x04;
+    *GP50_REG = 0x05;
+    *GP51_REG = 0x05;
+    *GP52_REG = 0x05;
+    *GP53_REG = 0x04;
+    *GP54_REG = 0x05;
+    *GP55_REG = 0x04;
+    *GP56_REG = 0x05;
+    *GP57_REG = 0x04;
 
- 	*GP60_REG = 0x84;
- 	*GP61_REG = 0x84;
+    *GP60_REG = 0x84;
+    *GP61_REG = 0x84;
 
- 	*GP1_REG = 0x00;
- 	*GP2_REG = 0x01;
- 	*GP3_REG = 0x00;
- 	*GP4_REG = 0x00;
- 	*GP5_REG = 0x00;
- 	*GP6_REG = 0x00;
+    *GP1_REG = 0x00;
+    *GP2_REG = 0x01;
+    *GP3_REG = 0x00;
+    *GP4_REG = 0x00;
+    *GP5_REG = 0x00;
+    *GP6_REG = 0x00;
 
- 	*LED1_REG = 0x01;
- 	*LED2_REG = 0x02;
+    *LED1_REG = 0x01;
+    *LED2_REG = 0x02;
 
     *FAN1_REG = 0x90;       // <= Value to change to Get the Fan running.
                             // See doc for more options, need to set $80 to get it started and use other bits to change the PWN...
     *FAN_CTRL_REG = 0x01;
- }
+}
 
 void configure_zones(void) {
     // First step is to get into the Configuration Mode
@@ -128,7 +124,7 @@ void configure_zones(void) {
     *CONFIG_0x2E_REG = 0x30;
     *CONFIG_0x2F_REG = 0x01;
 
-     // Setting Up Device 5 - Serial Port 2 
+      // Setting Up Device 5 - Serial Port 2 
     // {8'h03,16'h02F8,8'h05};
     // LD
     *CONFIG_0x2E_REG = 0x07;
@@ -146,7 +142,7 @@ void configure_zones(void) {
     *CONFIG_0x2E_REG = 0x30;
     *CONFIG_0x2F_REG = 0x01;  
 
-     // Setting Up Device 7 - Keyboard 
+      // Setting Up Device 7 - Keyboard 
     // {8'h01, 16'h0060,8'h07};
     // LD
     *CONFIG_0x2E_REG = 0x07;
@@ -222,48 +218,31 @@ void configure_zones(void) {
     *CONFIG_0x2F_REG = 0x01;
 
     // Supplemental Settings
-     // Power On Device 
+    // Power On Device 
     *CONFIG_0x2E_REG = 0x22;
     *CONFIG_0x2F_REG = 0xFF;   
+    
     // We are done with config. 
     *CONFIG_0x2E_REG = 0xAA;    // We need to Get into the Config Mode with 0x55     
 
     *GP60_REG = 0x84;           // THis is to replicate the FPGA behavior when it did the config.
     *LED1_REG = 0x01;           // THis is to replace the FPGA behavior when it did the config in hardware.
- }
+}
 
- #if MODEL == MODEL_FOENIX_A2560ME
- // Now the A2560Me is running @ 50Mhz, so let's beef up those delays
 void unreset_lpc( ) {
-  unsigned int i;
-  *GABE_CTRL_LPC = *GABE_CTRL_LPC | 0x100; // This will set the LPC_RSTn which is its normal operation state.
-  for (i = 0; i< 1500; i++);
+    // This will set the LPC_RSTn which is its normal operation state.
+    *GABE_CTRL_LPC = *GABE_CTRL_LPC | 0x100;
+    timer_wait_usec(100000);                  // Wait 100ms
 
-  *GABE_CTRL_LPC = *GABE_CTRL_LPC & 0xFEFF; // This will set the LPC_RSTn which is its normal operation state.
-  for (i = 0; i< 600000; i++); 
+    // This will set the LPC_RSTn which is its normal operation state.
+    *GABE_CTRL_LPC = *GABE_CTRL_LPC & 0xFEFF; 
+    timer_wait_usec(1000);                    // Wait 1ms
 
-  // So let's Unreset it
-  *GABE_CTRL_LPC = *GABE_CTRL_LPC | 0x100; // This will set the LPC_RSTn which is its normal operation state.
-  // Now, let's pause a bit before configuration time
-  for (i = 0; i< 3000000; i++);
+    // So let's Unreset it
+    *GABE_CTRL_LPC = *GABE_CTRL_LPC | 0x100;
+    
+    // Now, let's pause a bit before configuration time
+    timer_wait_usec(10);                      // Wait 10us
 }
-#else
-// All other models that have CPU @ 33Mhz
-void UnReset_LPC( ) {
-  unsigned int i;
-  *GABE_CTRL_LPC = *GABE_CTRL_LPC | 0x100; // This will set the LPC_RSTn which is its normal operation state.
-  for (i = 0; i< 1000; i++);
-
-  *GABE_CTRL_LPC = *GABE_CTRL_LPC & 0xFEFF; // This will set the LPC_RSTn which is its normal operation state.
-  for (i = 0; i< 400000; i++); 
-
-
-
-  // So let's Unreset it
-  *GABE_CTRL_LPC = *GABE_CTRL_LPC | 0x100; // This will set the LPC_RSTn which is its normal operation state.
-  // Now, let's pause a bit before configuration time
-  for (i = 0; i< 2000000; i++);
-}
-#endif
 
 #endif

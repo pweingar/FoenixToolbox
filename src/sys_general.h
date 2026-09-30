@@ -86,6 +86,13 @@ extern SYSTEMCALL void reboot();
  */
 extern uint8_t get_dip();
 
+/**
+ * Return the clock speed of the machine
+ * 
+ * @param the speed of the processor in kilohertz
+ */
+extern int sys_get_clock_speed();
+
 #if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X
 /*
  * Set the color of the LED for the floppy drive

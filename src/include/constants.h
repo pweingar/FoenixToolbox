@@ -49,20 +49,23 @@
 
 #define BDEV_SD0 0
 #define BDEV_SD1 1
-#define BDEV_HD0 1
+#define BDEV_HD0 3
 #define BDEV_FD0 2
 
 /*
  * Channel devices 
  */
 
-#define CDEV_CONSOLE 0
-#define CDEV_EVID 1
-#define CDEV_COM1 2
-#define CDEV_COM2 3
-#define CDEV_LPT 4
-#define CDEV_MIDI 5
-#define CDEV_FILE 6
+#define CDEV_CONSOLE    0
+#define CDEV_EVID       1
+#define CDEV_COM1       2
+#define CDEV_COM2       3
+#define CDEV_LPT        4
+#define CDEV_MIDI       5
+#define CDEV_COM3       6
+#define CDEV_COM4       7
+#define CDEV_WIZFI      8
+#define CDEV_FILE       15
 
 /**
  * Channel Device IOCTRL commands
