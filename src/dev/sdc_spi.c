@@ -125,7 +125,7 @@ static int SD0_wait_ready (p_sdc_spi sd) {
 	for (tmr = 5000; tmr; tmr--) {	// Wait for ready in timeout of 500ms
 		SD0_Rx(sd, &d, 1);
 		if (d == 0xFF) break;
-		timer_wait_usec(100);              	// 100us
+		timers_wait_usec(100);              	// 100us
 	}
 	return tmr ? 1 : 0;
 }
@@ -189,7 +189,7 @@ static int SD0_Rx_datablock (p_sdc_spi sd, uint8_t * buff, unsigned int btr) {
 		if (d[0] != 0xFF) {
 			break;
 		}
-		timer_wait_usec(100);    			// 100us
+		timers_wait_usec(100);    			// 100us
 	}
 
 	if (d[0] != 0xFE) {				// If not valid data token, return with error
@@ -309,7 +309,7 @@ static short sdc_init(p_dev_block dev) {
 
 	printf("SDC: init %d\n", dev->number);
 	
-	timer_wait_usec(10000);			/* 10ms */
+	timers_wait_usec(10000);			/* 10ms */
     sd->ctrl |= SDx_SLOW;   // Set the SPI in Slow Mode
 	for (n = 10; n; n--) {
 		SD0_Rx(sd, buf, 1);	// Apply 80 dummy clocks and the card gets ready to receive command
@@ -326,7 +326,7 @@ static short sdc_init(p_dev_block dev) {
 	  				if (SD0_Tx_cmd(sd, ACMD41, 1UL << 30) == 0) {
 						break;
 					}
-	  				timer_wait_usec(1000);
+	  				timers_wait_usec(1000);
 	  			}
 	  			if (tmr && SD0_Tx_cmd(sd, CMD58, 0) == 0) {	/* Check CCS bit in the OCR */
 	  				SD0_Rx(sd, buf, 4);
@@ -354,7 +354,7 @@ static short sdc_init(p_dev_block dev) {
 	  			if (SD0_Tx_cmd(sd, cmd, 0) == 0) {
 					break;
 				}
-	  			timer_wait_usec(1000);
+	  			timers_wait_usec(1000);
 	  		}
 
 			/* Set R/W block length to 512 */

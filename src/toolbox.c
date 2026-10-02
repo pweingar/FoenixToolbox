@@ -30,10 +30,13 @@ int main(int argc, char * argv[]) {
 
     // test_sd0();
     // test_sd1();
-    test_dir("/hd0");
+    // test_dir("/hd0");
     // test_com3();
     // test_com1();
     // test_hd();
+    // test_kbd();
+    // test_usec();
+    test_printer();
 
  	// boot_screen();
 

@@ -9,7 +9,7 @@
 /*
  * Initialize the SuperIO registers
  */
-void init_superio(void) {
+void superio_init(void) {
     *GP10_REG = 0x01;
     *GP11_REG = 0x01;
     *GP12_REG = 0x01;
@@ -124,7 +124,7 @@ void configure_zones(void) {
     *CONFIG_0x2E_REG = 0x30;
     *CONFIG_0x2F_REG = 0x01;
 
-      // Setting Up Device 5 - Serial Port 2 
+    // Setting Up Device 5 - Serial Port 2 
     // {8'h03,16'h02F8,8'h05};
     // LD
     *CONFIG_0x2E_REG = 0x07;
@@ -142,7 +142,7 @@ void configure_zones(void) {
     *CONFIG_0x2E_REG = 0x30;
     *CONFIG_0x2F_REG = 0x01;  
 
-      // Setting Up Device 7 - Keyboard 
+    // Setting Up Device 7 - Keyboard 
     // {8'h01, 16'h0060,8'h07};
     // LD
     *CONFIG_0x2E_REG = 0x07;
@@ -163,7 +163,7 @@ void configure_zones(void) {
     *CONFIG_0x2E_REG = 0x30;
     *CONFIG_0x2F_REG = 0x01;
 
-      // Setting Up Device 9 - Game Port
+    // Setting Up Device 9 - Game Port
     // {8'h00, 16'h0200,8'h09};
     // LD
     *CONFIG_0x2E_REG = 0x07;
@@ -181,7 +181,7 @@ void configure_zones(void) {
     *CONFIG_0x2E_REG = 0x30;
     *CONFIG_0x2F_REG = 0x01;
 
-      // Setting Up Device 10 - PME (Power Management)
+    // Setting Up Device 10 - PME (Power Management)
     // {8'h00, 16'h0100,8'h0A};
     // LD
     *CONFIG_0x2E_REG = 0x07;
@@ -221,7 +221,6 @@ void configure_zones(void) {
     // Power On Device 
     *CONFIG_0x2E_REG = 0x22;
     *CONFIG_0x2F_REG = 0xFF;   
-    
     // We are done with config. 
     *CONFIG_0x2E_REG = 0xAA;    // We need to Get into the Config Mode with 0x55     
 
@@ -230,19 +229,31 @@ void configure_zones(void) {
 }
 
 void unreset_lpc( ) {
-    // This will set the LPC_RSTn which is its normal operation state.
-    *GABE_CTRL_LPC = *GABE_CTRL_LPC | 0x100;
-    timer_wait_usec(100000);                  // Wait 100ms
+    int multiplier = timers_get_multiplier();
+
+    // Reset the microsecond timer to 0
+    timers_reset_usec();
 
     // This will set the LPC_RSTn which is its normal operation state.
-    *GABE_CTRL_LPC = *GABE_CTRL_LPC & 0xFEFF; 
-    timer_wait_usec(1000);                    // Wait 1ms
+    *GABE_CTRL_LPC = *GABE_CTRL_LPC | 0x100;
+
+    uint32_t ticks = timers_get_usec() + multiplier * 100000;
+    while (timers_get_usec() < ticks) ;
+    // timers_wait_usec(100000);                  // Wait 100ms
+
+    // This will set the LPC_RSTn which is its normal operation state.
+    *GABE_CTRL_LPC = *GABE_CTRL_LPC & 0xFEFF;
+    ticks = timers_get_usec() + multiplier * 1000;
+    while (timers_get_usec() < ticks) ;
+    // timers_wait_usec(1000);                    // Wait 1ms
 
     // So let's Unreset it
     *GABE_CTRL_LPC = *GABE_CTRL_LPC | 0x100;
     
     // Now, let's pause a bit before configuration time
-    timer_wait_usec(10);                      // Wait 10us
+    ticks = timers_get_usec() + multiplier * 10;
+    while (timers_get_usec() < ticks) ;
+    // timers_wait_usec(10);                      // Wait 10us
 }
 
 #endif

@@ -1,0 +1,216 @@
+###############################################################################
+#                                                                             #
+# Calypsi ISO C compiler for Motorola 68000                    version 5.18.2 #
+#                                                       30/Sep/2026  20:13:19 #
+# Command line: -l -o ps2_test.o ps2_test.c                                   #
+#                                                                             #
+###############################################################################
+
+    \ 00000000                      .rtmodel version,"1"
+    \ 00000000                      .rtmodel nearDataBase,"A4"
+    \ 00000000                      .rtmodel core,"68000"
+    \ 00000000                      .rtmodel codeModel,"large"
+    \ 00000000                      .rtmodel target,"none-specified"
+0001                    #include <stdint.h>
+0002                    #include <calypsi/intrinsics68000.h>
+0003
+0004                    /** Text Matrix for Channel B */
+0005                    #define TEXT_MATRIX     ((volatile uint8_t *)0xFECA0000)
+0006
+0007                    /** Color Matrix for Channel B */
+0008                    #define COLOR_MATRIX    ((volatile uint8_t *)0xFECA8000)
+0009
+0010                    #define PS2_DATA        ((volatile uint8_t *)0xFEC02060)
+0011                    #define PS2_CMD         ((volatile uint8_t *)0xFEC02064)
+0012                    #define PS2_STATUS      ((volatile uint8_t *)0xFEC02064)
+0013                    #define PS2_STAT_OBF    0x01
+0014                    #define PS2_STAT_IBF    0x02
+0015
+0016                    /**
+0017                     * Wait for the PS2 controller to be ready to receive data to its input buffer.
+0018                     */
+0019                    void ps2_wait_in() {
+    \ 00000000                      .section code,text
+    \ 00000000                      .public ps2_wait_in
+    \ 00000000                      .align  2
+    \ 00000000          ps2_wait_in:
+    \ 00000000          `?L4`:
+0020                        while ((*PS2_STATUS & PS2_STAT_IBF) != 0) ;
+    \ 00000000 08390001             btst.b  #1,0xfec02064.l
+    \ 00000004 fec02064
+    \ 00000008 66f6                 bne.s   `?L4`
+0021                    }
+    \ 0000000a 4e75                 rts
+0022
+0023                    /**
+0024                     * Wait for the PS2 controller to have data ready to read from its output bufffer.
+0025                     */
+0026                    void ps2_wait_out() {
+    \ 00000000                      .section code,text
+    \ 00000000                      .public ps2_wait_out
+    \ 00000000                      .align  2
+    \ 00000000          ps2_wait_out:
+    \ 00000000          `?L10`:
+0027                        while ((*PS2_STATUS & PS2_STAT_OBF) == 0) ;
+    \ 00000000 08390000             btst.b  #0,0xfec02064.l
+    \ 00000004 fec02064
+    \ 00000008 67f6                 beq.s   `?L10`
+0028                    }
+    \ 0000000a 4e75                 rts
+0029
+0030                    /**
+0031                     * Send a command to the PS/2 input buffer.
+0032                     */
+0033                    void ps2_send_cmd(uint8_t b) {
+    \ 00000000                      .section code,text
+    \ 00000000                      .public ps2_send_cmd
+    \ 00000000                      .align  2
+    \ 00000000          ps2_send_cmd:
+    \ 00000000 2f02                 move.l  d2,-(sp)
+    \ 00000002 1400                 move.b  d0,d2
+0034                        ps2_wait_in();
+    \ 00000004 4eb9....             jsr     ps2_wait_in.l
+    \ 00000008 ....
+0035                        *PS2_CMD = b;
+    \ 0000000a 13c2fec0             move.b  d2,0xfec02064.l
+    \ 0000000e 2064
+0036                    }
+    \ 00000010 241f                 move.l  (sp)+,d2
+    \ 00000012 4e75                 rts
+0037
+0038                    /**
+0039                     * Send a data byte to the PS/2 input buffer.
+0040                     */
+0041                    void ps2_send_data(uint8_t b) {
+    \ 00000000                      .section code,text
+    \ 00000000                      .public ps2_send_data
+    \ 00000000                      .align  2
+    \ 00000000          ps2_send_data:
+    \ 00000000 2f02                 move.l  d2,-(sp)
+    \ 00000002 1400                 move.b  d0,d2
+0042                        ps2_wait_in();
+    \ 00000004 4eb9....             jsr     ps2_wait_in.l
+    \ 00000008 ....
+0043                        *PS2_DATA = b;
+    \ 0000000a 13c2fec0             move.b  d2,0xfec02060.l
+    \ 0000000e 2060
+0044                    }
+    \ 00000010 241f                 move.l  (sp)+,d2
+    \ 00000012 4e75                 rts
+0045
+0046                    /**
+0047                     * Get a byte from the PS/2 output buffer.
+0048                     * 
+0049                     * @return the byte read
+0050                     */
+0051                    uint8_t ps2_get_data() {
+    \ 00000000                      .section code,text
+    \ 00000000                      .public ps2_get_data
+    \ 00000000                      .align  2
+    \ 00000000          ps2_get_data:
+0052                        ps2_wait_out();
+    \ 00000000 4eb9....             jsr     ps2_wait_out.l
+    \ 00000004 ....
+0053                        return *PS2_DATA;
+    \ 00000006 1039fec0             move.b  0xfec02060.l,d0
+    \ 0000000a 2060
+0054                    }
+    \ 0000000c 4e75                 rts
+0055
+0056                    const char hex_digits[] = "0123456789ABCDEF";
+    \ 00000000                      .section near,data
+    \ 00000000                      .public hex_digits
+    \ 00000000 30313233 hex_digits: .byte   48,49,50,51,52,53,54,55
+    \ 00000004 34353637
+    \ 00000008 38394142             .byte   56,57,65,66,67,68,69,70
+    \ 0000000c 43444546
+    \ 00000010 00                   .byte   0
+0057
+0058                    /**
+0059                     * Write the hex display code to the screen
+0060                     */
+0061                    void display_code(short offset, uint8_t code) {
+    \ 00000000                      .section code,text
+    \ 00000000                      .public display_code
+    \ 00000000                      .align  2
+    \ 00000000          display_code:
+    \ 00000000 48e73800             movem.l d2-d4,-(sp)
+0062                        const uint8_t color = 0x0f;
+    \ 00000004 760f                 moveq.l #15,d3
+0063
+0064                        TEXT_MATRIX[offset] = hex_digits[code >> 4];
+    \ 00000006 41ec....             lea.l   (.near hex_digits,a4),a0
+    \ 0000000a 1801                 move.b  d1,d4
+    \ 0000000c e80c                 lsr.b   #4,d4
+    \ 0000000e 7400                 moveq.l #0,d2
+    \ 00000010 1404                 move.b  d4,d2
+    \ 00000012 227cfeca             move.l  #0xfeca0000,a1
+    \ 00000016 0000
+    \ 00000018 13b02800             move.b  (0,a0,d2.l),(0,a1,d0.w)
+    \ 0000001c 0000
+0065                        TEXT_MATRIX[offset+1] = hex_digits[code & 0x0f];
+    \ 0000001e 41ec....             lea.l   (.near hex_digits,a4),a0
+    \ 00000022 740f                 moveq.l #15,d2
+    \ 00000024 c401                 and.b   d1,d2
+    \ 00000026 7200                 moveq.l #0,d1
+    \ 00000028 1202                 move.b  d2,d1
+    \ 0000002a 227cfeca             move.l  #0xfeca0000,a1
+    \ 0000002e 0000
+    \ 00000030 13b01800             move.b  (0,a0,d1.l),(1,a1,d0.w)
+    \ 00000034 0001
+0066                        COLOR_MATRIX[offset] = color;
+    \ 00000036 207cfeca             move.l  #0xfeca8000,a0
+    \ 0000003a 8000
+    \ 0000003c 11830000             move.b  d3,(0,a0,d0.w)
+0067                        COLOR_MATRIX[offset+1] = color;
+    \ 00000040 207cfeca             move.l  #0xfeca8000,a0
+    \ 00000044 8000
+    \ 00000046 11830001             move.b  d3,(1,a0,d0.w)
+0068                    }
+    \ 0000004a 4cdf001c             movem.l (sp)+,d2-d4
+    \ 0000004e 4e75                 rts
+0069
+0070                    int main(int argc, char argv[]) {
+    \ 00000000                      .section code,text
+    \ 00000000                      .public main
+    \ 00000000                      .align  2
+    \ 00000000          main:
+0071                        // We don't want anything grabbing out data
+0072                        __disable_interrupts();
+    \ 00000000 007c0700             ori.w   #0x700,sr
+0073
+0074                        display_code(0, 0xde);
+    \ 00000004 72de                 moveq.l #-34,d1
+    \ 00000006 7000                 moveq.l #0,d0
+    \ 00000008 4eb9....             jsr     display_code.l
+    \ 0000000c ....
+0075                        display_code(2, 0xad);
+    \ 0000000e 72ad                 moveq.l #-83,d1
+    \ 00000010 7002                 moveq.l #2,d0
+    \ 00000012 4eb9....             jsr     display_code.l
+    \ 00000016 ....
+    \ 00000018          `?L29`:
+0076
+0077                        do {
+0078                            uint8_t code = ps2_get_data();
+    \ 00000018 4eb9....             jsr     ps2_get_data.l
+    \ 0000001c ....
+0079                            display_code(4, code);
+    \ 0000001e 1200                 move.b  d0,d1
+    \ 00000020 7004                 moveq.l #4,d0
+    \ 00000022 4eb9....             jsr     display_code.l
+    \ 00000026 ....
+0080                        } while (1);
+    \ 00000028 60ee                 bra.s   `?L29`
+0081
+0082                        return 0;
+0083                    }
+
+##########################
+#                        #
+# Memory sizes (decimal) #
+#                        #
+##########################
+
+Executable         (Text): 200 bytes
+Data       __near        :  17 bytes

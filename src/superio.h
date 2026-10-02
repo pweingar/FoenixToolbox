@@ -14,7 +14,7 @@
 /*
  * Initialize the SuperIO registers
  */
-extern void init_superio(void);
+extern void superio_init(void);
 
 extern void unreset_lpc();
 

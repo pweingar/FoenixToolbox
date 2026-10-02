@@ -133,14 +133,15 @@ short tb_init() {
     int i;
     short res;
 
-    // Set the multiplier for the system clock timers
-    timer_set_sys_timers();
+    /* Initialize the timers the Toolbox uses */
+    timers_init();
+	INFO("Timers initialized");
 
 #if HAS_SUPERIO
 	// First thing... make sure that the SuperIO is initialized
-    unreset_lpc();
-    configure_zones(); // This Init used to be done by the FPGA.
-	init_superio();
+    // unreset_lpc();
+    // configure_zones(); // This Init used to be done by the FPGA.
+	// superio_init();
 #endif
 
     /* Setup logging early */
@@ -253,10 +254,6 @@ short tb_init() {
 #if HAS_IEC
 	iec_init();
 #endif
-
-    /* Initialize the timers the Toolbox uses */
-    timers_init();
-	INFO("Timers initialized");
 
     /* Initialize the real time clock */
     rtc_init();

@@ -55,4 +55,9 @@ extern void test_com3();
  */
 extern void test_printer();
 
+/**
+ * Test the microsecond resolution timer
+ */
+extern void test_usec();
+
 #endif

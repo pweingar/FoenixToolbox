@@ -18,6 +18,7 @@
 #include "dev/txt_screen.h"
 #include "serial_reg.h"
 #include "serial_reg.h"
+#include "timers.h"
 
 #define VKY_TXT_CHAR_A	((volatile char *)0xfeca0000)
 #define VKY_TXT_COLOR_A	((volatile uint8_t *)0xfeca8000)
@@ -275,4 +276,26 @@ void test_printer() {
     } else {
         printf("Could not open LPT: %d\n", lpt);
     }
+}
+
+/**
+ * Test the microsecond resolution timer
+ */
+void test_usec() {
+    const char animate[] = "\\|/-";
+    short counter = 0;
+
+    long jiffies_start = timers_jiffies();
+
+    int multiplier = timer_get_multiplier();
+
+    txt_set_xy(0, 0, 1);
+    printf("Multiplier: %d\n", multiplier);
+
+    do {
+        timers_wait_usec(1000000);
+        txt_set_xy(0, 0, 0);
+        counter++;
+        printf("%d ?= %d", counter, (timers_jiffies() - jiffies_start) / 60);
+    } while (1);
 }

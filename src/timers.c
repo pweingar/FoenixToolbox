@@ -8,6 +8,9 @@
  * Initialize the timers and their interrupts
  */
 void timers_init() {
+	// Set the multiplier for the system clock timers
+    timers_set_sys_timers();
+
 #if MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_A2560ME || MODEL == MODEL_FOENIX_FA2560K2
 
     *TIMER_TCR0 = 0;    // Reset timers 0, 1, and 2
@@ -50,14 +53,27 @@ void timers_init() {
 #endif
 }
 
-static int clock_multiplier = 0;
+static int clock_multiplier = 50;
 
 /**
  * Set the multiplier used by the system clock based timers based on the CPU clock speed.
  */
-void timer_set_sys_timers() {
-	int clock = sys_get_clock_speed();
-	clock_multiplier = (int)(clock / 1000);
+void timers_set_sys_timers() {
+	// TODO: fix the clock speed information
+	// int clock = sys_get_clock_speed();
+	clock_multiplier = 50; // (int)(clock / 1000);
+}
+
+/**
+ * Reset the microsecond timer to 0
+ */
+void timers_reset_usec() {
+	// Clear timer 2
+	*TIMER_VALUE_2 = 0;
+	*TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2 | TCR_CLEAR_2;
+
+	// Start timer 2 in count up mode
+	*TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2;
 }
 
 /**
@@ -67,9 +83,8 @@ void timer_set_sys_timers() {
  * 
  * @param n the number of microseconds to wait
  */
-void timer_wait_usec(unsigned int n) {
+void timers_wait_usec(unsigned int n) {
 	// TODO: flesh out for other models of A2560
-#if MODEL == MODEL_FOENIX_A2560ME
 	unsigned int clock_ticks = n * clock_multiplier;
 
 	// Clear timer 2
@@ -80,7 +95,22 @@ void timer_wait_usec(unsigned int n) {
 	*TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2;
 
 	while (*TIMER_VALUE_2 < clock_ticks) ;
-#endif
+}
+
+/**
+ * Return the current multiplier for the micro-second timer
+ */
+int timers_get_multiplier() {
+	return clock_multiplier;
+}
+
+/**
+ * Get the current microsecond timer count
+ * 
+ * @return the number of clock cycles
+ */
+uint32_t timers_get_usec() {
+	return *TIMER_VALUE_2;
 }
 
 /*

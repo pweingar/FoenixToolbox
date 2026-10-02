@@ -20,7 +20,12 @@ extern SYSTEMCALL long timers_jiffies();
 /**
  * Set the multiplier used by the system clock based timers based on the CPU clock speed.
  */
-extern void timer_set_sys_timers();
+extern void timers_set_sys_timers();
+
+/**
+ * Reset the microsecond timer to 0
+ */
+extern void timers_reset_usec();
 
 /**
  * Wait for N microseconds (approximately)
@@ -29,6 +34,19 @@ extern void timer_set_sys_timers();
  * 
  * @param n the number of microseconds to wait
  */
-extern void timer_wait_usec(unsigned int n);
+extern void timers_wait_usec(unsigned int n);
+
+
+/**
+ * Return the current multiplier for the micro-second timer
+ */
+extern int timers_get_multiplier();
+
+/**
+ * Get the current microsecond timer count
+ * 
+ * @return the number of clock cycles
+ */
+extern uint32_t timers_get_usec();
 
 #endif
