@@ -9,8 +9,6 @@
 
 #if HAS_SUPERIO
 
-#include "superio_reg.h"
-
 /*
  * Initialize the SuperIO registers
  */

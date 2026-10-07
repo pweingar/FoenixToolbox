@@ -1,16 +1,13 @@
 /**
- * @file kbd_f256jr.h
+ * @file kbd_ps2.h
  * @author your name (you@domain.com)
- * @brief Driver for the F256jr PS/2 keyboard
+ * @brief Driver for the PS/2 keyboard
  * @version 0.1
  * @date 2024-06-17
  * 
  * @copyright Copyright (c) 2024
  * 
  */
-
-#ifndef __kbd_f256jr_h__
-#define __kbd_f256jr_h__
 
 #include "log_level.h"
 #ifndef DEFAULT_LOG_LEVEL
@@ -22,7 +19,7 @@
 #include "errors.h"
 #include "interrupt.h"
 #include "log.h"
-#include "ps2_reg.h"
+#include "ps2_general.h"
 #include "ring_buffer.h"
 #include "sys_macros.h"
 #include "timers.h"
@@ -147,35 +144,6 @@ static bool break_pressed = false;
 //
 // Code
 //
-
-/**
- * Clear out the FIFO for the keyboard
- */
-static void kbd_clear_fifo() {
-	*PS2_CTRL |= PS2_CTRL_KBD_CLR;
-	*PS2_CTRL &= ~PS2_CTRL_KBD_CLR;
-}
-
-static short kbd_send_cmd(uint8_t byte) {
-	uint8_t status = 0;
-
-	*PS2_OUT = byte;
-	*PS2_CTRL |= PS2_CTRL_KBD_WR;
-
-	long timeout = timers_jiffies() + KBD_TIMEOUT;
-
-	do {
-		if (timeout < timers_jiffies()) {
-			*PS2_CTRL &= ~PS2_CTRL_KBD_WR;
-			return DEV_TIMEOUT;
-		}
-		status = *PS2_STAT;
-	} while ((status & (PS2_STAT_KBD_ACK | PS2_STAT_KBD_NAK)) == 0);
-
-	*PS2_CTRL &= ~PS2_CTRL_KBD_WR;
-
-	return 0;
-}
 
 /**
  * @brief Enqueue the scancode into the keyboard scancode buffer with modifiers added
@@ -427,9 +395,7 @@ static void kbd_process_set2_bytecode(uint8_t byte_code) {
  */
 SYSTEMCALL void kbd_handle_irq() {
 	// Check to see if there is a keyboard bytecode waiting... process it if so
-	while ((*PS2_STAT & PS2_STAT_KBD_EMP) == 0) {
-		kbd_process_set2_bytecode(*PS2_KBD_IN);
-	}
+	kbd_process_set2_bytecode(ps2_read_data(0));
 }
 
 /*
@@ -525,5 +491,3 @@ short kbd_sc_init() {
 
 	return result;
 }
-
-#endif

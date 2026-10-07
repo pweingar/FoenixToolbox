@@ -33,6 +33,7 @@
 #include "dev/txt_a2560k_b.h"
 #elif MODEL == MODEL_FOENIX_A2560ME
 #include "dev/txt_a2560me.h"
+#include "dev/kbd_ps2.h"
 #elif MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS
 #include "dev/txt_a2560u.h"
 #elif MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_FMX
@@ -139,9 +140,9 @@ short tb_init() {
 
 #if HAS_SUPERIO
 	// First thing... make sure that the SuperIO is initialized
-    // unreset_lpc();
-    // configure_zones(); // This Init used to be done by the FPGA.
-	// superio_init();
+    unreset_lpc();
+    configure_zones(); // This Init used to be done by the FPGA.
+	superio_init();
 #endif
 
     /* Setup logging early */
@@ -295,13 +296,13 @@ short tb_init() {
 
     // At this point, we should be able to call into to console to print to the screens
 
-    // if ((res = ps2_init())) {
-    //     ERROR1("FAILED: PS/2 keyboard initialization", res);
-    //     printf("FAILED: PS/2 keyboard initialization: %d\n", res);
-    // } else {
-    //     log(LOG_INFO, "PS/2 keyboard initialized.");
-    //     printf("PS/2 keyboard initialized.\n");
-    // }
+    if ((res = ps2_init())) {
+        ERROR1("FAILED: PS/2 keyboard initialization", res);
+        printf("FAILED: PS/2 keyboard initialization: %d\n", res);
+    } else {
+        log(LOG_INFO, "PS/2 keyboard initialized.");
+        printf("PS/2 keyboard initialized.\n");
+    }
 
 	// Initialize the keyboard
 // #if MODEL == MODEL_FOENIX_A2560K

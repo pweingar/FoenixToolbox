@@ -53,7 +53,7 @@
 #define PS2_CTRL_MOUSETEST  0xA9    /* Test the secondary (mouse) port */
 #define PS2_CTRL_ENABLE_1   0xAE    /* Enable the first (keyboard) port */
 #define PS2_CTRL_DISABLE_1  0xAD    /* Disable the first (keyboard) port */
-#define PS2_CTRL_ENABLE_2   0xA9    /* Enable the second (mouse) port */
+#define PS2_CTRL_ENABLE_2   0xA8    /* Enable the second (mouse) port */
 #define PS2_CTRL_DISABLE_2  0xA7    /* Disable the second (mouse) port */
 
 #define KBD_CMD_ID			0xF2	/* Keyboard command: identify */

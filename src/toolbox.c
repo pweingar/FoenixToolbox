@@ -16,6 +16,7 @@
 #include "log.h"
 #include "boot.h"
 #include "init.h"
+#include "dev/ps2_general.h"
 
 #include "tests.h"
 #include "test_cli.h"
@@ -28,6 +29,18 @@ int main(int argc, char * argv[]) {
 
     tb_init();
 
+    if (ps2_has_device(0)) {
+        printf("There is a PS/2 keyboard attached.\n");
+    } else {
+        printf("There is no PS/2 keyboard attached.\n");
+    }
+
+    if (ps2_has_device(1)) {
+        printf("There is a PS/2 mouse attached.\n");
+    } else {
+        printf("There is no PS/2 mouse attached.\n");
+    }
+
     // test_sd0();
     // test_sd1();
     // test_dir("/hd0");
@@ -35,8 +48,8 @@ int main(int argc, char * argv[]) {
     // test_com1();
     // test_hd();
     // test_kbd();
-    // test_usec();
-    test_printer();
+    test_usec();
+    // test_printer();
 
  	// boot_screen();
 

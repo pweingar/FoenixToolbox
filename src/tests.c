@@ -15,6 +15,7 @@
 #include "dev/fsys.h"
 #include "dev/kbd_mo.h"
 #include "dev/kbd_f256.h"
+#include "dev/kbd_ps2.h"
 #include "dev/txt_screen.h"
 #include "serial_reg.h"
 #include "serial_reg.h"
@@ -222,7 +223,7 @@ void test_kbd() {
  */
 void test_com1() {
     printf("Testing COM1...\n");
-    short com1 = chan_open(CDEV_COM1, "9600,8,1,NONE", 0);
+    short com1 = chan_open(CDEV_COM1, (uint8_t *)"9600,8,1,NONE", 0);
     if (com1 < 0) {
         printf("Unable to open COM1: %d\n", com1);
         return;
@@ -287,15 +288,10 @@ void test_usec() {
 
     long jiffies_start = timers_jiffies();
 
-    int multiplier = timer_get_multiplier();
-
-    txt_set_xy(0, 0, 1);
-    printf("Multiplier: %d\n", multiplier);
-
     do {
         timers_wait_usec(1000000);
         txt_set_xy(0, 0, 0);
         counter++;
-        printf("%d ?= %d", counter, (timers_jiffies() - jiffies_start) / 60);
+        printf("%d ?= %ld", counter, (timers_jiffies() - jiffies_start) / 60);
     } while (1);
 }

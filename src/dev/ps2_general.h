@@ -12,6 +12,7 @@
 #define PS2_TIMEOUT         -1          // PS/2 function hit the timeout limit
 #define PS2_ERR_CONTROLLER  -2          // PS/2 controller did not respond to initialization
 #define PS2_NO_DEVICE       -3          // PS/2 port device did not respond to identification
+#define PS2_SELF_TEST_FAIL  -4          // PS/2 device failed its self-test
 
 /**
  * Initialize the PS/2 interface
@@ -49,5 +50,65 @@ extern int ps2_send_data(uint8_t port, uint8_t b, long timeout);
  * @return the byte received (if >= 0) or an error code if negative
  */
 extern int ps2_read_data(long timeout);
+
+/**
+ * Return the ID of the device on the given port as determined during initialization.
+ * 
+ * @param port the number of the port to check (0 or 1)
+ * @return the ID of the device (0xffff means there was no device on that port, or the port is not supported)
+ */
+extern uint16_t ps2_device_id(uint8_t port);
+
+/**
+ * Check to see if there was a device on the given port
+ * 
+ * @param port the number of the port (0 or 1)
+ * @return true if there was a device there when we initialized
+ */
+extern bool ps2_has_device(uint8_t port);
+
+/**
+ * Wait for data on the input port and return it.
+ * 
+ * NOTE: timeout should be > 0 for non-interrupt use. For responding to interrupts,
+ *       timeout should be set to 0.
+ * 
+ * @param timeout the number of jiffies to wait for a timeout (0 is return immediately)
+ * @return the byte received (if >= 0) or an error code if negative
+ */
+extern int ps2_read_data(long timeout);
+
+/**
+ * Clear out the FIFO for the keyboard
+ */
+extern void kbd_clear_fifo();
+
+/**
+ * Send a command to the keyboard
+ * 
+ * @param cmd the command to send
+ * @return 0 on success, any other number is an error
+ */
+extern short kbd_send_cmd(uint8_t cmd);
+
+/**
+ * @brief Handle an IRQ to query the keyboard
+ * 
+ */
+extern void kbd_handle_irq();
+
+/**
+ * Send a command to the mouse
+ * 
+ * @param cmd the command to send
+ * @return 0 on success, any other number is an error
+ */
+extern short mouse_send_cmd(uint8_t cmd);
+
+/**
+ * @brief Handle an IRQ to query the mouse
+ * 
+ */
+extern void mouse_handle_irq();
 
 #endif
