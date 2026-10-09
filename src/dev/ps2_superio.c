@@ -14,17 +14,14 @@
 #include "timers.h"
 #include "txt_screen.h"
 
+#define CMD_REPEAT_MAX  3
+
 static long ps2_timeout = 120;
 static bool ps2_has_two_channels = false;
 static bool ps2_has_keyboard = false;
 static bool ps2_has_mouse = false;
 static uint16_t ps2_keyboard_id = 0;
 static uint16_t ps2_mouse_id = 0;
-
-// TODO: dummy to be deleted
-int kbd_getc() {
-    return 0;
-}
 
 // void ps2_echo_keys() {
 //     int count = 0;
@@ -154,6 +151,19 @@ int ps2_send_data(uint8_t port, uint8_t b, long timeout) {
 }
 
 /**
+ * Check to see if there is data waiting to be read from the PS/2 controller data buffer
+ * 
+ * @return true if ps2_read_data would return data, false otherwise
+ */
+bool ps2_has_data() {
+    if (*PS2_STATUS & PS2_STAT_OBF) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
  * Wait for data on the input port and return it.
  * 
  * NOTE: timeout should be > 0 for non-interrupt use. For responding to interrupts,
@@ -206,14 +216,12 @@ int ps2_send_cmd_with_data(uint8_t command, uint8_t param, long timeout) {
  */
 int ps2_send_cmd_expect_response(uint8_t command, long timeout) {
     TRACE1("ps2_send_cmd_expect_response: command = 0x%02X", command);
-    printf("ps2_send_cmd_expect_response: command = 0x%02X\n", command);
 
     int result = ps2_send_cmd(command, timeout);
     if (result < 0) return result;
 
     result = ps2_read_data(timeout);
     DEBUG1("ps2_send_cmd_expect_response got response 0x%02X", result);
-    printf("ps2_send_cmd_expect_response got response 0x%02X\n", result);
     return result;
 }
 
@@ -402,7 +410,32 @@ void kbd_clear_fifo() {
  * @return 0 on success, any other number is an error
  */
 short kbd_send_cmd(uint8_t cmd) {
-    return ps2_send_data(0, cmd, ps2_timeout);
+    int count = CMD_REPEAT_MAX;
+
+    while (count > 0) {
+        ps2_flush_buffer();
+
+        int result = ps2_send_data(0, cmd, ps2_timeout);
+        if (result < 0) return result;
+
+        printf("KBD SENT: %02X ", cmd);
+
+        int response = ps2_read_data(ps2_timeout);
+        printf("REPLY: %02X\n", response);
+        if (response < 0) {
+            return response;
+
+        } else if (response == 0xfa) {
+                // We got an ACK... return OK
+                return PS2_OK;
+
+        } else {
+            // Got errors and retry
+            count--;
+        }
+    }
+
+    return PS2_CMD_ERROR;
 }
 
 /**
@@ -541,6 +574,20 @@ int ps2_init() {
         } else {
             printf("PS/2: mouse ID: 0x%04X\n", ps2_mouse_id);
         }
+    }
+
+    if (ps2_has_mouse) {
+        // Set the controller configuration byte to enable both ports and translation
+        if (ps2_send_cmd_with_data(PS2_CTRL_WRITECMD, 0x07, ps2_timeout) < 0) {
+            DEBUG("PS/2: ps2_send_cmd_with_data timeout while enabling both ports");
+            return PS2_TIMEOUT;
+        }  
+    } else {
+        // Set the controller configuration byte to enable port #1 and translation
+        if (ps2_send_cmd_with_data(PS2_CTRL_WRITECMD, 0x05, ps2_timeout) < 0) {
+            DEBUG("PS/2: ps2_send_cmd_with_data timeout while enabling just port 0");
+            return PS2_TIMEOUT;
+        }   
     }
 
     return PS2_OK;

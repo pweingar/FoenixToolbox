@@ -8,12 +8,11 @@
 #include "log.h"
 #include "sys_general.h"
 #include "utilities.h"
-#include "A2560K/vky_chan_a.h"
-#include "A2560K/vky_chan_b.h"
+#include "A2560Me/vky_chan_b.h"
 #include "dev/txt_screen.h"
 #include "dev/txt_a2560me.h"
 
-#include "rsrc/font/foenix_st_8_16.h"
+#include "rsrc/font/BM437_IBM_Model3_Alt4.h"
 
 /* Default text color lookup table values (AARRGGBB) */
 const unsigned long a2560me_lut[VKY3_B_LUT_SIZE] = {
@@ -270,7 +269,7 @@ short txt_a2560me_set_font(short width, short height, const unsigned char * data
         // TODO: be able to load the font...
         /* Copy the font data... this assumes a width of one byte! */
         for (i = 0; i < 256 * height; i++) {
-            VKY3_B_FONT_MEMORY[i] = data[i];
+            VKY3_B_FONT_8X16[i] = data[i];
         }
 
         return 0;
@@ -608,7 +607,7 @@ void txt_a2560me_init() {
     txt_a2560me_set_color(0x07, 0x04);
 
     // /* Set the font */
-    txt_a2560me_set_font(8, 16, foenix_st_8_16_bin);        /* Use 8x16 font */
+    txt_a2560me_set_font(8, 16, BM437_IBM_Model3_Alt4);     /* Use 8x16 font */
 
     /* Set the cursor */
     txt_a2560me_set_cursor(1, 0, 0xB1);

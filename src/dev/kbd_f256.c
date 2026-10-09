@@ -17,7 +17,7 @@
 
 #include "log.h"
 #include "kbd_f256.h"
-#include "kbd_f256jr.h"
+#include "kbd_ps2.h"
 #include "ring_buffer.h"
 #include "simpleio.h"
 #include "sys_macros.h"

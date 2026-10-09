@@ -211,6 +211,7 @@ void test_kbd_mo() {
 void test_kbd() {
     printf("Type something:\n");
     do {
+        kbd_handle_irq();
         unsigned short scancode = kbd_get_scancode();
         if (scancode) {
             printf("%04X ", scancode);

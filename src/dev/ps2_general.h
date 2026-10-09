@@ -13,6 +13,7 @@
 #define PS2_ERR_CONTROLLER  -2          // PS/2 controller did not respond to initialization
 #define PS2_NO_DEVICE       -3          // PS/2 port device did not respond to identification
 #define PS2_SELF_TEST_FAIL  -4          // PS/2 device failed its self-test
+#define PS2_CMD_ERROR       -5          // PS/2 device did not accept command
 
 /**
  * Initialize the PS/2 interface
@@ -42,6 +43,13 @@ extern int ps2_send_cmd(uint8_t b, long timeout);
  * @return status (0 = success, negative number is an error)
  */
 extern int ps2_send_data(uint8_t port, uint8_t b, long timeout);
+
+/**
+ * Check to see if there is data waiting to be read from the PS/2 controller data buffer
+ * 
+ * @return true if ps2_read_data would return data, false otherwise
+ */
+extern bool ps2_has_data();
 
 /**
  * Wait for data on the input port and return it.

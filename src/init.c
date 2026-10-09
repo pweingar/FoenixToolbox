@@ -33,7 +33,7 @@
 #include "dev/txt_a2560k_b.h"
 #elif MODEL == MODEL_FOENIX_A2560ME
 #include "dev/txt_a2560me.h"
-#include "dev/kbd_ps2.h"
+#include "dev/kbd_f256.h"
 #elif MODEL == MODEL_FOENIX_A2560U || MODEL == MODEL_FOENIX_A2560U_PLUS
 #include "dev/txt_a2560u.h"
 #elif MODEL == MODEL_FOENIX_C256U || MODEL == MODEL_FOENIX_C256U_PLUS || MODEL == MODEL_FOENIX_FMX
@@ -312,8 +312,8 @@ short tb_init() {
 //         log(LOG_INFO, "A2560K built-in keyboard initialized.");
 //     }
 // #else
-// 	kbd_init();
-// 	INFO("Keyboard initialized");
+	kbd_init();
+	INFO("Keyboard initialized");
 // #endif
 
 #if HAS_PARALLEL_PORT
