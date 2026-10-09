@@ -287,6 +287,8 @@ void test_usec() {
     const char animate[] = "\\|/-";
     short counter = 0;
 
+    printf("TIMER2 multiplier: %d\n", timers_get_multiplier());
+
     long jiffies_start = timers_jiffies();
 
     do {

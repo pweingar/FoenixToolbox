@@ -48,7 +48,7 @@
 
 #define GABE_SUBVER_ID	    ((volatile uint32_t *)0xFEC0000C)    // Subversion[31:16], Machine ID[3:2] - Read Only
 #define GABE_CPU_ID_MASK    0x0000FF00
-#define GABE_CPU_SPD_MASK   0x000000E0
+#define GABE_CPU_SPD_MASK   0x000000F0
 #define GABE_ID_MASK        0x0000000C
 #define GABE_CHIP_SV_MASK   0xFFFF0000
 

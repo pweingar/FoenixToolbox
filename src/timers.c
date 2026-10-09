@@ -53,15 +53,14 @@ void timers_init() {
 #endif
 }
 
-static int clock_multiplier = 50;
+static float clock_multiplier = 50;
 
 /**
  * Set the multiplier used by the system clock based timers based on the CPU clock speed.
  */
-void timers_set_sys_timers() {
-	// TODO: fix the clock speed information
-	// int clock = sys_get_clock_speed();
-	clock_multiplier = 50; // (int)(clock / 1000);
+void timers_set_sys_timers() { 
+	// TODO: figure out how to do this without floats
+	clock_multiplier = sys_get_clock_speed() / 1000.0;
 }
 
 /**

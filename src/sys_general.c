@@ -225,11 +225,6 @@ SYSTEMCALL void sys_get_information(p_sys_info info) {
     info->cpu = cpu;
 
     switch (clock_speed) {
-		case SYSCLK_6MHZ:
-		    /* 6 MHz */
-            info->cpu_clock_khz = 6000;
-            break;
-
         case SYSCLK_14MHZ:
             /* 14.318 MHz */
             info->cpu_clock_khz = 14318;
@@ -378,14 +373,10 @@ int sys_get_clock_speed() {
 
 #if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_A2560X || MODEL == MODEL_FOENIX_A2560ME
     uint32_t gabe_id = *GABE_SUBVER_ID;
-    clock_speed = (gabe_id & 0xE0) >> 5;
+    clock_speed = (gabe_id & GABE_CPU_SPD_MASK) >> 4;
 #endif
 
     switch (clock_speed) {
-		case SYSCLK_6MHZ:
-		    /* 6 MHz */
-            return 6000;
-
         case SYSCLK_14MHZ:
             /* 14.318 MHz */
             return 14318;
@@ -406,7 +397,7 @@ int sys_get_clock_speed() {
             return 50000;
 
         case SYSCLK_66MHZ:
-            return 66000;
+            return 66670;
 
         case SYSCLK_80MHZ:
             return 80000;
