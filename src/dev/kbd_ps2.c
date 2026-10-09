@@ -398,7 +398,6 @@ SYSTEMCALL void kbd_handle_irq() {
 	// Check to see if there is a keyboard bytecode waiting... process it if so
 	if (ps2_has_data()) {
 		int c = ps2_read_data(100);
-		printf("{%04X} ", c);
 		kbd_process_set2_bytecode(c);
 	}
 }
@@ -465,11 +464,9 @@ short kbd_sc_init() {
 	result = kbd_send_cmd(0xf5);
 	if (result < 0) {
 		INFO1("PS/2: unable to disable keyboard scanning: %s", err_message(result));
-		printf("PS/2: unable to disable keyboard scanning: %s\n", err_message(result));
 		return result;
 	}
 	INFO("kbd_sc_init: ps/2 scanning disabled");
-	printf("kbd_sc_init: ps/2 scanning disabled\n");
 
 	// Set scan code set #2
 	result = kbd_send_cmd(0xf0);
@@ -480,11 +477,9 @@ short kbd_sc_init() {
 	result = kbd_send_cmd(0x02);
 	if (result < 0) {
 		INFO1("PS/2: unable to send scan code set: %s", err_message(result));
-		printf("PS/2: unable to send scan code set: %s\n", err_message(result));
 		return result;
 	}
 	INFO("kbd_sc_init: ps/2 scan code set #2 selected");
-	printf("kbd_sc_init: ps/2 scan code set #2 selected\n");
 
 	// Enable scanning
 	result = kbd_send_cmd(0xf4);
@@ -495,8 +490,8 @@ short kbd_sc_init() {
 	INFO("kbd_sc_init: ps/2 scanning enabled");
 
 	// Register and enable the PS/2 interrupt handler
-	// int_register(INT_KBD_PS2, (p_int_handler)kbd_handle_irq);
-	// int_enable(INT_KBD_PS2);
+	int_register(INT_KBD_PS2, (p_int_handler)kbd_handle_irq);
+	int_enable(INT_KBD_PS2);
 
 	return result;
 }

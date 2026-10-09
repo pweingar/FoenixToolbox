@@ -23,26 +23,6 @@ static bool ps2_has_mouse = false;
 static uint16_t ps2_keyboard_id = 0;
 static uint16_t ps2_mouse_id = 0;
 
-// void ps2_echo_keys() {
-//     int count = 0;
-
-//     txt_set_xy(0, 0, 1);
-//     printf("> ");
-
-//     do {
-//         if (*PS2_STATUS & PS2_STAT_OBF) {
-//             uint8_t code = *PS2_DATA_BUF;
-//             printf("%02X ", code);
-//             count++;
-//             if (count > 16) {
-//                 txt_set_xy(0, 0, 1);
-//                 printf("> ");
-//                 count = 0;
-//             }
-//         }
-//     } while (1);
-// }
-
 int ps2_wait_write(long timeout) {
     TRACE("ps2_wait_write");
     if (timeout != 0) {
@@ -235,7 +215,6 @@ static bool ps2_check_two_channels() {
 
     int result = ps2_send_data(1, PS2_CTRL_ENABLE_2, ps2_timeout);
     if (result) {
-        printf("ps2_check_two_channels: result = %d\n", result);
         return false;
     }
 
@@ -245,21 +224,16 @@ static bool ps2_check_two_channels() {
     result = ps2_send_cmd_expect_response(PS2_CTRL_READCMD, ps2_timeout);
     if (result < 0) {
         DEBUG("PS/2: PS2_CTRL_READCMD timeout");
-        printf("PS/2: PS2_CTRL_READCMD timeout\n");
         return PS2_TIMEOUT;
     }
 
-    printf("PS/2: PS2_CTRL_READCMD result = 0x%02X\n", result);
-
     if (result & 0x20) {
-        printf("PS/2: PS2_CTRL_READCMD result had bit 0x10 set.\n");
         return false;
     } else {
         uint8_t ctrl_config = (uint8_t)result;
         result = ps2_send_cmd(PS2_CTRL_DISABLE_2, ps2_timeout);
         result = ps2_send_cmd_with_data(PS2_CTRL_WRITECMD, ctrl_config & 0xee, ps2_timeout);
 
-        printf("PS/2: PS2_CTRL_READCMD result had bit 0x20 clear.\n");
         return true;
     }
 }
@@ -272,12 +246,10 @@ static bool ps2_check_two_channels() {
  */
 static bool ps2_channel_tested(uint8_t command) {
     TRACE1("ps2_channel_tested: command = 0x%02X", command);
-    printf("ps2_channel_tested: command = 0x%02X\n", command);
     int result = ps2_send_cmd_expect_response(command, ps2_timeout);
     if (result == 0) {
         return true;
     } else {
-        printf("ps2_channel_tested: command = 0x%02X, result = 0x%02X\n", command, result);
         return false;
     }
 }
@@ -505,12 +477,6 @@ int ps2_init() {
     // Check to see if there are two channels
     ps2_has_two_channels = true; // ps2_check_two_channels();
 
-    if (ps2_has_two_channels) {
-        printf("PS/2: system has two ports\n");
-    } else {
-        printf("PS/2: system has only one port\n");
-    }
-
     // Test channels
 
     // Make sure the buffer is clear
@@ -519,18 +485,13 @@ int ps2_init() {
     if (ps2_channel_tested(PS2_CTRL_KBDTEST)) {
         ps2_has_keyboard = true;
         INFO("PS/2: system has a keyboard");
-        printf("PS/2: system has a keyboard\n");
-    } else {
-        printf("PS/2: system does not have a keyboard.\n");
     }
 
     if (ps2_has_two_channels) {
         if (ps2_channel_tested(PS2_CTRL_MOUSETEST)) {
             ps2_has_mouse = true;
-            printf("PS/2: system has a mouse.\n");
         } else {
             ps2_has_mouse = false;
-            printf("PS/2: system does not have a mouse.\n");
         }
     }
 
@@ -558,7 +519,6 @@ int ps2_init() {
             // Keyboard did not respond... mark that we don't really have one
             ps2_has_keyboard = false;
             ps2_keyboard_id = 0;
-            printf("PS/2: keyboard did not reset.\n");
         } else {
             printf("PS/2: keyboard ID: 0x%04X\n", ps2_keyboard_id);
         }
@@ -570,7 +530,6 @@ int ps2_init() {
             // Mouse did not respond... mark that we don't really have one
             ps2_has_mouse = false;
             ps2_mouse_id = 0;
-            printf("PS/2: mouse did not reset.\n");
         } else {
             printf("PS/2: mouse ID: 0x%04X\n", ps2_mouse_id);
         }

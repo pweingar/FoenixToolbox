@@ -302,14 +302,14 @@ inline void int_dispatch(unsigned short n) {
  * CPU interrupt routine for PS/2 keyboard (CPU vector 0x40)
  */
 __attribute__((interrupt(0x0100))) void int_handle_40() {
-	int_dispatch(INT_KBD_PS2);
+	int_dispatch(0x08);
 }
 
 /**
  * CPU interrupt routine for PS/2 mouse (CPU vector 0x41)
  */
 __attribute__((interrupt(0x0104))) void int_handle_41() {
-	int_dispatch(INT_MOUSE);
+	int_dispatch(0x09);
 }
 
 // /**

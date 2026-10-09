@@ -13,9 +13,11 @@
  * Interrupt control registers
  */
 
-// TODO: separate A2560Me definitions
+#if MODEL == MODEL_FOENIX_A2560ME
+#include "A2560Me/interrupt_a2560me.h"
+#else
 
-#if (MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X || MODEL == MODEL_FOENIX_A2560ME)
+#if (MODEL == MODEL_FOENIX_A2560K || MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X)
 
 #define PENDING_GRP0 		((volatile unsigned short *)0xFEC00100)
 #define PENDING_GRP1 		((volatile unsigned short *)0xFEC00102)
@@ -247,6 +249,8 @@
 #define INT_DAC1_PB         0x2D    /* DAC1 Playback Done (48K) */
 #define INT_RESERVED_8      0x2E    /* Reserved */
 #define INT_DAC0_PB         0x2F    /* DAC0 Playback Done (44.1K) */
+
+#endif
 
 /*
  * Initialize the interrupt registers
