@@ -255,6 +255,23 @@ void test_com3() {
 }
 
 /**
+ * Test the COM4 serial port
+ */
+void test_com4() {
+    printf("Attempting to send to COM4\n");
+    short com4 = chan_open(CDEV_COM4, 0, 0);
+    if (com4 > 0) {
+        do {
+            for (uint8_t c = 0x20; c < 0x7f; c++) {
+                chan_write_b(com4, c);
+            }
+        } while (1);
+    } else {
+        printf("Could not open COM4: %d\n", com4);
+    }
+}
+
+/**
  * Send a message to the printer on LPT
  */
 void test_printer() {

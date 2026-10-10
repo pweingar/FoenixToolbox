@@ -51,6 +51,11 @@ extern void test_com1();
 extern void test_com3();
 
 /**
+ * Test the COM4 serial port
+ */
+extern void test_com4();
+
+/**
  * Send a message to the printer on LPT
  */
 extern void test_printer();

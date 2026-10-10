@@ -29,8 +29,8 @@ typedef struct com_ser_dev_s {
 /**
  * COM3 and 4 -- USB serial ports for serial communications to a host computer
  */
-#define SER_COM3            ((uint8_t *)0xffc00b00)
-#define SER_COM4            ((uint8_t *)0xffc00c00)
+#define SER_COM3            ((uint8_t *)0xfec00b00)
+#define SER_COM4            ((uint8_t *)0xfec00c00)
 
 /**
  * WIZFI wireless adapter -- This will be mapped to CDEV_WIZFI
