@@ -5,6 +5,8 @@
 #ifndef __sdc_spi_H
 #define __sdc_spi_H
 
+#include <stdbool.h>
+
 #include "sdc_reg.h"
 #include "sys_types.h"
 
@@ -31,6 +33,7 @@ typedef struct s_sd_card_info {
 	p_sdc_spi reg;
 	uint8_t type;
 	uint8_t status;
+	bool uses_cpu_clock;
 } t_sd_card_info, *p_sd_card_info;
 
 //

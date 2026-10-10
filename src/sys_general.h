@@ -92,6 +92,12 @@ extern uint8_t get_dip();
  */
 extern int sys_get_clock_speed();
 
+/*
+ * Scale a busy-wait loop count tuned at 50 MHz to the actual CPU clock.
+ * Reads the CPU speed nibble of the GAVIN ID register (SYSCLK_xxMHZ) once; cheap enough for early boot.
+ */
+extern unsigned long sys_scale_loops(unsigned long n);
+
 #if MODEL == MODEL_FOENIX_GENX || MODEL == MODEL_FOENIX_A2560X
 /*
  * Set the color of the LED for the floppy drive

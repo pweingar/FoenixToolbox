@@ -407,6 +407,22 @@ int sys_get_clock_speed() {
     }
 }
 
+/*
+ * Scale a busy-wait loop count tuned at 50 MHz to the actual CPU clock.
+ * Reads the CPU speed nibble of the GAVIN ID register (SYSCLK_xxMHZ) once; cheap enough for early boot.
+ */
+unsigned long sys_scale_loops(unsigned long n) {
+    static unsigned short speed = 0xFFFF;
+    if (speed == 0xFFFF) {
+        speed = (unsigned short)((*GABE_SUBVER_ID & 0xF0) >> 4);
+    }
+    switch (speed) {
+        case SYSCLK_66MHZ:  return n + (n + 2) / 3;         /* 66.67 / 50 = 4/3 */
+        case SYSCLK_80MHZ:  return n + (n * 3 + 4) / 5;     /* 80 / 50 = 8/5 */
+        default:            return n;                       /* 50 MHz and slower: as tuned */
+    }
+}
+
 /**
  * Get the status of the DIP switches
  * 

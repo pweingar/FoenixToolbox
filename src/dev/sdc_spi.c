@@ -53,6 +53,16 @@
 static t_sd_card_info sd0_card_info;
 static t_sd_card_info sd1_card_info;
 
+/*
+ * SD2 slow-mode divider. The SD2 SPI lives in the 10M02 on the local bus and runs on the local-bus clock, which is
+ * the CPU bus clock (BCLK). Its power-on value 40 gives about 298 kHz at 50 MHz, but about 397 kHz at 66.67 MHz (no
+ * margin against the 400 kHz card-initialisation limit). Scale it with the CPU speed: 40 at 50 MHz (unchanged),
+ * 54 at 66.67 MHz, 66 at 80 MHz - about 300 kHz each.
+ */
+static unsigned char sd2_slow_delay(void) {
+	return (unsigned char)(sys_scale_loops(42) - 2);	/* (N + 2) scales with the clock */
+}
+
 /**
  * @brief Transmit Busy Flag Check
  * 
@@ -310,7 +320,11 @@ static short sdc_init(p_dev_block dev) {
 	printf("SDC: init %d\n", dev->number);
 	
 	timers_wait_usec(10000);			/* 10ms */
-    sd->ctrl |= SDx_SLOW;   // Set the SPI in Slow Mode
+
+	if (card->uses_cpu_clock) {
+		sd->delay = sd2_slow_delay();		// slow-mode divider for the CPU bus clock (10M02 SPI runs on it)
+	}
+	sd->ctrl |= SDx_SLOW;   // Set the SPI in Slow Mode
 	for (n = 10; n; n--) {
 		SD0_Rx(sd, buf, 1);	// Apply 80 dummy clocks and the card gets ready to receive command
 	}
@@ -570,6 +584,7 @@ short sdc_install() {
 	sd0_card_info.reg = SD0_REG;
 	sd0_card_info.status = 0;
 	sd0_card_info.type = 0;
+	sd0_card_info.uses_cpu_clock = false;
 
     dev.number = BDEV_SD0;
     dev.name = "SD0";
@@ -588,6 +603,7 @@ short sdc_install() {
 	sd1_card_info.reg = SD1_REG;
 	sd1_card_info.status = 0;
 	sd1_card_info.type = 0;
+	sd1_card_info.uses_cpu_clock = false;
 
     dev.number = BDEV_SD1;
     dev.name = "SD1";
