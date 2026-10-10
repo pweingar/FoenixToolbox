@@ -10,6 +10,7 @@
 typedef struct s_sdc_spi {
 	uint8_t ctrl;
 	uint8_t data;
+	uint8_t delay;
 } t_sdc_spi, *p_sdc_spi;
 
 #define SDx_CS				0x01		// 1 = Enable

@@ -1,6 +1,8 @@
 (define memories
   '((memory flash (address (#x010000 . #x02ffff)) (type ROM))
-    (memory dataRAM (address (#x030000 . #x03ffff)) (type RAM))
+
+    (memory dataRAM (address (#x030000 . #x04ffff)) (type RAM))
+
     (memory Vector (address (#x0000 . #x03ff))
 		(section (reset #x0000)))
 
@@ -9,6 +11,7 @@
                      (palette2 #xfec42800) (palette3 #xfec42c00)
                      (palette4 #xfec43000) (palette5 #xfec43400)
                      (palette6 #xfec43800) (palette7 #xfec43c00)))
+
     (memory vram (address (#x800000 . #xbfffff))
             (section vram))
 

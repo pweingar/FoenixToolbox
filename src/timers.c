@@ -83,15 +83,14 @@ void timers_reset_usec() {
  * @param n the number of microseconds to wait
  */
 void timers_wait_usec(unsigned int n) {
-	// TODO: flesh out for other models of A2560
+	// Clear timer 2
+	*TIMER_VALUE_2 = 0;
+	*TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2 | TCR_CLEAR_2;
+
+	// Start timer 2 in count up mode
+	*TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2;
+
 	uint32_t clock_ticks = *TIMER_VALUE_2 + (uint32_t)(n * clock_multiplier);
-
-	// // Clear timer 2
-	// *TIMER_VALUE_2 = 0;
-	// *TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2 | TCR_CLEAR_2;
-
-	// // Start timer 2 in count up mode
-	// *TIMER_TCR0 = TCR_ENABLE_2 | TCR_CNTUP_2;
 
 	while (*TIMER_VALUE_2 < clock_ticks) ;
 }
