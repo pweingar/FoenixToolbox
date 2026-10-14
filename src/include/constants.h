@@ -49,8 +49,9 @@
 
 #define BDEV_SD0 0
 #define BDEV_SD1 1
-#define BDEV_HD0 3
+#define BDEV_SD2 2
 #define BDEV_FD0 2
+#define BDEV_HD0 3
 
 /*
  * Channel devices 

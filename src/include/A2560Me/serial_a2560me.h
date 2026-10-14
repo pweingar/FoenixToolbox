@@ -35,6 +35,6 @@ typedef struct com_ser_dev_s {
 /**
  * WIZFI wireless adapter -- This will be mapped to CDEV_WIZFI
  */
-#define SER_WIZFI           ((uint8_t *)0xffc00800)
+#define SER_WIZFI           ((uint8_t *)0xfec00800)
 
 #endif

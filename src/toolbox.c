@@ -30,13 +30,18 @@ int main(int argc, char * argv[]) {
 
     tb_init();
 
-    // test_sd0();
-    // test_sd1();
-    // test_dir("/sd1");
-    // test_com3();
-    test_com4();
+    // test_bdev(BDEV_SD0);
+    // test_bdev(BDEV_SD1);
+    // test_bdev(BDEV_SD2);
+    // test_bdev(BDEV_HD0);
+
+    test_dir("/sd2");
+
     // test_com1();
-    // test_hd();
+    // test_com3();
+    // test_com4();
+    // test_wizfi();
+
     // test_kbd();
     // test_usec();
     // test_printer();

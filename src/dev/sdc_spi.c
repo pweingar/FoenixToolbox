@@ -52,6 +52,7 @@
 
 static t_sd_card_info sd0_card_info;
 static t_sd_card_info sd1_card_info;
+static t_sd_card_info sd2_card_info;
 
 /*
  * SD2 slow-mode divider. The SD2 SPI lives in the 10M02 on the local bus and runs on the local-bus clock, which is
@@ -612,6 +613,21 @@ short sdc_install() {
     result = bdev_register(&dev);
 
 	printf("SDC: Registered #%d, result %d\n", dev.number, result);
+
+	sd2_card_info.reg = SD2_REG;
+	sd2_card_info.status = 0;
+	sd2_card_info.type = 0;
+	sd2_card_info.uses_cpu_clock = true;
+
+    dev.number = BDEV_SD2;
+    dev.name = "SD2";
+	dev.data = &sd2_card_info;
+
+    result = bdev_register(&dev);
+
+	printf("SDC: Registered #%d, result %d\n", dev.number, result);
+
+	
 
 #if HAS_INTERNAL_SD
 	if (result == 0) {

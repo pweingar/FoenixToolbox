@@ -86,67 +86,19 @@ void dump_buffer(const uint8_t * buffer, short size, short labels) {
 }
 
 /**
- * Make sure we can read from the PATA hard drive
- */
-void test_hd() {
-    char line[80];
-    uint8_t my_buf[512];
-
-    printf("\nReading the hard drive's boot sector\n\n");
-    short result = bdev_init(BDEV_HD0);
-    if (result < 0) {
-        sprintf(line, "Unable to initialize the hard drive: %s [%d]\n", err_message(result), result);
-        txt_print(0, line);
-    } else {
-        short n = bdev_read(BDEV_HD0, 0L, my_buf, 512);
-        if (n >= 0) {
-            // printf("Read %d bytes:\n", n);
-            dump_buffer(my_buf, 512, 1);
-        } else {
-            sprintf(line, "Unable to read the boot sector: %s [%d]\n", err_message(n), n);
-            txt_print(0, line);
-        }
-    }
-}
-
-/**
- * Make sure we can read from the internal SD card
- */
-void test_sd1() {
-    char line[80];
-    uint8_t my_buf[512];
-
-    printf("\nReading SD1's boot sector\n\n");
-    short result = bdev_init(BDEV_SD1);
-    if (result < 0) {
-        sprintf(line, "Unable to initialize SD1 (%d): %s [%d]\n", BDEV_SD1, err_message(result), result);
-        txt_print(0, line);
-    } else {
-        short n = bdev_read(BDEV_SD1, 0L, my_buf, 512);
-        if (n >= 0) {
-            // printf("Read %d bytes:\n", n);
-            dump_buffer(my_buf, 512, 1);
-        } else {
-            sprintf(line, "Unable to read the boot sector: %s [%d]\n", err_message(n), n);
-            txt_print(0, line);
-        }
-    }
-}
-
-/**
  * Make sure we can read from the external SD card
  */
-void test_sd0() {
+void test_bdev(short dev) {
     char line[80];
     uint8_t my_buf[512];
 
-    printf("\nReading SD0's boot sector\n\n");
-    short result = bdev_init(BDEV_SD0);
+    printf("\nReading block device %d boot sector\n\n", dev);
+    short result = bdev_init(dev);
     if (result < 0) {
-        sprintf(line, "Unable to initialize SD0: %d\n", result);
+        sprintf(line, "Unable to initialize device %d: %d\n", dev, result);
         txt_print(0, line);
     } else {
-        short n = bdev_read(BDEV_SD0, 0L, my_buf, 512);
+        short n = bdev_read(dev, 0L, my_buf, 512);
         if (n >= 0) {
             // printf("Read %d bytes:\n", n);
             dump_buffer(my_buf, 512, 1);
@@ -182,7 +134,7 @@ void test_dir(const char * path) {
 				if (entry.attributes & FSYS_AM_DIR) {
                     printf("%s/\n", entry.name);
 				} else {
-                    printf("%s\t%4ld\n", entry.name, entry.size);
+                    printf("%s %10ld\n", entry.name, entry.size);
 				}
 			}
 
@@ -268,6 +220,29 @@ void test_com4() {
         } while (1);
     } else {
         printf("Could not open COM4: %d\n", com4);
+    }
+}
+
+/**
+ * Test connecting to the WizFi interface
+ */
+void test_wizfi() {
+    printf("Attempting to send a test command to the WizFi interface\n");
+    short wizfi = chan_open(CDEV_WIZFI, 0, 0);
+    if (wizfi) {
+        char buffer[80];
+        const char * command = "AT\r\n";
+        short n = chan_write(wizfi, (uint8_t *)command, strlen(command));
+        printf("Send %d bytes to the WizFi: %s", n, command);
+
+        n = chan_read(wizfi, (uint8_t *)buffer, 80);
+        if (n > 0) {
+            printf("WizFi responded: '%s'\n", buffer);
+        } else {
+            printf("WizFi did not respond [%s].\n", buffer);
+        }
+
+        chan_close(wizfi);
     }
 }
 

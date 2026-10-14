@@ -56,6 +56,11 @@ extern void test_com3();
 extern void test_com4();
 
 /**
+ * Test connecting to the WizFi interface
+ */
+extern void test_wizfi();
+
+/**
  * Send a message to the printer on LPT
  */
 extern void test_printer();
