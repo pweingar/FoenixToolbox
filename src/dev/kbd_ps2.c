@@ -416,6 +416,27 @@ unsigned short kbd_get_scancode() {
 	}
 }
 
+/**
+ * A test routine to display the raw PS/2 make/break codes coming from the keyboard
+ */
+void kbd_show_bytes() {
+    short count = 0;
+
+	printf("\nType something:\n");
+
+    do {
+        short result = ps2_read_data(1000);
+        if (result >= 0) {
+            printf("%04X ", result);
+            count++;
+            if (count > 16) {
+                printf("\n");
+                count = 0;
+            }
+        }
+    } while(true);
+}
+
 /*
  * Check to see if a BREAK code has been pressed recently
  * If so, return true and reset the internal flag.
@@ -488,6 +509,9 @@ short kbd_sc_init() {
 		return result;
 	}
 	INFO("kbd_sc_init: ps/2 scanning enabled");
+
+	// Test: print out the bytes received from the PS/2 port
+	kbd_show_bytes();
 
 	// Register and enable the PS/2 interrupt handler
 	int_register(INT_KBD_PS2, (p_int_handler)kbd_handle_irq);

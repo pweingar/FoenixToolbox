@@ -35,7 +35,7 @@ int main(int argc, char * argv[]) {
     // test_bdev(BDEV_SD2);
     // test_bdev(BDEV_HD0);
 
-    test_dir("/sd2");
+    // test_dir("/sd2");
 
     // test_com1();
     // test_com3();
@@ -45,6 +45,8 @@ int main(int argc, char * argv[]) {
     // test_kbd();
     // test_usec();
     // test_printer();
+    // test_charset();
+    test_keys_fnx79();
 
  	// boot_screen();
 

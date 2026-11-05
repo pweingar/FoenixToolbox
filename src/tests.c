@@ -290,3 +290,220 @@ void test_usec() {
         printf("%d ?= %ld", counter, (timers_jiffies() - jiffies_start) / 60);
     } while (1);
 }
+
+/**
+ * Print out the current character set in a matrix
+ */
+void test_charset() {
+    short screen = 0;
+
+    txt_clear(screen, 2);
+    txt_set_xy(screen, 0, 0);
+    txt_print(screen, "0123456789ABCDEF\n");
+    txt_print(screen, "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\nA\nB\nC\nD\nE\nF");
+
+    for (short row = 0; row < 16; row++) {
+        txt_set_xy(screen, 1, row + 1);
+        for (short column = 0; column < 16; column++) {
+            txt_put(screen, (row << 4) + column);
+        }
+    }
+
+    while (1) ;
+}
+
+/**
+ * Represent the display information for a key
+ */
+typedef struct visual_key_s {
+    short x;
+    short y;
+    short scancode;
+    const char * label;
+} visual_key_t, *visual_key_p;
+
+const visual_key_t keys_fnx79[] = {
+    {0, 0, 0x01, "ESC"},
+    {8, 0, 0x3b, "F1"},
+    {14, 0, 0x3c, "F2"},
+    {20, 0, 0x3d, "F3"},
+    {26, 0, 0x3e, "F4"},
+    {32, 0, 0x3f, "F5"},
+    {38, 0, 0x40, "F6"},
+    {44, 0, 0x41, "F7"},
+    {50, 0, 0x42, "F8"},
+    {57, 0, 0x43, "MON"},
+    {64, 0, 0x44, "APP"},
+    {72, 0, 0x78, "MENU"},
+    // {57, 0, 0x54, "MON"},
+    // {64, 0, 0x55, "APP"},
+    // {72, 0, 0x56, "MENU"},
+
+    {1, 3, 0x29, "`"},
+    {6, 3, 0x02, "1"},
+    {11, 3, 0x03, "2"},
+    {16, 3, 0x04, "3"},
+    {21, 3, 0x05, "4"},
+    {26, 3, 0x06, "5"},
+    {31, 3, 0x07, "6"},
+    {36, 3, 0x08, "7"},
+    {41, 3, 0x09, "8"},
+    {46, 3, 0x0a, "9"},
+    {51, 3, 0x0b, "0"},
+    {56, 3, 0x0c, "-"},
+    {61, 3, 0x0d, "="},
+    {66, 3, 0x2b, "\\"},
+    {71, 3, 0x0e, "BS"},
+    {77, 3, 0x65, "DEL"},
+
+    {1, 6, 0x0f, "TAB"},
+    {8, 6, 0x10, "Q"},
+    {13, 6, 0x11, "W"},
+    {18, 6, 0x12, "E"},
+    {23, 6, 0x13, "R"},
+    {28, 6, 0x14, "T"},
+    {33, 6, 0x15, "Y"},
+    {38, 6, 0x16, "U"},
+    {43, 6, 0x17, "I"},
+    {48, 6, 0x18, "O"},
+    {53, 6, 0x19, "P"},
+    {58, 6, 0x1a, "["},
+    {63, 6, 0x1b, "]"},
+    {68, 6, 0x1c, "ENTER"},
+
+    {1, 9, 0x3a, "CAPS"},
+    {9, 9, 0x1e, "A"},
+    {14, 9, 0x1f, "S"},
+    {19, 9, 0x20, "D"},
+    {24, 9, 0x21, "F"},
+    {29, 9, 0x22, "G"},
+    {34, 9, 0x23, "H"},
+    {39, 9, 0x24, "J"},
+    {44, 9, 0x25, "K"},
+    {49, 9, 0x26, "L"},
+    {54, 9, 0x27, ":"},
+    {59, 9, 0x28, "'"},
+    {64, 9, 0x59, " "},
+
+    {1, 12, 0x2a, "SHIFT"},
+    {10, 12, 0x5a, " "},
+    {15, 12, 0x2c, "Z"},
+    {20, 12, 0x2d, "X"},
+    {25, 12, 0x2e, "C"},
+    {30, 12, 0x2f, "V"},
+    {35, 12, 0x30, "B"},
+    {40, 12, 0x31, "N"},
+    {45, 12, 0x32, "M"},
+    {50, 12, 0x33, "<"},
+    {55, 12, 0x34, ">"},
+    {60, 12, 0x35, "/"},
+    {65, 12, 0x36, "SHIFT"},
+    {74, 12, 0x68, "^"},
+
+    {0, 15, 0x1d, "CTRL"},
+    {8, 15, 0x38, "ALT"},
+    {15, 15, 0x5b, "FNX"},
+    {22, 15, 0x39, "                     "},
+    {47, 15, 0x5d, "FNX"},
+    {54, 15, 0x5c, "ALT"},
+    {61, 15, 0x5e, "CTRL"},
+    {69, 15, 0x69, "<"},
+    {74, 15, 0x6a, "V"},
+    {79, 15, 0x6b, ">"},
+
+    {-1, -1, -1, ""}
+};
+
+/**
+ * Draw a key on the screen
+ */
+static void txt_draw_key(short screen, short x, short y, const char * label, bool is_pressed) {
+    const short padding = 1;
+    const uint8_t pressed_fg = 4;
+    const uint8_t pressed_bg = 7;
+
+    short label_length = strlen(label);
+    short interior_width = label_length + padding * 2;
+    uint8_t foreground = 0;
+    uint8_t background = 0;
+
+    // Get the current color
+    txt_get_color(screen, &foreground, &background);
+    if (is_pressed) {
+        // If the key is pressed, set the text colors to the pressed color values
+        txt_set_color(screen, pressed_fg, pressed_bg);
+    }
+
+    // Draw the top row
+    txt_set_xy(screen, x, y);
+    txt_put(screen, 0xda);
+    for (short i = 0; i < interior_width; i++) {
+        txt_put(screen, 0xc4);
+    }
+    txt_put(screen, 0xbf);
+
+    // Draw the key label row
+    txt_set_xy(screen, x, y + 1);
+    printf("%c %s %c", 0xb3, label, 0xb3);
+
+    // Draw the bottom row
+    txt_set_xy(screen, x, y + 2);
+    txt_put(screen, 0xc0);
+    for (short i = 0; i < interior_width; i++) {
+        txt_put(screen, 0xc4);
+    }
+    txt_put(screen, 0xd9);
+
+    // Restore the original text screen colors
+    if (is_pressed) {
+        txt_set_color(screen, foreground, background);
+    }
+}
+
+/**
+ * Display a FNX79 keyboard
+ */
+void test_keys_fnx79() {
+    const short screen = 0;
+    short k = 0;
+
+    bool is_down[128];
+    bool is_changed[128];
+
+    for (k = 0; k < 128; k++) {
+        is_down[k] = false;
+        is_changed[k] = true;
+    }
+
+    txt_clear(screen, 2);
+    txt_set_cursor_visible(screen, false);
+
+    do {
+        short key_code = kbd_get_scancode();
+
+        if (key_code != 0) {
+            if (key_code & 0x0080) {
+                // Break
+                is_down[key_code & 0x007f] = false;
+            } else {
+                // Make
+                is_down[key_code & 0x007f] = true;
+            }
+            is_changed[key_code & 0x007f] = true;
+        }
+
+        for (short k = 0; k < 128; k++) {
+            short x = keys_fnx79[k].x;
+            short y = keys_fnx79[k].y;
+            short code = keys_fnx79[k].scancode;
+
+            if (x != -1) {
+                if (is_changed[code]) {
+                    is_changed[code] = false;
+                    txt_draw_key(screen, x, y, keys_fnx79[k].label, is_down[code]);
+                }
+            }
+        }
+
+    } while (1);
+}

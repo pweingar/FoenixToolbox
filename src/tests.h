@@ -70,4 +70,14 @@ extern void test_printer();
  */
 extern void test_usec();
 
+/**
+ * Print out the current character set in a matrix
+ */
+extern void test_charset();
+
+/**
+ * Display a FNX79 keyboard
+ */
+extern void test_keys_fnx79();
+
 #endif

@@ -267,7 +267,7 @@ static int ps2_reset_device(uint8_t port, uint16_t * dev_id) {
     short ack_count = 0;
     *dev_id = 0;
 
-    int result = ps2_send_data(port, 0xff, ps2_timeout);
+    int result = kbd_send_cmd(0xff);
     if (result) return result;
 
     // Process the response from the device as flexibly as possible
@@ -276,6 +276,7 @@ static int ps2_reset_device(uint8_t port, uint16_t * dev_id) {
 
     while (1) {
         result = ps2_read_data(ps2_timeout);
+        // printf("PS/2 Port #%d Reset: 0x%02X\n", port, result);
         if ((result == 0xfa) || (result == 0xaa)) {
             ack_count++;
         } else {
@@ -398,6 +399,10 @@ short kbd_send_cmd(uint8_t cmd) {
             return response;
 
         } else if (response == 0xfa) {
+                // We got an ACK... return OK
+                return PS2_OK;
+
+        } else if (response == 0xaa) {
                 // We got an ACK... return OK
                 return PS2_OK;
 
