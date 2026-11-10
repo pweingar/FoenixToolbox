@@ -46,4 +46,27 @@ extern bool kbd_break();
  */
 extern short kbd_sc_init();
 
+/**
+ * Enable to disable keyboard scanning
+ * 
+ * @param is_enabled true if scanning should be enabled false otherwise
+ * @return 0 on success, negative number on error
+ */
+extern short kbd_enable(bool is_enabled);
+
+/**
+ * Set the status of the keyboad status LEDS (caps, scroll, and numlock)
+ * 
+ * status is a bitfield:
+ * - 0x01 = SCROLL LOCK
+ * - 0x02 = NUM LOCK
+ * - 0x04 = CAPS LOCK
+ * 
+ * NOTE: keyboard scanning should be turned off before calling this
+ * 
+ * @param status a bitfield describing which LEDs should be on
+ * @return 0 on success, negative number on error
+ */
+extern short kbd_set_status(uint8_t status);
+
 #endif

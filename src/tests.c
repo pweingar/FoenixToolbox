@@ -299,7 +299,7 @@ void test_charset() {
 
     txt_clear(screen, 2);
     txt_set_xy(screen, 0, 0);
-    txt_print(screen, "0123456789ABCDEF\n");
+    txt_print(screen, " 0123456789ABCDEF\n");
     txt_print(screen, "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\nA\nB\nC\nD\nE\nF");
 
     for (short row = 0; row < 16; row++) {
@@ -398,7 +398,7 @@ const visual_key_t keys_fnx79[] = {
     {55, 12, 0x34, ">"},
     {60, 12, 0x35, "/"},
     {65, 12, 0x36, "SHIFT"},
-    {74, 12, 0x68, "^"},
+    {74, 12, 0x68, "\x1e"},
 
     {0, 15, 0x1d, "CTRL"},
     {8, 15, 0x38, "ALT"},
@@ -407,9 +407,9 @@ const visual_key_t keys_fnx79[] = {
     {47, 15, 0x5d, "FNX"},
     {54, 15, 0x5c, "ALT"},
     {61, 15, 0x5e, "CTRL"},
-    {69, 15, 0x69, "<"},
-    {74, 15, 0x6a, "V"},
-    {79, 15, 0x6b, ">"},
+    {69, 15, 0x69, "\x11"},
+    {74, 15, 0x6a, "\x1f"},
+    {79, 15, 0x6b, "\x10"},
 
     {-1, -1, -1, ""}
 };
@@ -470,6 +470,8 @@ void test_keys_fnx79() {
     bool is_down[128];
     bool is_changed[128];
 
+    bool caps_active = false;
+
     for (k = 0; k < 128; k++) {
         is_down[k] = false;
         is_changed[k] = true;
@@ -482,14 +484,40 @@ void test_keys_fnx79() {
         short key_code = kbd_get_scancode();
 
         if (key_code != 0) {
-            if (key_code & 0x0080) {
+            short bare_code = key_code & 0x7f;
+            bool is_break = (key_code & 0x80) == 0x80;
+
+            if (is_break) {
                 // Break
-                is_down[key_code & 0x007f] = false;
+                if (is_down[bare_code]) {
+                    is_down[bare_code] = false;
+                    is_changed[bare_code] = true;
+                }
+            
             } else {
                 // Make
-                is_down[key_code & 0x007f] = true;
+                if (!is_down[bare_code]) {
+                    is_down[bare_code] = true;
+                    is_changed[bare_code] = true;
+                }
+
+                // if ((bare_code == 0x3a) && is_changed[bare_code]) {
+                //     if (caps_active) {
+                //         // We are pressing the CAPS LOCK for the first time since releasing it, and the LED is ON... turn it OFF
+                //         caps_active = false;
+                //         kbd_enable(false);
+                //         kbd_set_status(0x00);
+                //         kbd_enable(true);
+
+                //     } else {
+                //         // We are pressing the CAPS LOCK for the first time since releasing it, and the LED is OFF... turn it ON
+                //         caps_active = true;
+                //         kbd_enable(false);
+                //         kbd_set_status(0x04);
+                //         kbd_enable(true);
+                //     }
+                // }
             }
-            is_changed[key_code & 0x007f] = true;
         }
 
         for (short k = 0; k < 128; k++) {

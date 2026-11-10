@@ -18,8 +18,10 @@
 #include <stdbool.h>
 
 #include "errors.h"
+#include "indicators.h"
 #include "interrupt.h"
 #include "log.h"
+#include "kbd_ps2.h"
 #include "ps2_general.h"
 #include "ring_buffer.h"
 #include "sys_macros.h"
@@ -44,6 +46,8 @@
 #define KBD_MOD_ALT         0x20
 #define KBD_MOD_OS          0x40
 #define KBD_MOD_MENU        0x80
+
+#define KBD_LOCKS			(KBD_LOCK_SCROLL | KBD_LOCK_NUM | KBD_LOCK_CAPS)
 
 /*
  * Special PS/2 byte codes
@@ -178,6 +182,8 @@ static void kbd_enqueue_scancode(short scancode, bool is_make) {
  * @param is_make true if the byte is a make code, false if it's a break
  */
 static void kbd_process_modifier(short modifier, bool is_make) {
+	uint8_t old_modifiers = 0;
+
 	switch(modifier) {
 		case KBD_MOD_SHIFT:
 		case KBD_MOD_CTRL:
@@ -191,8 +197,18 @@ static void kbd_process_modifier(short modifier, bool is_make) {
 
 		case KBD_LOCK_CAPS:
 		case KBD_LOCK_NUM:
+		case KBD_LOCK_SCROLL:
+			old_modifiers = modifiers;
+
 			if (!is_make) {
 				modifiers ^= modifier;
+
+				if ((old_modifiers ^ modifiers) & KBD_LOCKS) {
+					// A keyboard lock key has changed position... update the status LEDs
+					kbd_enable(false);
+					kbd_set_status(modifiers & KBD_LOCKS);
+					kbd_enable(true);
+				}
 			}
 			break;
 
@@ -452,6 +468,49 @@ bool kbd_break() {
 	return result;
 }
 
+/**
+ * Enable to disable keyboard scanning
+ * 
+ * @param is_enabled true if scanning should be enabled false otherwise
+ * @return 0 on success, negative number on error
+ */
+short kbd_enable(bool is_enabled) {
+	short result = 0;
+
+	if (is_enabled) {
+		result = kbd_send_cmd(0xf4);
+	} else {
+		result = kbd_send_cmd(0xf5);
+	}
+	
+	return result;
+}
+
+/**
+ * Set the status of the keyboad status LEDS (caps, scroll, and numlock)
+ * 
+ * status is a bitfield:
+ * - 0x01 = SCROLL LOCK
+ * - 0x02 = NUM LOCK
+ * - 0x04 = CAPS LOCK
+ * 
+ * NOTE: keyboard scanning should be turned off before calling this
+ * 
+ * @param status a bitfield describing which LEDs should be on
+ * @return 0 on success, negative number on error
+ */
+short kbd_set_status(uint8_t status) {
+	short result = 0;
+
+	result = kbd_send_cmd(0xed);
+	if (result == 0) {
+		result = kbd_send_cmd(status);
+	}
+
+	return result;
+}
+
+
 /*
  * Initialize the matrix keyboard
  *
@@ -482,12 +541,11 @@ short kbd_sc_init() {
 	kbd_clear_fifo();
 
 	// Disable scanning
-	result = kbd_send_cmd(0xf5);
+	result = kbd_enable(false);
 	if (result < 0) {
 		INFO1("PS/2: unable to disable keyboard scanning: %s", err_message(result));
 		return result;
 	}
-	INFO("kbd_sc_init: ps/2 scanning disabled");
 
 	// Set scan code set #2
 	result = kbd_send_cmd(0xf0);
@@ -503,7 +561,7 @@ short kbd_sc_init() {
 	INFO("kbd_sc_init: ps/2 scan code set #2 selected");
 
 	// Enable scanning
-	result = kbd_send_cmd(0xf4);
+	result = kbd_enable(true);
 	if (result < 0) {
 		INFO1("PS/2: unable to restart keyboard scanning: %s", err_message(result));
 		return result;
@@ -511,7 +569,7 @@ short kbd_sc_init() {
 	INFO("kbd_sc_init: ps/2 scanning enabled");
 
 	// Test: print out the bytes received from the PS/2 port
-	kbd_show_bytes();
+	// kbd_show_bytes();
 
 	// Register and enable the PS/2 interrupt handler
 	int_register(INT_KBD_PS2, (p_int_handler)kbd_handle_irq);

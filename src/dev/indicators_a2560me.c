@@ -1,5 +1,7 @@
 #include <stdint.h>
+#include <stdlib.h>
 
+#include "errors.h"
 #include "A2560Me/gabe_a2560me.h"
 #include "indicators.h"
 
@@ -52,7 +54,7 @@
  * ind_number = the number of the indicator to change
  * state = the state the indicator should take (on, off, error)
  */
-void ind_set(short ind_number, short state) {
+void ind_handler_a2560me(short ind_number, short state) {
     uint32_t mask = 0;
     
     // Compute and set the color the indicator should assume
@@ -127,7 +129,9 @@ void ind_set(short ind_number, short state) {
  *
  * Generally, this means the indicators will all be turned off
  */
-void ind_init() {
+void ind_init_lowlevel() {
+    ind_register(ind_handler_a2560me);
+
     ind_set(IND_POWER, IND_FOENIX);
     ind_set(IND_FDC, IND_OFF);
     ind_set(IND_HDC, IND_OFF);

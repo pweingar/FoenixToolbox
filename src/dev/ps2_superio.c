@@ -391,10 +391,10 @@ short kbd_send_cmd(uint8_t cmd) {
         int result = ps2_send_data(0, cmd, ps2_timeout);
         if (result < 0) return result;
 
-        printf("KBD SENT: %02X ", cmd);
+        // printf("KBD SENT: %02X ", cmd);
 
         int response = ps2_read_data(ps2_timeout);
-        printf("REPLY: %02X\n", response);
+        // printf("REPLY: %02X\n", response);
         if (response < 0) {
             return response;
 
