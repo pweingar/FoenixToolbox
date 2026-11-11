@@ -460,6 +460,21 @@ static void txt_draw_key(short screen, short x, short y, const char * label, boo
     }
 }
 
+const t_color3 led_defaults[] = {
+		{0, 64, 0},		// power is green
+		{255, 0, 0},	// LED 1 and 2 are blue
+		{255, 0, 0},
+		{255, 0, 255},	// CAPS is purple
+		{0, 0, 255},	// F1 = red
+		{0, 128, 255},	// F2 = orange
+		{0, 255, 255},	// F3 = yellow
+		{0, 255, 0},	// F4 = green
+		{128, 255, 0},	// F5 = cyan
+		{255, 0, 0},	// F6 = blue
+		{255, 0, 129},  // F7 = magenta?
+		{255, 0, 255}	// F8 = purple
+};
+
 /**
  * Display a FNX79 keyboard
  */
@@ -480,6 +495,19 @@ void test_keys_fnx79() {
     txt_clear(screen, 2);
     txt_set_cursor_visible(screen, false);
 
+    kbd_enable(false);
+
+    for (uint8_t led = 0; led < 12; led++) {
+        kbd_set_led_color(led, led_defaults[led].red, led_defaults[led].green, led_defaults[led].blue);
+    }
+
+    // Turn off all but the power LED
+    kbd_set_led_on_all(false);
+    kbd_set_led_on(0, true);
+    kbd_update_colors();
+
+    kbd_enable(true);
+
     do {
         short key_code = kbd_get_scancode();
 
@@ -493,12 +521,26 @@ void test_keys_fnx79() {
                     is_down[bare_code] = false;
                     is_changed[bare_code] = true;
                 }
+
+                if ((bare_code >= 0x3b) && (bare_code < 0x43) && is_changed[bare_code]) {
+                    uint8_t led = bare_code - 0x3b + 4;
+                    kbd_enable(false);
+                    kbd_set_led_on(led, false);
+                    kbd_enable(true);
+                }
             
             } else {
                 // Make
                 if (!is_down[bare_code]) {
                     is_down[bare_code] = true;
                     is_changed[bare_code] = true;
+                }
+
+                if ((bare_code >= 0x3b) && (bare_code < 0x43) && is_changed[bare_code]) {
+                    uint8_t led = bare_code - 0x3b + 4;
+                    kbd_enable(false);
+                    kbd_set_led_on(led, true);
+                    kbd_enable(true);
                 }
 
                 // if ((bare_code == 0x3a) && is_changed[bare_code]) {

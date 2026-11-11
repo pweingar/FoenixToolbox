@@ -31,6 +31,11 @@
 // Constants
 //
 
+#define FNX79_POWER_LED		0
+#define FNX79_MEDIA_LED		1
+#define FNX79_NETWORK_LED	2
+#define FNX79_CAPS_LED		3
+
 #define KBD_TIMEOUT			(60 * 5)
 #define KBD_RETRIES			10
 
@@ -145,6 +150,7 @@ static t_word_ring scan_code_buffer;
 static t_word_ring char_buffer; 
 static uint8_t modifiers = 0;
 static bool break_pressed = false;
+static bool is_foenix_kbd = false;
 
 //
 // Code
@@ -510,6 +516,187 @@ short kbd_set_status(uint8_t status) {
 	return result;
 }
 
+/**
+ * Set the color of an RGB LED using the Foenix keyboard command
+ * 
+ * NOTE: this will send the color the LED should take when on. It
+ *       does not necessarily turn the LED on if it was off.
+ * 
+ * @param led the number of the LED (keyboard dependent)
+ * @param red the red component (0 - 255)
+ * @param green the green component (0 - 255)
+ * @param blue the blue component (0 - 255)
+ */
+short kbd_set_led_color(uint8_t led, uint8_t red, uint8_t green, uint8_t blue) {
+	short result = kbd_send_cmd(0xe0);
+	if (result) return result;
+
+	result = kbd_send_cmd(led);
+	if (result) return result;
+
+	result = kbd_send_cmd(red);
+	if (result) return result;
+
+	result = kbd_send_cmd(green);
+	if (result) return result;
+
+	result = kbd_send_cmd(blue);
+
+	return result;
+}
+
+/**
+ * Send the command to update all the RGB colors
+ */
+short kbd_update_colors() {
+	return kbd_send_cmd(0xe3);
+}
+
+/**
+ * Set whether a keyboard LED is on or off
+ * 
+ * @param led the number of the LED (keyboard dependent)
+ * @param on true to turn the LED on, false to turn it off
+ */
+short kbd_set_led_on(uint8_t led, bool on) {
+	if (on) {
+		short result = kbd_send_cmd(0xe1);
+		if (result) return result;
+
+		result = kbd_send_cmd(led);
+		return result;
+	} else {
+		short result = kbd_send_cmd(0xe2);
+		if (result) return result;
+
+		result = kbd_send_cmd(led);
+		return result;
+	}
+}
+
+
+/**
+ * Turn all the LEDs on the keyboard on or off
+ *
+ * @param on true to turn the LEDs on, false to turn it off 
+ */
+short kbd_set_led_on_all(bool on) {
+	if (on) {
+		short result = kbd_send_cmd(0xe4);
+		return result;
+	} else {
+		short result = kbd_send_cmd(0xe5);
+		return result;
+	}
+}
+
+/**
+ * Handler for indicator updates
+ * 
+ * This handler will update the RGB LEDs on the Foenix keyboard, if that keyboard is present
+ */
+static void fnx79_ind_handler(short indicator, short state) {
+	uint8_t led = 0xff;
+	t_color3 on_color;
+	t_color3 led_color;
+	bool led_on = false;
+
+	if (is_foenix_kbd) {
+		switch(indicator) {
+			case IND_POWER:
+				// 
+				led = FNX79_POWER_LED;
+				on_color.red = 255;
+				on_color.green = 0;
+				on_color.blue = 255;
+				break;
+
+			case IND_NET:
+				led = FNX79_NETWORK_LED;
+				on_color.red = 0;
+				on_color.green = 128;
+				on_color.blue = 255;
+				break;
+
+			case IND_SDC:
+			case IND_SDC1:
+			case IND_FDC:
+			case IND_HDC:
+				led = FNX79_MEDIA_LED;
+				on_color.red = 0;
+				on_color.green = 128;
+				on_color.blue = 255;
+				break;
+
+			case IND_CAPS:
+				led = FNX79_CAPS_LED;
+				on_color.red = 128;
+				on_color.green = 0;
+				on_color.blue = 128;
+				break;
+
+			default:
+				// An indicator we don't handle was changed
+				return;
+		}
+
+		switch(state) {
+			case IND_OFF:
+				// LED off
+				led_color.red = 128;
+				led_color.green = 128;
+				led_color.blue = 128;
+				led_on = false;
+				break;
+
+			case IND_ON:
+				// Use the ON color for the led (set above)
+				led_color.red = on_color.red;
+				led_color.green = on_color.green;
+				led_color.blue = on_color.blue;
+
+				led_on = true;
+				break;
+
+			case IND_WARN:
+				// Use YELLOW for warning
+				led_color.red = 128;
+				led_color.green = 128;
+				led_color.blue = 0;
+				led_on = true;
+				break;
+
+			case IND_ERROR:
+				// Use RED for error
+				led_color.red = 255;
+				led_color.green = 0;
+				led_color.blue = 0;
+				break;
+
+			case IND_FOENIX:
+				// Use PURPLE for Foenix
+				led_color.red = 255;
+				led_color.green = 0;
+				led_color.blue = 255;
+				led_on = true;
+				break;
+
+			default:
+				// White by default
+				led_color.red = 128;
+				led_color.green = 128;
+				led_color.blue = 128;
+				led_on = true;
+				break;
+		}
+
+		kbd_enable(false);
+		kbd_set_led_color(led, led_color.red, led_color.green, led_color.blue);
+		kbd_set_led_on(led, led_on);
+		kbd_update_colors();
+		kbd_enable(true);
+	}
+}
 
 /*
  * Initialize the matrix keyboard
@@ -547,6 +734,18 @@ short kbd_sc_init() {
 		return result;
 	}
 
+	// Check to see if we have the Foenix keyboard
+	result = kbd_send_cmd(0xe6);
+	if (result == 0) {
+		// We should be getting a version number next
+		short firmware_version = ps2_read_data(500);
+		if (firmware_version > 0) {
+			// We got an expected response
+			is_foenix_kbd = true;
+			printf("PS/2: Foenix FNX79 keyboard detected\n");
+		}
+	}
+
 	// Set scan code set #2
 	result = kbd_send_cmd(0xf0);
 	if (result < 0) {
@@ -559,6 +758,12 @@ short kbd_sc_init() {
 		return result;
 	}
 	INFO("kbd_sc_init: ps/2 scan code set #2 selected");
+
+	// Register the indicator handler
+	if (is_foenix_kbd) {
+		ind_register(fnx79_ind_handler);
+		ind_set(IND_POWER, IND_ON);
+	}
 
 	// Enable scanning
 	result = kbd_enable(true);
